@@ -14,12 +14,12 @@ export function ModuleCard({ tone, title, value, detail }: ModuleCardProps) {
 
   return (
     <article
-      className="rounded-[24px] border p-4"
+      className="interactive-surface rounded-[24px] border p-4"
       style={{ background: theme.surface, color: theme.text, borderColor: theme.color }}
     >
       <div className="mb-4 flex items-center justify-between">
         <div className="grid size-10 place-items-center rounded-full bg-[rgb(255_255_255_/_6%)]">
-          <Icon size={20} strokeWidth={2.4} />
+          <Icon aria-hidden="true" size={20} strokeWidth={2.4} />
         </div>
         <span className="text-[11px] font-bold uppercase tracking-normal">{title}</span>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { CalendarPlus, ShoppingBasket } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "./bottom-nav";
 
@@ -14,6 +15,9 @@ export function AppChrome({ children }: AppChromeProps) {
 
   return (
     <main className="app-shell">
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido
+      </a>
       <div className="mobile-frame">
         <div className="min-h-screen bg-[var(--surface-bg)] px-5 py-5 md:min-h-[860px]">
           <header className="mb-6 flex items-center justify-between">
@@ -26,23 +30,23 @@ export function AppChrome({ children }: AppChromeProps) {
               </h1>
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
-                className="grid size-11 place-items-center rounded-full border border-[var(--surface-stroke)] bg-[var(--panel)] text-[var(--text)] shadow-[var(--shadow-soft)]"
-                aria-label="Buscar"
+              <Link
+                href="/calendar"
+                className="interactive-surface grid size-11 place-items-center rounded-full border border-[var(--surface-stroke)] bg-[var(--panel)] text-[var(--text)] shadow-[var(--shadow-soft)]"
+                aria-label="Abrir agenda"
               >
-                <Search size={19} strokeWidth={2.4} />
-              </button>
-              <button
-                type="button"
-                className="grid size-11 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
-                aria-label="Crear nuevo elemento"
+                <CalendarPlus aria-hidden="true" size={19} strokeWidth={2.4} />
+              </Link>
+              <Link
+                href="/market"
+                className="interactive-surface grid size-11 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
+                aria-label="Abrir mercado"
               >
-                <Plus size={20} strokeWidth={2.6} />
-              </button>
+                <ShoppingBasket aria-hidden="true" size={20} strokeWidth={2.6} />
+              </Link>
             </div>
           </header>
-          {children}
+          <div id="main-content">{children}</div>
         </div>
         <BottomNav />
       </div>

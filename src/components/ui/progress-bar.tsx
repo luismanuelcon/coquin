@@ -4,11 +4,19 @@ type ProgressBarProps = {
 };
 
 export function ProgressBar({ value, color }: ProgressBarProps) {
+  const clampedValue = Math.max(0, Math.min(value, 100));
+
   return (
-    <div className="h-3 overflow-hidden rounded-full bg-[var(--panel-raised)]">
+    <div
+      className="progress-track"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={clampedValue}
+    >
       <div
-        className="h-full rounded-full"
-        style={{ width: `${value}%`, background: color, boxShadow: `0 0 14px ${color}` }}
+        className="progress-fill"
+        style={{ width: `${clampedValue}%`, background: color, boxShadow: `0 0 14px ${color}` }}
       />
     </div>
   );

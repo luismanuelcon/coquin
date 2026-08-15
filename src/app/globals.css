@@ -59,6 +59,11 @@
 
   --shadow-soft: 0 0 0 1px var(--surface-stroke), 0 16px 40px rgb(0 0 0 / 28%);
   --shadow-active: 0 0 0 1px rgb(0 242 255 / 42%), 0 0 22px rgb(0 242 255 / 18%);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --motion-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -88,8 +93,38 @@ select {
   font: inherit;
 }
 
+a,
 button {
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard),
+    background var(--motion-base) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgb(0 242 255 / 72%);
+  outline-offset: 3px;
+}
+
+button:active,
+a:active {
+  transform: translateY(1px) scale(0.985);
 }
 
 a {
@@ -100,6 +135,24 @@ a {
 .app-shell {
   min-height: 100vh;
   padding: 18px 20px 96px;
+}
+
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 12px;
+  z-index: 50;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  transform: translateY(-140%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 .mobile-frame {
@@ -113,11 +166,36 @@ a {
   gap: var(--space-lg);
 }
 
+.page-stack > * {
+  animation: surface-in var(--motion-slow) var(--ease-emphasis) both;
+}
+
+.page-stack > *:nth-child(2) {
+  animation-delay: 55ms;
+}
+
+.page-stack > *:nth-child(3) {
+  animation-delay: 110ms;
+}
+
+.page-stack > *:nth-child(4) {
+  animation-delay: 165ms;
+}
+
+.page-stack > *:nth-child(5) {
+  animation-delay: 220ms;
+}
+
 .card {
   border: 1px solid var(--surface-stroke);
   border-radius: var(--radius-xl);
   background: var(--gradient-panel);
   box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
 }
 
 .soft-card {
@@ -125,6 +203,41 @@ a {
   border-radius: var(--radius-xl);
   background: var(--panel);
   box-shadow: var(--shadow-soft);
+}
+
+.interactive-surface {
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard),
+    filter var(--motion-base) var(--ease-standard);
+}
+
+.interactive-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgb(255 255 255 / 10%), transparent 34%);
+  opacity: 0;
+  transition: opacity var(--motion-base) var(--ease-standard);
+}
+
+.progress-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--panel-raised);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  transform-origin: left center;
+  animation: progress-in var(--motion-slow) var(--ease-emphasis) both;
+  transition: width var(--motion-slow) var(--ease-emphasis);
 }
 
 .section-title {
@@ -151,6 +264,41 @@ a {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+@keyframes surface-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes progress-in {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (hover: hover) {
+  .interactive-surface:hover,
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgb(0 242 255 / 28%);
+    box-shadow: var(--shadow-soft), 0 0 24px rgb(0 242 255 / 8%);
+  }
+
+  .interactive-surface:hover::after {
+    opacity: 1;
+  }
+}
+
 @media (min-width: 768px) {
   .app-shell {
     padding-top: 28px;
@@ -162,5 +310,23 @@ a {
     background: var(--surface-bg);
     box-shadow: 0 24px 80px rgb(0 0 0 / 48%), 0 0 60px rgb(0 242 255 / 8%);
     overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  button:active,
+  a:active,
+  .card:hover,
+  .interactive-surface:hover {
+    transform: none;
   }
 }

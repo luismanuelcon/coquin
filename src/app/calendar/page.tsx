@@ -32,7 +32,7 @@ export default function CalendarPage() {
               className="grid size-10 place-items-center rounded-full border border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary)]"
               aria-label="Filtrar calendario"
             >
-              <Filter size={18} strokeWidth={2.4} />
+              <Filter aria-hidden="true" size={18} strokeWidth={2.4} />
             </button>
           </div>
           <div className="grid grid-cols-5 gap-2">
@@ -40,7 +40,8 @@ export default function CalendarPage() {
               <button
                 key={item.date}
                 type="button"
-                className="rounded-[20px] px-2 py-3 text-center"
+                className="interactive-surface rounded-[20px] px-2 py-3 text-center"
+                aria-pressed={item.active}
                 style={{
                   background: item.active ? "var(--gradient-primary)" : "var(--surface-low)",
                   color: item.active ? "white" : "var(--text-muted)",
@@ -58,8 +59,11 @@ export default function CalendarPage() {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="section-title">Proximos eventos</h2>
-            <button className="flex items-center gap-1 rounded-full bg-[image:var(--gradient-primary)] px-3 py-2 text-xs font-extrabold text-white shadow-[var(--shadow-active)]">
-              <Plus size={14} /> Nuevo
+            <button
+              type="button"
+              className="interactive-surface flex items-center gap-1 rounded-full bg-[image:var(--gradient-primary)] px-3 py-2 text-xs font-extrabold text-white shadow-[var(--shadow-active)]"
+            >
+              <Plus aria-hidden="true" size={14} /> Nuevo
             </button>
           </div>
           <div className="flex flex-col gap-3">
@@ -69,7 +73,7 @@ export default function CalendarPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-[var(--primary)] bg-[var(--primary-soft)] p-5">
+        <section className="interactive-surface rounded-[28px] border border-[var(--primary)] bg-[var(--primary-soft)] p-5">
           <p className="text-xs font-extrabold uppercase text-[var(--text-soft)]">Recordatorios</p>
           <h2 className="mt-2 text-xl font-extrabold text-[var(--on-primary-container)]">
             Impuestos y pagos pueden vivir en el calendario

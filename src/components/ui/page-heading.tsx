@@ -14,7 +14,7 @@ export function PageHeading({ tone, icon: Icon, eyebrow, title, description }: P
 
   return (
     <section
-      className="rounded-[28px] border p-5"
+      className="interactive-surface rounded-[28px] border p-5"
       style={{ background: theme.surface, borderColor: theme.color, boxShadow: `0 0 24px ${theme.color}18` }}
     >
       <div className="mb-5 flex items-start justify-between gap-4">
@@ -28,7 +28,7 @@ export function PageHeading({ tone, icon: Icon, eyebrow, title, description }: P
           className="grid size-12 shrink-0 place-items-center rounded-full bg-[rgb(255_255_255_/_7%)]"
           style={{ color: theme.text }}
         >
-          <Icon size={24} strokeWidth={2.4} />
+          <Icon aria-hidden="true" size={24} strokeWidth={2.4} />
         </div>
       </div>
       <p className="text-sm font-medium leading-6 text-[var(--text-soft)]">{description}</p>

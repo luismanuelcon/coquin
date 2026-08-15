@@ -8,6 +8,7 @@ export type IconComponent = ComponentType<LucideProps>;
 export type OverviewMetric = {
   label: string;
   value: string;
+  detail: string;
   tone: ModuleKey;
 };
 
@@ -27,19 +28,26 @@ export type FinanceItem = {
   due: string;
 };
 
-export type MarketItem = {
+export type MarketCategory =
+  | "Aseo"
+  | "Carnes"
+  | "Verduras"
+  | "Despensa"
+  | "Lacteos"
+  | "Hogar"
+  | "Otro";
+
+export type MarketPurchase = {
   id: string;
-  name: string;
-  category: string;
-  quantity: string;
-  checked?: boolean;
+  date: string;
+  detail: string;
+  category: MarketCategory;
+  amount: number;
 };
 
 export type MarketBudget = {
   month: string;
   budget: number;
-  spent: number;
-  planned: number;
   currency: string;
 };
 

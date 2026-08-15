@@ -2,16 +2,16 @@ import type {
   FinanceItem,
   HouseholdEvent,
   MarketBudget,
-  MarketItem,
+  MarketPurchase,
   OverviewMetric,
   ProjectTask,
 } from "../types";
 
 export const overviewMetrics: OverviewMetric[] = [
-  { label: "Citas hoy", value: "3", tone: "calendar" },
-  { label: "Pagos pendientes", value: "$420", tone: "finances" },
-  { label: "Lista mercado", value: "18", tone: "market" },
-  { label: "Tareas urgentes", value: "5", tone: "tasks" },
+  { label: "Citas hoy", value: "3", detail: "Agenda inmediata", tone: "calendar" },
+  { label: "Pagos pendientes", value: "$420k", detail: "Administracion", tone: "finances" },
+  { label: "Mercado usado", value: "63%", detail: "$440k disponibles", tone: "market" },
+  { label: "Tareas urgentes", value: "1", detail: "Para hoy", tone: "tasks" },
 ];
 
 export const todayEvents: HouseholdEvent[] = [
@@ -31,8 +31,8 @@ export const todayEvents: HouseholdEvent[] = [
   },
   {
     id: "event-3",
-    title: "Comprar frutas y limpieza",
-    meta: "Mercado semanal",
+    title: "Actualizar presupuesto de mercado",
+    meta: "$760.000 usados de $1.200.000",
     time: "18:00",
     tone: "market",
   },
@@ -80,21 +80,49 @@ export const financeItems: FinanceItem[] = [
   },
 ];
 
-export const marketItems: MarketItem[] = [
-  { id: "m-1", name: "Huevos", category: "Despensa", quantity: "30 und" },
-  { id: "m-2", name: "Leche deslactosada", category: "Lacteos", quantity: "4 bolsas" },
-  { id: "m-3", name: "Detergente", category: "Aseo", quantity: "2 L" },
-  { id: "m-4", name: "Manzanas", category: "Frutas", quantity: "1 kg", checked: true },
-  { id: "m-5", name: "Papel higienico", category: "Hogar", quantity: "12 rollos" },
-];
-
 export const marketBudget: MarketBudget = {
   month: "Agosto",
   budget: 1200000,
-  spent: 760000,
-  planned: 310000,
   currency: "COP",
 };
+
+export const marketPurchases: MarketPurchase[] = [
+  {
+    id: "purchase-1",
+    date: "2026-08-02",
+    detail: "Compra de carnes para la semana",
+    category: "Carnes",
+    amount: 185000,
+  },
+  {
+    id: "purchase-2",
+    date: "2026-08-05",
+    detail: "Verduras y frutas",
+    category: "Verduras",
+    amount: 92000,
+  },
+  {
+    id: "purchase-3",
+    date: "2026-08-09",
+    detail: "Productos de aseo",
+    category: "Aseo",
+    amount: 134000,
+  },
+  {
+    id: "purchase-4",
+    date: "2026-08-14",
+    detail: "Despensa mensual",
+    category: "Despensa",
+    amount: 248000,
+  },
+  {
+    id: "purchase-5",
+    date: "2026-08-18",
+    detail: "Leche, queso y yogures",
+    category: "Lacteos",
+    amount: 101000,
+  },
+];
 
 export const projectTasks: ProjectTask[] = [
   {
