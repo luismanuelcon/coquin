@@ -1,0 +1,44 @@
+"use client";
+
+import clsx from "clsx";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { moduleThemes, visibleModules } from "@/lib/design-system";
+
+export function BottomNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="bottom-nav-safe fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[430px] px-4 pb-4 md:absolute md:left-1/2 md:-translate-x-1/2">
+      <div className="grid grid-cols-5 gap-1 rounded-[28px] border border-[var(--surface-stroke)] bg-[rgb(20_19_19_/_92%)] p-2 shadow-[0_18px_46px_rgb(0_0_0_/_45%)] backdrop-blur">
+        {visibleModules.map((key) => {
+          const item = moduleThemes[key];
+          const Icon = item.icon;
+          const active = pathname === item.href;
+
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={clsx(
+                "flex h-14 flex-col items-center justify-center gap-1 rounded-[22px] text-[10px] font-bold transition",
+                active ? "text-[var(--active-text)] shadow-[0_0_18px_var(--active-glow)]" : "text-[var(--text-soft)]",
+              )}
+              style={
+                {
+                  background: active ? item.surface : "transparent",
+                  "--active-text": item.text,
+                  "--active-glow": item.color,
+                } as React.CSSProperties
+              }
+              aria-current={active ? "page" : undefined}
+            >
+              <Icon size={19} strokeWidth={2.3} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
