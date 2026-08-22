@@ -1,5 +1,6 @@
 import type {
   FinanceItem,
+  FinanceBudgetState,
   HouseholdEvent,
   MarketBudget,
   MarketPurchase,
@@ -79,6 +80,51 @@ export const financeItems: FinanceItem[] = [
     due: "30 Ago",
   },
 ];
+
+export const financeBudgetState: FinanceBudgetState = {
+  settings: {
+    cutoffDay: 20,
+    currency: "COP",
+  },
+  activePeriodId: "period-2026-08-20",
+  periods: [
+    {
+      id: "period-2026-07-20",
+      startDate: "2026-07-20",
+      endDate: "2026-08-19",
+      incomes: [
+        { id: "income-previous-1", concept: "Salario", amount: 6400000 },
+        { id: "income-previous-2", concept: "Ingreso adicional", amount: 450000 },
+      ],
+      items: [
+        { id: "item-previous-1", concept: "Administracion", amount: 420000, fixed: true, status: "paid" },
+        { id: "item-previous-2", concept: "Servicios publicos", amount: 286500, fixed: true, status: "paid" },
+        { id: "item-previous-3", concept: "Seguro hogar", amount: 180000, fixed: true, status: "pending" },
+      ],
+      miscExpenses: [
+        { id: "misc-previous-1", date: "2026-08-02", concept: "Almuerzo", amount: 32000, category: "Comida" },
+      ],
+    },
+    {
+      id: "period-2026-08-20",
+      startDate: "2026-08-20",
+      endDate: "2026-09-19",
+      incomes: [
+        { id: "income-current-1", concept: "Salario", amount: 6200000 },
+        { id: "income-current-2", concept: "Ingreso adicional", amount: 350000 },
+      ],
+      items: [
+        { id: "item-current-1", concept: "Administracion", amount: 420000, fixed: true, status: "pending" },
+        { id: "item-current-2", concept: "Servicios publicos", amount: 286500, fixed: true, status: "paid" },
+        { id: "item-current-3", concept: "Impuesto predial", amount: 1240000, fixed: false, status: "pending" },
+      ],
+      miscExpenses: [
+        { id: "misc-current-1", date: "2026-08-21", concept: "Cafe", amount: 8000, category: "Comida" },
+        { id: "misc-current-2", date: "2026-08-22", concept: "Parqueadero", amount: 12000, category: "Transporte" },
+      ],
+    },
+  ],
+};
 
 export const marketBudget: MarketBudget = {
   month: "Agosto",

@@ -28,6 +28,53 @@ export type FinanceItem = {
   due: string;
 };
 
+export type FinancePaymentStatus = "paid" | "pending";
+
+export type FinanceIncome = {
+  id: string;
+  concept: string;
+  amount: number;
+  note?: string;
+};
+
+export type FinanceBudgetItem = {
+  id: string;
+  concept: string;
+  amount: number;
+  fixed: boolean;
+  status: FinancePaymentStatus;
+  note?: string;
+};
+
+export type FinanceMiscExpense = {
+  id: string;
+  date: string;
+  concept: string;
+  amount: number;
+  category?: string;
+  note?: string;
+};
+
+export type FinancePeriod = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  incomes: FinanceIncome[];
+  items: FinanceBudgetItem[];
+  miscExpenses: FinanceMiscExpense[];
+};
+
+export type FinanceSettings = {
+  cutoffDay: number;
+  currency: string;
+};
+
+export type FinanceBudgetState = {
+  settings: FinanceSettings;
+  activePeriodId: string;
+  periods: FinancePeriod[];
+};
+
 export type MarketCategory =
   | "Aseo"
   | "Carnes"

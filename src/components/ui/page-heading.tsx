@@ -4,34 +4,23 @@ import { moduleThemes } from "@/lib/design-system";
 type PageHeadingProps = {
   tone: ModuleKey;
   icon: IconComponent;
-  eyebrow: string;
   title: string;
-  description: string;
 };
 
-export function PageHeading({ tone, icon: Icon, eyebrow, title, description }: PageHeadingProps) {
+export function PageHeading({ tone, icon: Icon, title }: PageHeadingProps) {
   const theme = moduleThemes[tone];
 
   return (
-    <section
-      className="interactive-surface rounded-[28px] border p-5"
-      style={{ background: theme.surface, borderColor: theme.color, boxShadow: `0 0 24px ${theme.color}18` }}
-    >
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-extrabold uppercase text-[var(--text-soft)]">{eyebrow}</p>
-          <h2 className="mt-2 text-[28px] font-extrabold leading-9" style={{ color: theme.text }}>
-            {title}
-          </h2>
-        </div>
-        <div
-          className="grid size-12 shrink-0 place-items-center rounded-full bg-[rgb(255_255_255_/_7%)]"
-          style={{ color: theme.text }}
-        >
-          <Icon aria-hidden="true" size={24} strokeWidth={2.4} />
-        </div>
+    <header className="flex items-center justify-between gap-4 pt-1">
+      <h2 className="text-[30px] font-extrabold leading-9" style={{ color: theme.text }}>
+        {title}
+      </h2>
+      <div
+        className="grid size-11 shrink-0 place-items-center rounded-full border bg-[rgb(255_255_255_/_5%)]"
+        style={{ borderColor: theme.color, color: theme.text, boxShadow: `0 0 18px ${theme.color}14` }}
+      >
+        <Icon aria-hidden="true" size={22} strokeWidth={2.4} />
       </div>
-      <p className="text-sm font-medium leading-6 text-[var(--text-soft)]">{description}</p>
-    </section>
+    </header>
   );
 }

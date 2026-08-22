@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, CalendarPlus, Landmark, ShoppingBasket } from "lucide-react";
+import { ArrowRight, Bell, CalendarPlus, CirclePlus, Landmark, ShoppingBasket } from "lucide-react";
 import Link from "next/link";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { EventRow } from "@/components/ui/event-row";
@@ -73,10 +73,11 @@ export default function HomePage() {
               {attentionSummary.urgentTasks} urgente
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-2">
             {[
               { label: "Cita", icon: CalendarPlus, tone: "calendar" as const },
               { label: "Gasto", icon: Landmark, tone: "finances" as const },
+              { label: "Varios", icon: CirclePlus, tone: "finances" as const, href: "/finances?quick=misc" },
               { label: "Mercado", icon: ShoppingBasket, tone: "market" as const },
             ].map((action) => {
               const Icon = action.icon;
@@ -85,8 +86,8 @@ export default function HomePage() {
               return (
                 <Link
                   key={action.label}
-                  href={action.tone === "calendar" ? "/calendar" : action.tone === "finances" ? "/finances" : "/market"}
-                  className="flex h-[92px] flex-col items-center justify-center gap-2 rounded-[22px] text-xs font-extrabold"
+                  href={action.href ?? (action.tone === "calendar" ? "/calendar" : action.tone === "finances" ? "/finances" : "/market")}
+                  className="flex h-[82px] flex-col items-center justify-center gap-2 rounded-[20px] text-[11px] font-extrabold"
                   style={{ background: theme.surface, color: theme.text }}
                 >
                 <Icon aria-hidden="true" size={22} strokeWidth={2.4} />
