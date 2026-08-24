@@ -15,7 +15,7 @@ export default function HomePage() {
   return (
     <AppChrome>
       <div className="page-stack">
-        <section className="interactive-surface rounded-[30px] border border-[rgb(0_242_255_/_42%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
+        <section className="interactive-surface rounded-[30px] border border-[rgb(194_65_12_/_28%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase opacity-80">Resumen de hoy</p>
@@ -31,7 +31,7 @@ export default function HomePage() {
             Lo importante esta arriba: agenda inmediata, pagos por vencer, mercado al {marketSummary.spentPercent}% y tareas de hoy.
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link href="/calendar" className="interactive-surface rounded-full bg-white px-4 py-3 text-center text-sm font-extrabold text-[#00363a]">
+            <Link href="/calendar" className="interactive-surface rounded-full bg-white px-4 py-3 text-center text-sm font-extrabold text-[#7c2d12]">
               Abrir agenda
             </Link>
             <Link href="/tasks" className="interactive-surface rounded-full border border-white/24 bg-white/10 px-4 py-3 text-center text-sm font-extrabold text-white">

@@ -271,7 +271,7 @@ export default function FinancesPage() {
       <div className="page-stack">
         <PageHeading tone="finances" icon={Landmark} title="Administracion" />
 
-        <section className="interactive-surface rounded-[30px] border border-[rgb(0_219_231_/_42%)] bg-[linear-gradient(135deg,#00dbe7_0%,#a020f0_100%)] p-5 text-white shadow-[var(--shadow-active)]">
+        <section className="interactive-surface rounded-[30px] border border-[rgb(194_65_12_/_28%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase text-white/75">
@@ -292,7 +292,7 @@ export default function FinancesPage() {
                   setMiscForm(emptyMiscForm(activePeriod.startDate));
                   setMiscFormOpen(true);
                 }}
-                className="grid size-12 place-items-center rounded-full bg-white text-[#00363a]"
+                className="grid size-12 place-items-center rounded-full bg-white text-[#7c2d12]"
                 aria-label="Registrar gasto varios"
               >
                 <CirclePlus aria-hidden="true" size={24} strokeWidth={2.5} />
@@ -365,7 +365,7 @@ export default function FinancesPage() {
                     className="h-10 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
                   />
                 </label>
-                <button type="submit" className="mt-5 h-10 rounded-full bg-white text-xs font-extrabold text-[#00363a]">
+                <button type="submit" className="mt-5 h-10 rounded-full bg-white text-xs font-extrabold text-[#7c2d12]">
                   Guardar
                 </button>
               </div>
@@ -575,7 +575,7 @@ export default function FinancesPage() {
             <button
               type="button"
               onClick={() => setMiscDetailOpen((current) => !current)}
-              className="interactive-surface rounded-[22px] border border-[var(--urgent)] bg-[var(--urgent-soft)] p-3 text-left shadow-[0_0_18px_rgb(255_0_229_/_10%)]"
+              className="interactive-surface rounded-[22px] border border-[var(--urgent)] bg-[var(--urgent-soft)] p-3 text-left shadow-[0_12px_22px_rgb(194_65_12_/_10%)]"
               aria-expanded={miscDetailOpen}
               aria-controls="gastos-varios"
             >

@@ -79,8 +79,8 @@ export default function CalendarPage() {
                 style={{
                   background: item.active ? "var(--gradient-primary)" : "var(--surface-low)",
                   color: item.active ? "white" : "var(--text-muted)",
-                  border: item.active ? "1px solid rgb(0 242 255 / 58%)" : "1px solid var(--surface-stroke)",
-                  boxShadow: item.active ? "0 0 18px rgb(0 242 255 / 18%)" : "none",
+                  border: item.active ? "1px solid rgb(194 65 12 / 38%)" : "1px solid var(--surface-stroke)",
+                  boxShadow: item.active ? "0 12px 22px rgb(194 65 12 / 16%)" : "none",
                 }}
               >
                 <span className="block text-[11px] font-bold">{item.day}</span>
@@ -92,7 +92,7 @@ export default function CalendarPage() {
 
         {lastAdded ? (
           <p
-            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(0_242_255_/_30%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
+            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(194_65_12_/_24%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
             aria-live="polite"
           >
             <Clock aria-hidden="true" size={16} strokeWidth={2.4} />

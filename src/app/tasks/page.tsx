@@ -80,7 +80,7 @@ export default function TasksPage() {
               {progress}%
             </span>
           </div>
-          <div className="interactive-surface rounded-[20px] border border-[var(--urgent)] bg-[var(--urgent-soft)] p-4 shadow-[0_0_18px_rgb(255_0_229_/_12%)]">
+          <div className="interactive-surface rounded-[20px] border border-[var(--urgent)] bg-[var(--urgent-soft)] p-4 shadow-[0_12px_22px_rgb(194_65_12_/_10%)]">
             <div className="mb-4 flex items-center gap-3">
               <div className="grid size-11 shrink-0 place-items-center rounded-full bg-[rgb(255_255_255_/_8%)] text-[var(--urgent)]">
                 <Hammer aria-hidden="true" size={20} strokeWidth={2.4} />
@@ -98,7 +98,7 @@ export default function TasksPage() {
 
         {lastAdded ? (
           <p
-            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(0_242_255_/_30%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
+            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(194_65_12_/_24%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
             aria-live="polite"
           >
             <CheckCircle2 aria-hidden="true" size={16} strokeWidth={2.4} />
@@ -160,7 +160,7 @@ export default function TasksPage() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="mt-2 h-11 w-full rounded-full bg-[image:var(--gradient-alert)] text-sm font-extrabold text-white shadow-[0_0_18px_rgb(255_0_229_/_18%)] disabled:cursor-not-allowed disabled:opacity-45"
+                className="mt-2 h-11 w-full rounded-full bg-[image:var(--gradient-alert)] text-sm font-extrabold text-white shadow-[0_12px_22px_rgb(194_65_12_/_14%)] disabled:cursor-not-allowed disabled:opacity-45"
               >
                 Guardar
               </button>

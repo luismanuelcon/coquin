@@ -126,7 +126,7 @@ export default function MarketPage() {
                   setPurchaseFormOpen((current) => !current);
                   setSettingsOpen(false);
                 }}
-                className="grid size-12 place-items-center rounded-full border border-[var(--market)] bg-[var(--market-soft)] text-[var(--market)] shadow-[0_0_18px_rgb(255_138_0_/_16%)]"
+                className="grid size-12 place-items-center rounded-full border border-[var(--market)] bg-[var(--market-soft)] text-[var(--market)] shadow-[0_12px_22px_rgb(194_65_12_/_14%)]"
                 aria-label={purchaseFormOpen ? "Cerrar compra" : "Registrar compra"}
                 aria-expanded={purchaseFormOpen}
               >
@@ -157,7 +157,7 @@ export default function MarketPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-[18px] border border-[rgb(255_138_0_/_28%)] bg-[var(--market-soft)] p-3">
+            <div className="rounded-[18px] border border-[rgb(194_65_12_/_24%)] bg-[var(--market-soft)] p-3">
               <p className="text-[10px] font-extrabold uppercase text-[var(--text-soft)]">Gastado</p>
               <p className="mt-1 text-sm font-extrabold text-[var(--market)]">
                 {moneyFormatter.format(summary.spent)}
@@ -169,7 +169,7 @@ export default function MarketPage() {
                 {moneyFormatter.format(Math.max(summary.remaining, 0))}
               </p>
             </div>
-            <div className="rounded-[18px] border border-[rgb(255_0_229_/_30%)] bg-[var(--urgent-soft)] p-3">
+            <div className="rounded-[18px] border border-[rgb(194_65_12_/_24%)] bg-[var(--urgent-soft)] p-3">
               <p className="text-[10px] font-extrabold uppercase text-[var(--text-soft)]">Compras</p>
               <p className="mt-1 text-sm font-extrabold text-[var(--urgent)]">{summary.purchaseCount}</p>
             </div>
@@ -192,7 +192,7 @@ export default function MarketPage() {
                 step="10000"
                 value={budgetDraft}
                 onChange={(event) => setBudgetDraft(event.target.value)}
-                className="h-11 min-w-0 rounded-[14px] border border-[rgb(255_138_0_/_30%)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--market)]"
+                className="h-11 min-w-0 rounded-[14px] border border-[rgb(194_65_12_/_24%)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--market)]"
                 aria-label="Presupuesto mensual"
               />
               <button
@@ -254,7 +254,7 @@ export default function MarketPage() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="h-11 rounded-full bg-[image:var(--gradient-alert)] text-sm font-extrabold text-white shadow-[0_0_18px_rgb(255_138_0_/_20%)] disabled:cursor-not-allowed disabled:opacity-45"
+                className="h-11 rounded-full bg-[image:var(--gradient-alert)] text-sm font-extrabold text-white shadow-[0_12px_22px_rgb(194_65_12_/_14%)] disabled:cursor-not-allowed disabled:opacity-45"
               >
                 Registrar compra
               </button>
@@ -264,7 +264,7 @@ export default function MarketPage() {
 
         {lastAdded ? (
           <p
-            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(0_242_255_/_30%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
+            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(194_65_12_/_24%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
             aria-live="polite"
           >
             <CheckCircle2 aria-hidden="true" size={16} strokeWidth={2.4} />
@@ -306,7 +306,7 @@ export default function MarketPage() {
                 key={purchase.id}
                 className="interactive-surface flex items-center gap-3 rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] p-3"
               >
-                <div className="grid size-10 shrink-0 place-items-center rounded-full border border-[rgb(255_138_0_/_34%)] bg-[var(--market-soft)] text-[var(--market)]">
+                <div className="grid size-10 shrink-0 place-items-center rounded-full border border-[rgb(194_65_12_/_24%)] bg-[var(--market-soft)] text-[var(--market)]">
                   <CalendarDays aria-hidden="true" size={17} strokeWidth={2.4} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -315,7 +315,7 @@ export default function MarketPage() {
                     {dateFormatter.format(new Date(`${purchase.date}T12:00:00`))} · {purchase.category}
                   </p>
                 </div>
-                <span className="rounded-full border border-[rgb(255_138_0_/_38%)] bg-[var(--market-soft)] px-3 py-1 text-xs font-extrabold text-[var(--market)]">
+                <span className="rounded-full border border-[rgb(194_65_12_/_24%)] bg-[var(--market-soft)] px-3 py-1 text-xs font-extrabold text-[var(--market)]">
                   {moneyFormatter.format(purchase.amount)}
                 </span>
               </article>
