@@ -31,7 +31,11 @@ export default function HomePage() {
             Lo importante esta arriba: agenda inmediata, pagos por vencer, mercado al {marketSummary.spentPercent}% y tareas de hoy.
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link href="/calendar" className="interactive-surface rounded-full bg-white px-4 py-3 text-center text-sm font-extrabold text-[#7c2d12]">
+            <Link
+              href="/calendar"
+              className="interactive-surface rounded-full border border-white/70 bg-white px-4 py-3 text-center text-sm font-extrabold shadow-[0_10px_22px_rgb(124_45_18_/_14%)]"
+              style={{ color: "#7c2d12" }}
+            >
               Abrir agenda
             </Link>
             <Link href="/tasks" className="interactive-surface rounded-full border border-white/24 bg-white/10 px-4 py-3 text-center text-sm font-extrabold text-white">
