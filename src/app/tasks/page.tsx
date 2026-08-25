@@ -1,10 +1,11 @@
 "use client";
 
-import { Check, CheckCircle2, Hammer, Plus, UserRound, X } from "lucide-react";
+import { Check, CheckCircle2, Hammer, Plus, Trash2, UserRound, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { projectTasks } from "@/lib/data/mock";
 import { calculateTaskProgress } from "@/lib/modules/tasks";
 import type { ProjectTask } from "@/lib/types";
@@ -62,6 +63,15 @@ export default function TasksPage() {
           : task,
       ),
     );
+  }
+
+  function deleteTask(task: ProjectTask) {
+    if (!window.confirm(`Eliminar ${task.title}?`)) {
+      return;
+    }
+
+    setTasks((current) => current.filter((currentTask) => currentTask.id !== task.id));
+    setLastAdded("Tarea eliminada");
   }
 
   return (
@@ -168,10 +178,16 @@ export default function TasksPage() {
           ) : null}
 
           <div className="flex flex-col gap-2">
+            {tasks.length === 0 ? (
+              <p className="rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--panel)] p-4 text-sm font-bold text-[var(--text-soft)]">
+                No hay tareas registradas.
+              </p>
+            ) : null}
             {tasks.map((task) => {
               const completed = task.status === "Completada";
 
               return (
+                <SwipeDeleteRow key={task.id} deleteLabel={`Eliminar ${task.title}`} onDelete={() => deleteTask(task)}>
                 <article
                   key={task.id}
                   className="interactive-surface flex items-center gap-3 rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--panel)] p-3 shadow-[var(--shadow-soft)]"
@@ -196,10 +212,21 @@ export default function TasksPage() {
                       <span>{task.due}</span>
                     </div>
                   </div>
-                  <span className="rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-[11px] font-extrabold text-[var(--urgent)]">
-                    {task.status}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="max-w-[88px] truncate rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-[11px] font-extrabold text-[var(--urgent)]">
+                      {task.status}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => deleteTask(task)}
+                      className="grid size-10 place-items-center rounded-full bg-[var(--urgent-soft)] text-[var(--urgent)]"
+                      aria-label={`Eliminar ${task.title}`}
+                    >
+                      <Trash2 aria-hidden="true" size={16} strokeWidth={2.4} />
+                    </button>
+                  </div>
                 </article>
+                </SwipeDeleteRow>
               );
             })}
           </div>

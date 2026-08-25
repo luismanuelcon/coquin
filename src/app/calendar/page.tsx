@@ -53,6 +53,15 @@ export default function CalendarPage() {
     setFormOpen(false);
   }
 
+  function deleteEvent(event: HouseholdEvent) {
+    if (!window.confirm(`Eliminar ${event.title}?`)) {
+      return;
+    }
+
+    setEvents((current) => current.filter((currentEvent) => currentEvent.id !== event.id));
+    setLastAdded("Evento eliminado");
+  }
+
   return (
     <AppChrome>
       <div className="page-stack">
@@ -163,8 +172,13 @@ export default function CalendarPage() {
           ) : null}
 
           <div className="flex flex-col gap-3">
+            {events.length === 0 ? (
+              <p className="rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--panel)] p-4 text-sm font-bold text-[var(--text-soft)]">
+                No hay eventos registrados.
+              </p>
+            ) : null}
             {events.map((event) => (
-              <EventRow key={event.id} event={event} />
+              <EventRow key={event.id} event={event} onDelete={deleteEvent} />
             ))}
           </div>
         </section>

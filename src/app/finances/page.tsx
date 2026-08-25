@@ -16,6 +16,7 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
+import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { financeBudgetState } from "@/lib/data/mock";
 import {
   calculateFinancePeriodSummary,
@@ -252,6 +253,11 @@ export default function FinancesPage() {
       return;
     }
     updateActivePeriod({ ...activePeriod, items: activePeriod.items.filter((current) => current.id !== item.id) });
+    if (editingBudgetId === item.id) {
+      setEditingBudgetId(null);
+      setBudgetForm(emptyBudgetForm());
+      setBudgetFormOpen(false);
+    }
     showFeedback("Concepto eliminado");
   }
 
@@ -263,6 +269,11 @@ export default function FinancesPage() {
       ...activePeriod,
       miscExpenses: activePeriod.miscExpenses.filter((current) => current.id !== expense.id),
     });
+    if (editingMiscId === expense.id) {
+      setEditingMiscId(null);
+      setMiscForm(emptyMiscForm(activePeriod.startDate));
+      setMiscFormOpen(false);
+    }
     showFeedback("Gasto eliminado");
   }
 
@@ -516,6 +527,7 @@ export default function FinancesPage() {
               <p className="text-sm font-bold text-[var(--text-soft)]">Sin conceptos presupuestados.</p>
             ) : null}
             {activePeriod.items.map((item) => (
+              <SwipeDeleteRow key={item.id} deleteLabel={`Eliminar ${item.concept}`} onDelete={() => deleteBudgetItem(item)}>
               <article key={item.id} className="interactive-surface rounded-[22px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -571,6 +583,7 @@ export default function FinancesPage() {
                   </button>
                 </div>
               </article>
+              </SwipeDeleteRow>
             ))}
             <button
               type="button"
@@ -614,6 +627,7 @@ export default function FinancesPage() {
               <p className="p-3 text-sm font-bold text-[var(--text-soft)]">Sin gastos varios en este periodo.</p>
             ) : null}
             {activePeriod.miscExpenses.map((expense) => (
+              <SwipeDeleteRow key={expense.id} deleteLabel={`Eliminar ${expense.concept}`} onDelete={() => deleteMiscExpense(expense)}>
               <article key={expense.id} className="flex items-center gap-3 border-b border-[var(--surface-stroke)] p-3 last:border-b-0">
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-sm font-extrabold">{expense.concept}</h3>
@@ -651,6 +665,7 @@ export default function FinancesPage() {
                   </button>
                 </div>
               </article>
+              </SwipeDeleteRow>
             ))}
           </div>
         </section>
