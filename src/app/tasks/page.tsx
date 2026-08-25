@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CheckCircle2, Hammer, Plus, Trash2, UserRound, X } from "lucide-react";
+import { Check, CheckCircle2, Hammer, Plus, UserRound, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
@@ -212,19 +212,9 @@ export default function TasksPage() {
                       <span>{task.due}</span>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="max-w-[88px] truncate rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-[11px] font-extrabold text-[var(--urgent)]">
-                      {task.status}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => deleteTask(task)}
-                      className="grid size-10 place-items-center rounded-full bg-[var(--urgent-soft)] text-[var(--urgent)]"
-                      aria-label={`Eliminar ${task.title}`}
-                    >
-                      <Trash2 aria-hidden="true" size={16} strokeWidth={2.4} />
-                    </button>
-                  </div>
+                  <span className="max-w-[88px] shrink-0 truncate rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-[11px] font-extrabold text-[var(--urgent)]">
+                    {task.status}
+                  </span>
                 </article>
                 </SwipeDeleteRow>
               );

@@ -11,7 +11,6 @@ import {
   Plus,
   ReceiptText,
   Settings,
-  Trash2,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
@@ -573,14 +572,6 @@ export default function FinancesPage() {
                   >
                     <Pencil aria-hidden="true" size={16} />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteBudgetItem(item)}
-                    className="grid size-10 place-items-center rounded-full bg-[var(--urgent-soft)] text-[var(--urgent)]"
-                    aria-label={`Eliminar ${item.concept}`}
-                  >
-                    <Trash2 aria-hidden="true" size={16} />
-                  </button>
                 </div>
               </article>
               </SwipeDeleteRow>
@@ -654,14 +645,6 @@ export default function FinancesPage() {
                     aria-label={`Editar ${expense.concept}`}
                   >
                     <Pencil aria-hidden="true" size={15} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteMiscExpense(expense)}
-                    className="grid size-9 place-items-center rounded-full bg-[var(--urgent-soft)] text-[var(--urgent)]"
-                    aria-label={`Eliminar ${expense.concept}`}
-                  >
-                    <Trash2 aria-hidden="true" size={15} />
                   </button>
                 </div>
               </article>
