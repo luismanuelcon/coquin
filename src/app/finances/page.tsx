@@ -6,7 +6,6 @@ import {
   ChevronRight,
   CirclePlus,
   CircleAlert,
-  Landmark,
   Pencil,
   Plus,
   ReceiptText,
@@ -279,7 +278,7 @@ export default function FinancesPage() {
   return (
     <AppChrome>
       <div className="page-stack">
-        <PageHeading tone="finances" icon={Landmark} title="Administracion" />
+        <PageHeading tone="finances" title="Administracion" />
 
         <section className="interactive-surface rounded-[30px] border border-[rgb(194_65_12_/_28%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
           <div className="flex items-start justify-between gap-4">

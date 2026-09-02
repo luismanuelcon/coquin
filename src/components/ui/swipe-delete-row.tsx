@@ -19,6 +19,7 @@ function isInteractiveTarget(target: EventTarget) {
 export function SwipeDeleteRow({ children, deleteLabel, onDelete }: SwipeDeleteRowProps) {
   const [offset, setOffset] = useState(0);
   const isOpen = offset <= -openThreshold;
+  const isRevealing = offset < -8;
   const dragging = useRef(false);
   const currentOffset = useRef(0);
   const movedDuringGesture = useRef(false);
@@ -190,7 +191,7 @@ export function SwipeDeleteRow({ children, deleteLabel, onDelete }: SwipeDeleteR
         <button
           type="button"
           onClick={handleDelete}
-          className={`grid w-[68px] place-items-center rounded-[18px] bg-[var(--urgent)] text-white ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+          className={`grid w-[68px] place-items-center rounded-[18px] bg-[var(--urgent)] text-white transition-opacity duration-150 ${isOpen ? "pointer-events-auto" : "pointer-events-none"} ${isRevealing ? "opacity-100" : "opacity-0"}`}
           aria-label={deleteLabel}
           tabIndex={isOpen ? 0 : -1}
         >

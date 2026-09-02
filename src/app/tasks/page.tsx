@@ -77,11 +77,7 @@ export default function TasksPage() {
   return (
     <AppChrome>
       <div className="page-stack">
-        <PageHeading
-          tone="tasks"
-          icon={CheckCircle2}
-          title="Responsabilidades"
-        />
+        <PageHeading tone="tasks" title="Responsabilidades" />
 
         <section className="card p-4">
           <div className="mb-4 flex items-center justify-between">

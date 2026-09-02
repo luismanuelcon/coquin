@@ -65,11 +65,7 @@ export default function CalendarPage() {
   return (
     <AppChrome>
       <div className="page-stack">
-        <PageHeading
-          tone="calendar"
-          icon={CalendarDays}
-          title="Citas y eventos"
-        />
+        <PageHeading tone="calendar" title="Citas y eventos" />
 
         <section className="card p-4">
           <div className="mb-4 flex items-center justify-between">

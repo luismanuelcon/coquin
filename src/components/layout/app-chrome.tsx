@@ -3,6 +3,8 @@
 import { CalendarPlus, ShoppingBasket } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CoquinMark } from "@/components/brand/coquin-mark";
+import { CoquinWordmark } from "@/components/brand/coquin-wordmark";
 import { BottomNav } from "./bottom-nav";
 
 type AppChromeProps = {
@@ -20,16 +22,27 @@ export function AppChrome({ children }: AppChromeProps) {
       </a>
       <div className="mobile-frame">
         <div className="min-h-screen bg-[var(--surface-bg)] px-5 py-5 md:min-h-[860px]">
-          <header className="mb-6 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase text-[var(--text-soft)]">
-                {isHome ? "Buenos dias" : "COQUIN"}
-              </p>
-              <h1 className="mt-1 text-[24px] font-extrabold leading-8 text-[var(--text)]">
-                {isHome ? "Hogar en orden" : "Gestion del hogar"}
-              </h1>
+          <header className="mb-6 flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              {isHome ? (
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase text-[var(--text-soft)]">Buenos dias</p>
+                  <CoquinWordmark priority />
+                  <h1 className="sr-only">COQUIN - Hogar en orden</h1>
+                </div>
+              ) : (
+                <>
+                  <CoquinMark />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase text-[var(--text-soft)]">COQUIN</p>
+                    <h1 className="mt-1 truncate text-[24px] font-extrabold leading-8 text-[var(--text)]">
+                      Gestion del hogar
+                    </h1>
+                  </div>
+                </>
+              )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex shrink-0 gap-2">
               <Link
                 href="/calendar"
                 className="interactive-surface grid size-11 place-items-center rounded-full border border-[var(--surface-stroke)] bg-[var(--panel)] text-[var(--text)] shadow-[var(--shadow-soft)]"

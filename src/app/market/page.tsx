@@ -3,7 +3,6 @@
 import {
   CalendarDays,
   CheckCircle2,
-  PiggyBank,
   Plus,
   ReceiptText,
   Settings,
@@ -103,11 +102,7 @@ export default function MarketPage() {
   return (
     <AppChrome>
       <div className="page-stack">
-        <PageHeading
-          tone="market"
-          icon={PiggyBank}
-          title="Presupuesto y compras"
-        />
+        <PageHeading tone="market" title="Presupuesto y compras" />
 
         <section className="card p-5">
           <div className="mb-5 flex items-start justify-between gap-4">

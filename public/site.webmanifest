@@ -1,0 +1,23 @@
+{
+  "name": "COQUIN",
+  "short_name": "COQUIN",
+  "description": "Gestion del hogar, citas, finanzas, mercado y tareas familiares.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#efefec",
+  "theme_color": "#efefec",
+  "icons": [
+    {
+      "src": "/coquin-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/coquin-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

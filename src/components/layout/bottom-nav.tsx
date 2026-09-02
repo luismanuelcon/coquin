@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ModuleIcon } from "@/components/brand/module-icon";
 import { moduleThemes, visibleModules } from "@/lib/design-system";
 
 export function BottomNav() {
@@ -16,7 +17,6 @@ export function BottomNav() {
       <div className="grid grid-cols-5 gap-1 rounded-[28px] border border-[var(--surface-stroke)] bg-[rgb(255_255_255_/_94%)] p-2 shadow-[0_18px_38px_rgb(23_23_23_/_14%)] backdrop-blur">
         {visibleModules.map((key) => {
           const item = moduleThemes[key];
-          const Icon = item.icon;
           const active = pathname === item.href;
 
           return (
@@ -36,7 +36,7 @@ export function BottomNav() {
               }
               aria-current={active ? "page" : undefined}
             >
-              <Icon aria-hidden="true" size={19} strokeWidth={2.3} />
+              <ModuleIcon tone={item.key} size="nav" />
               <span>{item.label}</span>
             </Link>
           );

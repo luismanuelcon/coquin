@@ -1,5 +1,6 @@
-import { ArrowRight, Bell, CalendarPlus, CirclePlus, Landmark, ShoppingBasket } from "lucide-react";
+import { ArrowRight, Bell } from "lucide-react";
 import Link from "next/link";
+import { ModuleIcon } from "@/components/brand/module-icon";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { EventRow } from "@/components/ui/event-row";
 import { ModuleCard } from "@/components/ui/module-card";
@@ -79,12 +80,11 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: "Cita", icon: CalendarPlus, tone: "calendar" as const },
-              { label: "Gasto", icon: Landmark, tone: "finances" as const },
-              { label: "Varios", icon: CirclePlus, tone: "finances" as const, href: "/finances?quick=misc" },
-              { label: "Mercado", icon: ShoppingBasket, tone: "market" as const },
+              { label: "Cita", tone: "calendar" as const },
+              { label: "Gasto", tone: "finances" as const },
+              { label: "Varios", tone: "finances" as const, href: "/finances?quick=misc" },
+              { label: "Mercado", tone: "market" as const },
             ].map((action) => {
-              const Icon = action.icon;
               const theme = moduleThemes[action.tone];
 
               return (
@@ -94,7 +94,7 @@ export default function HomePage() {
                   className="flex h-[82px] flex-col items-center justify-center gap-2 rounded-[20px] text-[11px] font-extrabold"
                   style={{ background: theme.surface, color: theme.text }}
                 >
-                <Icon aria-hidden="true" size={22} strokeWidth={2.4} />
+                  <ModuleIcon tone={action.tone} size="sm" />
                   {action.label}
                 </Link>
               );

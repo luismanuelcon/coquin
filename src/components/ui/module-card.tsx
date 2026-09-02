@@ -1,3 +1,4 @@
+import { ModuleIcon } from "@/components/brand/module-icon";
 import type { ModuleKey } from "@/lib/types";
 import { moduleThemes } from "@/lib/design-system";
 
@@ -10,7 +11,6 @@ type ModuleCardProps = {
 
 export function ModuleCard({ tone, title, value, detail }: ModuleCardProps) {
   const theme = moduleThemes[tone];
-  const Icon = theme.icon;
 
   return (
     <article
@@ -18,9 +18,7 @@ export function ModuleCard({ tone, title, value, detail }: ModuleCardProps) {
       style={{ background: theme.surface, color: theme.text, borderColor: theme.color }}
     >
       <div className="mb-4 flex items-center justify-between">
-        <div className="grid size-10 place-items-center rounded-full bg-[rgb(255_255_255_/_6%)]">
-          <Icon aria-hidden="true" size={20} strokeWidth={2.4} />
-        </div>
+        <ModuleIcon tone={tone} size="sm" />
         <span className="text-[11px] font-bold uppercase tracking-normal">{title}</span>
       </div>
       <p className="text-[28px] font-extrabold leading-8">{value}</p>
