@@ -20,7 +20,7 @@ The initial visual direction comes from the Stitch project:
   - `COQUIN - Mercado (ES)`
   - Dark Neon variants
 
-The default implementation should follow the `Dark Premium Neon` design system from Stitch.
+The default implementation should now follow the `Premium Light Coquin` system while preserving the Stitch screen structure and brand energy.
 
 ## Recommended Stack
 
@@ -118,26 +118,28 @@ File storage should wait until authentication and backend selection are clear.
 
 ## Visual Direction
 
-The active theme from Stitch is called `Dark Premium Neon`. It uses:
+The active theme is `Premium Light Coquin`. It keeps the playful Stitch-inspired brand identity but adapts the UI to the new pink and gold iconography.
 
-- Deep black and charcoal surfaces
-- Neon cyan, pink, purple, and orange accents
+- Warm ivory and porcelain surfaces
+- Deep cabernet/ink primary actions for premium contrast
+- Rose accents for market and brand moments
+- Muted gold accents for urgency, deadlines, and highlights
+- Deep emerald for finances to separate money flows from the pink brand layer
 - Plus Jakarta Sans typography
 - Rounded premium cards and controls
-- Luminescent borders instead of traditional shadows
-- Dense dashboard hierarchy designed for low-light use
+- Soft borders, restrained shadows, and compact mobile-first information density
 
 Core color direction:
 
-- Canvas and app background: `#0D0D0D` / `#141313`
-- Cards and panels: `#1A1A1A` and `#262626`
-- Calendar and primary interactions: neon cyan
-- Finance and growth indicators: cyan to purple gradients
-- Market and energy indicators: orange
-- Urgent tasks and alerts: pink or orange to pink gradients
-- Supporting text: muted gray, with white reserved for primary labels and data
+- Canvas and app background: `#FBFAF7` / `#F2EEE8`
+- Cards and panels: `#FFFFFF` / `#FFFAF5`
+- Primary interactions: cabernet `#4B1029`
+- Market and brand accents: rose `#9F1239` / `#C2416C`
+- Finance indicators: emerald `#174A41`
+- Urgent highlights: muted gold `#A16207`
+- Supporting text: warm gray/brown, with deep ink reserved for primary labels and data
 
-Implementation should keep cards, lists, and controls polished on mobile. Avoid marketing-page composition; this is a usable household management app, not a landing page. Neon colors should be functional: active states, data highlights, progress indicators, status chips, and primary actions.
+Implementation should keep cards, lists, and controls polished on mobile. Avoid marketing-page composition; this is a usable household management app, not a landing page. The pink/gold iconography should remain expressive, while UI containers use stronger contrast and calmer premium surfaces.
 
 ## Initial App Structure
 

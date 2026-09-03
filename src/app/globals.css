@@ -3,46 +3,48 @@
 :root {
   color-scheme: light;
 
-  --surface: #f7f7f4;
-  --surface-bg: #efefec;
+  --surface: #fbfaf7;
+  --surface-bg: #f2eee8;
   --surface-lowest: #ffffff;
-  --surface-low: #f5f3ef;
-  --surface-container: #ebe8e2;
-  --surface-high: #ded9d0;
-  --surface-highest: #cbc4b8;
-  --surface-variant: #e4dfd6;
+  --surface-low: #f8f4ee;
+  --surface-container: #eee7dd;
+  --surface-high: #dfd4c5;
+  --surface-highest: #cdbba8;
+  --surface-variant: #e8ded3;
   --panel: #ffffff;
-  --panel-raised: #f8f7f4;
-  --surface-stroke: #e2ddd4;
+  --panel-raised: #fffaf5;
+  --surface-stroke: #ded2c5;
 
-  --text: #171717;
-  --text-soft: #87827a;
-  --text-muted: #57534e;
-  --outline: #8b8580;
-  --outline-soft: #d4cec4;
+  --text: #160d12;
+  --text-soft: #837771;
+  --text-muted: #514742;
+  --outline: #8b7d75;
+  --outline-soft: #d7c9ba;
 
-  --primary: #c2410c;
-  --primary-container: #fff1e8;
-  --primary-soft: rgb(194 65 12 / 10%);
+  --primary: #4b1029;
+  --primary-container: #fff0f6;
+  --primary-soft: rgb(75 16 41 / 10%);
   --on-primary: #ffffff;
-  --on-primary-container: #7c2d12;
+  --on-primary-container: #641638;
 
-  --finance: #1f2937;
-  --finance-container: #f1f2f4;
-  --finance-soft: rgb(31 41 55 / 8%);
+  --finance: #174a41;
+  --finance-container: #eaf6f2;
+  --finance-soft: rgb(23 74 65 / 10%);
 
-  --market: #c2410c;
-  --market-container: #fff1e8;
-  --market-soft: rgb(194 65 12 / 10%);
+  --market: #9f1239;
+  --market-container: #fff0f6;
+  --market-soft: rgb(159 18 57 / 10%);
 
-  --urgent: #c2410c;
-  --urgent-soft: rgb(194 65 12 / 10%);
-  --purple: #6f7177;
+  --urgent: #a16207;
+  --urgent-soft: rgb(161 98 7 / 12%);
+  --gold: #a16207;
+  --rose: #e04473;
+  --purple: #5b435d;
   --error: #b42318;
 
-  --gradient-primary: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
-  --gradient-alert: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
-  --gradient-panel: linear-gradient(180deg, #ffffff 0%, #f8f7f4 100%);
+  --gradient-primary: linear-gradient(135deg, #4b1029 0%, #7a1f42 54%, #a16207 100%);
+  --gradient-alert: linear-gradient(135deg, #9f1239 0%, #c2416c 58%, #a16207 100%);
+  --gradient-panel: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
 
   --radius-sm: 0.25rem;
   --radius-md: 0.75rem;
@@ -57,8 +59,8 @@
   --space-xl: 32px;
   --space-2xl: 48px;
 
-  --shadow-soft: 0 0 0 1px var(--surface-stroke), 0 16px 36px rgb(23 23 23 / 8%);
-  --shadow-active: 0 0 0 1px rgb(194 65 12 / 28%), 0 14px 26px rgb(194 65 12 / 16%);
+  --shadow-soft: 0 0 0 1px var(--surface-stroke), 0 18px 38px rgb(22 13 18 / 8%);
+  --shadow-active: 0 0 0 1px rgb(75 16 41 / 28%), 0 18px 32px rgb(75 16 41 / 18%);
   --motion-fast: 150ms;
   --motion-base: 240ms;
   --motion-slow: 420ms;
@@ -78,7 +80,7 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  background: linear-gradient(180deg, #f7f7f4 0%, #efefec 54%, #e8e5df 100%);
+  background: linear-gradient(180deg, #fbfaf7 0%, #f2eee8 52%, #e9e1d8 100%);
   color: var(--text);
   font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
@@ -117,7 +119,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgb(194 65 12 / 44%);
+  outline: 3px solid rgb(75 16 41 / 42%);
   outline-offset: 3px;
 }
 
@@ -138,7 +140,7 @@ a {
 }
 
 .skip-link {
-  position: fixed;
+  position: absolute;
   left: 16px;
   top: 12px;
   z-index: 50;
@@ -151,12 +153,12 @@ a {
   transform: translateY(-140%);
 }
 
-.skip-link:focus {
+.skip-link:focus-visible {
   transform: translateY(0);
 }
 
 .mobile-frame {
-  width: min(100%, 430px);
+  width: min(100%, 520px);
   margin: 0 auto;
   overflow-x: clip;
 }
@@ -166,12 +168,12 @@ a {
   width: 56px;
   height: 56px;
   flex: 0 0 56px;
-  border: 1px solid rgb(194 65 12 / 24%);
+  border: 1px solid rgb(224 68 115 / 24%);
   border-radius: 20px;
   background:
-    radial-gradient(circle at 50% 40%, rgb(255 255 255 / 82%), rgb(255 241 232 / 56%) 42%, transparent 68%),
+    radial-gradient(circle at 50% 40%, rgb(255 255 255 / 84%), rgb(255 240 246 / 56%) 42%, transparent 68%),
     var(--primary-soft);
-  box-shadow: 0 12px 24px rgb(194 65 12 / 14%), 0 0 0 1px rgb(255 255 255 / 60%) inset;
+  box-shadow: 0 12px 24px rgb(159 18 57 / 14%), 0 0 0 1px rgb(255 255 255 / 60%) inset;
 }
 
 .brand-wordmark {
@@ -179,7 +181,7 @@ a {
   width: min(56vw, 244px);
   min-width: 168px;
   aspect-ratio: 2083 / 755;
-  filter: drop-shadow(0 10px 18px rgb(194 65 12 / 18%));
+  filter: drop-shadow(0 10px 18px rgb(159 18 57 / 18%));
 }
 
 .module-icon {
@@ -332,7 +334,7 @@ a {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(135deg, rgb(255 122 26 / 8%), transparent 34%);
+  background: linear-gradient(135deg, rgb(224 68 115 / 10%), transparent 34%);
   opacity: 0;
   transition: opacity var(--motion-base) var(--ease-standard);
 }
@@ -402,8 +404,8 @@ a {
   .interactive-surface:hover,
   .card:hover {
     transform: translateY(-2px);
-    border-color: rgb(194 65 12 / 24%);
-    box-shadow: var(--shadow-soft), 0 14px 28px rgb(23 23 23 / 6%);
+    border-color: rgb(75 16 41 / 24%);
+    box-shadow: var(--shadow-soft), 0 14px 28px rgb(22 13 18 / 7%);
   }
 
   .interactive-surface:hover::after {
@@ -420,7 +422,7 @@ a {
     border: 1px solid var(--surface-stroke);
     border-radius: 40px;
     background: var(--surface-bg);
-    box-shadow: 0 24px 70px rgb(23 23 23 / 16%);
+    box-shadow: 0 24px 70px rgb(22 13 18 / 16%);
     overflow: hidden;
   }
 }

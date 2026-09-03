@@ -21,7 +21,7 @@ export function AppChrome({ children }: AppChromeProps) {
         Saltar al contenido
       </a>
       <div className="mobile-frame">
-        <div className="min-h-screen bg-[var(--surface-bg)] px-4 pb-32 pt-5 min-[390px]:px-5 md:min-h-[860px]">
+        <div className="min-h-screen bg-[var(--surface-bg)] px-3 pb-32 pt-5 min-[390px]:px-4 md:min-h-[860px]">
           <header className="mb-6 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               {isHome ? (
@@ -52,7 +52,7 @@ export function AppChrome({ children }: AppChromeProps) {
               </Link>
               <Link
                 href="/market"
-                className="interactive-surface grid size-11 shrink-0 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
+                className="interactive-surface grid size-11 shrink-0 place-items-center rounded-full bg-[image:var(--gradient-alert)] text-white shadow-[var(--shadow-active)]"
                 aria-label="Abrir mercado"
               >
                 <ShoppingBasket aria-hidden="true" size={20} strokeWidth={2.6} />
