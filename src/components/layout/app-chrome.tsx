@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarPlus, ShoppingBasket } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CoquinMark } from "@/components/brand/coquin-mark";
@@ -45,17 +45,31 @@ export function AppChrome({ children }: AppChromeProps) {
             <div className="flex shrink-0 gap-2">
               <Link
                 href="/calendar"
-                className="interactive-surface grid size-11 shrink-0 place-items-center rounded-full border border-[var(--surface-stroke)] bg-[var(--panel)] text-[var(--text)] shadow-[var(--shadow-soft)]"
+                className="header-icon-button"
                 aria-label="Abrir agenda"
               >
-                <CalendarPlus aria-hidden="true" size={19} strokeWidth={2.4} />
+                <Image
+                  src="/modules/calendario.png"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
+                  priority
+                />
               </Link>
               <Link
                 href="/market"
-                className="interactive-surface grid size-11 shrink-0 place-items-center rounded-full bg-[image:var(--gradient-alert)] text-white shadow-[var(--shadow-active)]"
+                className="header-icon-button"
                 aria-label="Abrir mercado"
               >
-                <ShoppingBasket aria-hidden="true" size={20} strokeWidth={2.6} />
+                <Image
+                  src="/modules/mercado.png"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
+                  priority
+                />
               </Link>
             </div>
           </header>

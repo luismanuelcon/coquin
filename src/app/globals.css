@@ -257,6 +257,28 @@ a {
   filter: drop-shadow(0 8px 13px color-mix(in srgb, var(--module-color) 24%, transparent));
 }
 
+.header-icon-button {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  filter: drop-shadow(0 6px 10px rgb(159 18 57 / 22%));
+  transition:
+    transform var(--motion-base) var(--ease-standard),
+    filter var(--motion-base) var(--ease-standard);
+}
+
+.header-icon-button:hover {
+  filter: drop-shadow(0 10px 16px rgb(159 18 57 / 28%));
+}
+
+.header-icon-button:active {
+  transform: translateY(1px) scale(0.96);
+}
+
 .module-icon-nav {
   width: 30px;
   height: 30px;
