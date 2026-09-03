@@ -16,6 +16,7 @@ import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { financeBudgetState } from "@/lib/data/mock";
+import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
   calculateFinancePeriodSummary,
@@ -39,11 +40,12 @@ const moneyFormatter = new Intl.NumberFormat("es-CO", {
   maximumFractionDigits: 0,
 });
 
-const dateFormatter = new Intl.DateTimeFormat("es-CO", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
+const dateFormatter = {
+  format(date: Date) {
+    const months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+    return `${String(date.getDate()).padStart(2, "0")} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
+  },
+};
 
 function newId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -83,7 +85,7 @@ export default function FinancesPage() {
   const [summarySettingsForm, setSummarySettingsForm] = useState({ base: "", cutoffDay: "", startDate: "" });
   const [feedback, setFeedback] = useState("");
   const [formError, setFormError] = useState("");
-  const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayIso = useMemo(() => getColombiaTodayIso(), []);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(storageKey);
@@ -285,7 +287,7 @@ export default function FinancesPage() {
       <div className="page-stack">
         <PageHeading tone="finances" title="Administracion" />
 
-        <section className="interactive-surface rounded-[30px] border border-[rgb(75_16_41_/_28%)] bg-[image:var(--gradient-primary)] p-4 text-white shadow-[var(--shadow-active)] min-[390px]:p-5">
+        <section className="interactive-surface rounded-[30px] border border-[rgb(15_82_54_/_30%)] bg-[image:var(--gradient-finances)] p-4 text-white shadow-[0_18px_38px_rgb(15_82_54_/_28%)] min-[390px]:p-5">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase text-white/75">
@@ -474,7 +476,7 @@ export default function FinancesPage() {
                 setBudgetForm(emptyBudgetForm());
                 setBudgetFormOpen((current) => !current);
               }}
-              className="grid size-11 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
+              className="grid size-11 place-items-center rounded-full bg-[image:var(--gradient-finances)] text-white shadow-[0_12px_22px_rgb(15_82_54_/_28%)]"
               aria-label="Agregar concepto"
               aria-expanded={budgetFormOpen}
             >
@@ -519,7 +521,7 @@ export default function FinancesPage() {
                 />
                 Gasto fijo reutilizable
               </label>
-              <button type="submit" className="h-12 rounded-full bg-[image:var(--gradient-primary)] text-sm font-extrabold text-white shadow-[var(--shadow-active)]">
+              <button type="submit" className="h-12 rounded-full bg-[image:var(--gradient-finances)] text-sm font-extrabold text-white shadow-[0_12px_22px_rgb(15_82_54_/_28%)]">
                 {editingBudgetId ? "Guardar concepto" : "Crear concepto"}
               </button>
             </form>
@@ -583,7 +585,7 @@ export default function FinancesPage() {
             <button
               type="button"
               onClick={() => setMiscDetailOpen((current) => !current)}
-              className="interactive-surface rounded-[22px] border border-[var(--urgent)] bg-[var(--urgent-soft)] p-3 text-left shadow-[0_12px_22px_rgb(161_98_7_/_12%)]"
+              className="interactive-surface rounded-[22px] border border-[var(--warning)] bg-[var(--warning-soft)] p-3 text-left shadow-[0_12px_22px_rgb(221_162_24_/_18%)]"
               aria-expanded={miscDetailOpen}
               aria-controls="gastos-varios"
             >

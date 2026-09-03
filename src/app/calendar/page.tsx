@@ -1,25 +1,19 @@
 "use client";
 
 import { CalendarDays, Clock, Plus, X } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { EventRow } from "@/components/ui/event-row";
 import { PageHeading } from "@/components/ui/page-heading";
 import { calendarEvents } from "@/lib/data/mock";
+import { getColombiaWorkweek } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import type { HouseholdEvent, ModuleKey } from "@/lib/types";
-
-const days = [
-  { day: "Lun", date: "17", active: false },
-  { day: "Mar", date: "18", active: true },
-  { day: "Mie", date: "19", active: false },
-  { day: "Jue", date: "20", active: false },
-  { day: "Vie", date: "21", active: false },
-];
 
 const tones: ModuleKey[] = ["calendar", "finances", "market", "tasks"];
 
 export default function CalendarPage() {
+  const days = useMemo(() => getColombiaWorkweek(), []);
   const [events, setEvents] = useState<HouseholdEvent[]>(calendarEvents);
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -80,15 +74,15 @@ export default function CalendarPage() {
           <div className="grid grid-cols-5 gap-1 min-[360px]:gap-2">
             {days.map((item) => (
               <button
-                key={item.date}
+                key={item.iso}
                 type="button"
                 className="interactive-surface rounded-[16px] px-1.5 py-3 text-center min-[360px]:px-2"
                 aria-pressed={item.active}
                 style={{
-                  background: item.active ? "var(--gradient-primary)" : "var(--surface-low)",
+                  background: item.active ? "var(--gradient-calendar)" : "var(--surface-low)",
                   color: item.active ? "white" : "var(--text-muted)",
-                  border: item.active ? "1px solid rgb(75 16 41 / 32%)" : "1px solid var(--surface-stroke)",
-                  boxShadow: item.active ? "0 12px 22px rgb(75 16 41 / 18%)" : "none",
+                  border: item.active ? "1px solid rgb(180 122 15 / 34%)" : "1px solid var(--surface-stroke)",
+                  boxShadow: item.active ? "0 12px 22px rgb(221 162 24 / 30%)" : "none",
                 }}
               >
                 <span className="block text-[11px] font-bold">{item.day}</span>
@@ -100,7 +94,7 @@ export default function CalendarPage() {
 
         {lastAdded ? (
           <p
-            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(75_16_41_/_24%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
+            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(122_15_62_/_26%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
             aria-live="polite"
           >
             <Clock aria-hidden="true" size={16} strokeWidth={2.4} />
@@ -163,7 +157,7 @@ export default function CalendarPage() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="mt-2 h-11 w-full rounded-full bg-[image:var(--gradient-primary)] text-sm font-extrabold text-white shadow-[var(--shadow-active)] disabled:cursor-not-allowed disabled:opacity-45"
+                className="mt-2 h-11 w-full rounded-full bg-[image:var(--gradient-calendar)] text-sm font-extrabold text-white shadow-[0_12px_22px_rgb(180_122_15_/_28%)] disabled:cursor-not-allowed disabled:opacity-45"
               >
                 Guardar
               </button>

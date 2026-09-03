@@ -16,7 +16,7 @@ export default function HomePage() {
   return (
     <AppChrome>
       <div className="page-stack">
-        <section className="interactive-surface rounded-[30px] border border-[rgb(75_16_41_/_28%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
+        <section className="interactive-surface rounded-[30px] border border-[rgb(122_15_62_/_28%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase opacity-80">Resumen de hoy</p>
@@ -34,7 +34,7 @@ export default function HomePage() {
           <div className="mt-5 grid grid-cols-2 gap-3">
             <Link
               href="/calendar"
-              className="interactive-surface rounded-full border border-white/70 bg-white px-4 py-3 text-center text-sm font-extrabold shadow-[0_10px_22px_rgb(75_16_41_/_16%)]"
+              className="interactive-surface rounded-full border border-white/70 bg-white px-4 py-3 text-center text-sm font-extrabold shadow-[0_10px_22px_rgb(122_15_62_/_20%)]"
               style={{ color: "var(--on-primary-container)" }}
             >
               Abrir agenda
