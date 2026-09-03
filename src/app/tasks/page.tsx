@@ -7,6 +7,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { projectTasks } from "@/lib/data/mock";
+import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import { calculateTaskProgress } from "@/lib/modules/tasks";
 import type { ProjectTask } from "@/lib/types";
 
@@ -27,6 +28,8 @@ export default function TasksPage() {
   );
   const progress = calculateTaskProgress(completedCount, tasks.length || 1);
   const canSubmit = Boolean(title.trim() && owner.trim() && due.trim());
+
+  useScrollIntoViewOnOpen(formOpen, "task-form");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -127,7 +130,7 @@ export default function TasksPage() {
           </div>
 
           {formOpen ? (
-            <form className="card mb-3 p-3" onSubmit={handleSubmit}>
+            <form id="task-form" className="card mb-3 p-3" onSubmit={handleSubmit}>
               <input
                 type="text"
                 value={title}
@@ -135,7 +138,7 @@ export default function TasksPage() {
                 placeholder="Tarea"
                 className="h-11 w-full rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--urgent)]"
               />
-              <div className="mt-2 grid grid-cols-[1fr_120px] gap-2">
+              <div className="mt-2 grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_120px]">
                 <input
                   type="text"
                   value={owner}
@@ -191,7 +194,7 @@ export default function TasksPage() {
                   <button
                     type="button"
                     onClick={() => toggleCompleted(task.id)}
-                    className="grid size-10 shrink-0 place-items-center rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] text-[var(--urgent)]"
+                    className="grid size-11 shrink-0 place-items-center rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] text-[var(--urgent)]"
                     aria-label={completed ? "Marcar pendiente" : "Completar tarea"}
                     aria-pressed={completed}
                   >
@@ -201,11 +204,11 @@ export default function TasksPage() {
                     <h3 className={`truncate text-sm font-extrabold ${completed ? "text-[var(--text-soft)] line-through" : ""}`}>
                       {task.title}
                     </h3>
-                    <div className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-soft)]">
+                    <div className="mt-1 flex min-w-0 items-center gap-2 text-xs font-bold text-[var(--text-soft)]">
                       <UserRound aria-hidden="true" size={14} />
-                      <span>{task.owner}</span>
+                      <span className="min-w-0 truncate">{task.owner}</span>
                       <span>·</span>
-                      <span>{task.due}</span>
+                      <span className="shrink-0">{task.due}</span>
                     </div>
                   </div>
                   <span className="max-w-[88px] shrink-0 truncate rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-[11px] font-extrabold text-[var(--urgent)]">

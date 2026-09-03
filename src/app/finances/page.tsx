@@ -16,6 +16,7 @@ import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { financeBudgetState } from "@/lib/data/mock";
+import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
   calculateFinancePeriodSummary,
   ensureFinancePeriods,
@@ -123,6 +124,10 @@ export default function FinancesPage() {
     [budgetState],
   );
   const summary = useMemo(() => calculateFinancePeriodSummary(activePeriod), [activePeriod]);
+
+  useScrollIntoViewOnOpen(budgetFormOpen, "finance-budget-form");
+  useScrollIntoViewOnOpen(miscFormOpen, "finance-misc-form");
+  useScrollIntoViewOnOpen(settingsOpen, "finance-settings-form");
 
   useEffect(() => {
     setSummarySettingsForm({
@@ -280,13 +285,13 @@ export default function FinancesPage() {
       <div className="page-stack">
         <PageHeading tone="finances" title="Administracion" />
 
-        <section className="interactive-surface rounded-[30px] border border-[rgb(194_65_12_/_28%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
-          <div className="flex items-start justify-between gap-4">
-            <div>
+        <section className="interactive-surface rounded-[30px] border border-[rgb(194_65_12_/_28%)] bg-[image:var(--gradient-primary)] p-4 text-white shadow-[var(--shadow-active)] min-[390px]:p-5">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase text-white/75">
                 {formatDate(activePeriod.startDate)} - {formatDate(activePeriod.endDate)}
               </p>
-              <p className="mt-2 text-[32px] font-extrabold leading-10">
+              <p className="mt-2 whitespace-nowrap text-[clamp(28px,7.6vw,32px)] font-extrabold leading-10">
                 {moneyFormatter.format(summary.available)}
               </p>
               <p className="mt-1 text-xs font-bold text-white/75">
@@ -328,20 +333,20 @@ export default function FinancesPage() {
               const Icon = metric.icon;
 
               return (
-                <div key={metric.label} className="rounded-[20px] bg-white/14 p-3">
-                  <div className="flex items-center gap-2 text-white/78">
+                <div key={metric.label} className="min-w-0 rounded-[20px] bg-white/14 p-3">
+                  <div className="flex min-w-0 items-center gap-2 text-white/78">
                     <Icon aria-hidden="true" size={16} strokeWidth={2.4} />
-                    <p className="text-[11px] font-bold uppercase">{metric.label}</p>
+                    <p className="min-w-0 truncate text-[11px] font-bold uppercase">{metric.label}</p>
                   </div>
-                  <p className="mt-2 text-sm font-extrabold">{moneyFormatter.format(metric.value)}</p>
+                  <p className="mt-2 truncate text-sm font-extrabold">{moneyFormatter.format(metric.value)}</p>
                 </div>
               );
             })}
           </div>
 
           {settingsOpen ? (
-            <form className="mt-4 rounded-[20px] bg-white/14 p-3" onSubmit={handleSummarySettingsSubmit}>
-              <div className="grid grid-cols-[1fr_96px] gap-2">
+            <form id="finance-settings-form" className="mt-4 rounded-[20px] bg-white/14 p-3" onSubmit={handleSummarySettingsSubmit}>
+              <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_96px]">
                 <label className="flex min-w-0 flex-col gap-1 text-[10px] font-extrabold uppercase text-white/75">
                   Base
                   <input
@@ -349,7 +354,7 @@ export default function FinancesPage() {
                     min="0"
                     value={summarySettingsForm.base}
                     onChange={(event) => setSummarySettingsForm((current) => ({ ...current, base: event.target.value }))}
-                    className="h-10 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
+                    className="h-11 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
                   />
                 </label>
                 <label className="flex min-w-0 flex-col gap-1 text-[10px] font-extrabold uppercase text-white/75">
@@ -360,21 +365,21 @@ export default function FinancesPage() {
                     max="31"
                     value={summarySettingsForm.cutoffDay}
                     onChange={(event) => setSummarySettingsForm((current) => ({ ...current, cutoffDay: event.target.value }))}
-                    className="h-10 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
+                    className="h-11 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
                   />
                 </label>
               </div>
-              <div className="mt-2 grid grid-cols-[1fr_92px] gap-2">
+              <div className="mt-2 grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_92px]">
                 <label className="flex min-w-0 flex-col gap-1 text-[10px] font-extrabold uppercase text-white/75">
                   Inicio periodo
                   <input
                     type="date"
                     value={summarySettingsForm.startDate}
                     onChange={(event) => setSummarySettingsForm((current) => ({ ...current, startDate: event.target.value }))}
-                    className="h-10 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
+                    className="h-11 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
                   />
                 </label>
-                <button type="submit" className="mt-5 h-10 rounded-full bg-white text-xs font-extrabold text-[#7c2d12]">
+                <button type="submit" className="h-11 rounded-full bg-white text-xs font-extrabold text-[#7c2d12] min-[380px]:mt-5">
                   Guardar
                 </button>
               </div>
@@ -383,7 +388,7 @@ export default function FinancesPage() {
         </section>
 
         {miscFormOpen ? (
-          <section className="card p-3">
+          <section id="finance-misc-form" className="card p-3">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="section-title">Registrar gasto</h2>
               <span className="rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-xs font-extrabold text-[var(--urgent)]">
@@ -391,28 +396,28 @@ export default function FinancesPage() {
               </span>
             </div>
             <form className="flex flex-col gap-2" onSubmit={handleMiscSubmit}>
-              <div className="grid grid-cols-[116px_1fr] gap-2">
+              <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[116px_minmax(0,1fr)]">
                 <input
                   type="date"
                   value={miscForm.date}
                   onChange={(event) => setMiscForm((current) => ({ ...current, date: event.target.value }))}
-                  className="h-10 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-2 text-[11px] font-bold text-[var(--text)] outline-none focus:border-[var(--finance)]"
+                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-2 text-[11px] font-bold text-[var(--text)] outline-none focus:border-[var(--finance)]"
                   aria-label="Fecha del gasto"
                 />
                 <input
                   value={miscForm.concept}
                   onChange={(event) => setMiscForm((current) => ({ ...current, concept: event.target.value }))}
                   placeholder="Cafe, parqueadero..."
-                  className="h-10 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-xs font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
+                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-xs font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
                   aria-label="Concepto del gasto"
                 />
               </div>
-              <div className="grid grid-cols-[1fr_112px] gap-2">
+              <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_112px]">
                 <input
                   value={miscForm.category}
                   onChange={(event) => setMiscForm((current) => ({ ...current, category: event.target.value }))}
                   placeholder="Categoria"
-                  className="h-10 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-xs font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
+                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-xs font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
                   aria-label="Categoria del gasto"
                 />
                 <input
@@ -421,12 +426,12 @@ export default function FinancesPage() {
                   value={miscForm.amount}
                   onChange={(event) => setMiscForm((current) => ({ ...current, amount: event.target.value }))}
                   placeholder="Valor"
-                  className="h-10 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-xs font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
+                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-xs font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
                   aria-label="Valor del gasto"
                 />
               </div>
-              <div className="grid grid-cols-[1fr_96px] gap-2">
-                <button type="submit" className="h-10 rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] text-xs font-extrabold text-[var(--urgent)]">
+              <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_96px]">
+                <button type="submit" className="h-11 rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] text-xs font-extrabold text-[var(--urgent)]">
                   {editingMiscId ? "Guardar gasto" : "Registrar gasto"}
                 </button>
                 <button
@@ -436,7 +441,7 @@ export default function FinancesPage() {
                     setEditingMiscId(null);
                     setMiscForm(emptyMiscForm(activePeriod.startDate));
                   }}
-                  className="h-10 rounded-full border border-[var(--surface-stroke)] bg-[var(--surface-low)] text-xs font-extrabold text-[var(--text-muted)]"
+                  className="h-11 rounded-full border border-[var(--surface-stroke)] bg-[var(--surface-low)] text-xs font-extrabold text-[var(--text-muted)]"
                 >
                   Cerrar
                 </button>
@@ -469,7 +474,7 @@ export default function FinancesPage() {
                 setBudgetForm(emptyBudgetForm());
                 setBudgetFormOpen((current) => !current);
               }}
-              className="grid size-10 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
+              className="grid size-11 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
               aria-label="Agregar concepto"
               aria-expanded={budgetFormOpen}
             >
@@ -477,33 +482,33 @@ export default function FinancesPage() {
             </button>
           </div>
           {budgetFormOpen ? (
-            <form className="mb-5 flex flex-col gap-3" onSubmit={handleBudgetSubmit}>
+            <form id="finance-budget-form" className="mb-5 flex flex-col gap-3" onSubmit={handleBudgetSubmit}>
               <input
                 value={budgetForm.concept}
                 onChange={(event) => setBudgetForm((current) => ({ ...current, concept: event.target.value }))}
                 placeholder="Arriendo, seguro, colegio..."
-                className="h-12 rounded-[16px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-4 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
+                className="h-12 min-w-0 rounded-[16px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-4 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
                 aria-label="Concepto presupuestado"
               />
-              <div className="grid grid-cols-[1fr_116px] gap-3">
-              <input
-                type="number"
-                min="0"
-                value={budgetForm.amount}
-                onChange={(event) => setBudgetForm((current) => ({ ...current, amount: event.target.value }))}
-                placeholder="Valor"
-                className="h-12 rounded-[16px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-4 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
-                aria-label="Valor presupuestado"
-              />
-              <select
-                value={budgetForm.status}
-                onChange={(event) => setBudgetForm((current) => ({ ...current, status: event.target.value as "paid" | "pending" }))}
-                className="h-12 rounded-[16px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--finance)]"
-                aria-label="Estado de pago"
-              >
-                <option value="pending">Pendiente</option>
-                <option value="paid">Pagado</option>
-              </select>
+              <div className="grid grid-cols-1 gap-3">
+                <input
+                  type="number"
+                  min="0"
+                  value={budgetForm.amount}
+                  onChange={(event) => setBudgetForm((current) => ({ ...current, amount: event.target.value }))}
+                  placeholder="Valor"
+                  className="h-12 min-w-0 rounded-[16px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-4 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--finance)]"
+                  aria-label="Valor presupuestado"
+                />
+                <select
+                  value={budgetForm.status}
+                  onChange={(event) => setBudgetForm((current) => ({ ...current, status: event.target.value as "paid" | "pending" }))}
+                  className="h-12 min-w-0 rounded-[16px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--finance)]"
+                  aria-label="Estado de pago"
+                >
+                  <option value="pending">Pendiente</option>
+                  <option value="paid">Pagado</option>
+                </select>
               </div>
               <label className="flex min-h-11 items-center gap-3 rounded-[16px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-4 text-sm font-bold">
                 <input
@@ -520,26 +525,24 @@ export default function FinancesPage() {
             </form>
           ) : null}
 
-          <div className="flex flex-col gap-3">
+          <div className="overflow-hidden rounded-[20px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)]">
+            <div className="grid grid-cols-[minmax(0,1fr)_86px_44px] items-center gap-2 bg-[var(--surface-low)] px-3 py-2 text-[10px] font-extrabold uppercase text-[var(--text-soft)]">
+              <span>Concepto</span>
+              <span className="text-center">Estado</span>
+              <span aria-hidden="true" />
+            </div>
             {activePeriod.items.length === 0 ? (
-              <p className="text-sm font-bold text-[var(--text-soft)]">Sin conceptos presupuestados.</p>
+              <p className="border-t border-[var(--surface-stroke)] p-3 text-sm font-bold text-[var(--text-soft)]">Sin conceptos presupuestados.</p>
             ) : null}
             {activePeriod.items.map((item) => (
               <SwipeDeleteRow key={item.id} deleteLabel={`Eliminar ${item.concept}`} onDelete={() => deleteBudgetItem(item)}>
-              <article key={item.id} className="interactive-surface rounded-[22px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] p-3">
-                <div className="flex items-start justify-between gap-3">
+                <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_86px_44px] items-center gap-2 border-t border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 py-3">
                   <div className="min-w-0">
                     <h3 className="truncate text-sm font-extrabold">{item.concept}</h3>
                     <p className="mt-1 text-xs font-bold text-[var(--text-soft)]">
                       {item.fixed ? "Fijo" : "Variable"} · {moneyFormatter.format(item.amount)}
                     </p>
                   </div>
-                  <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-extrabold ${item.status === "paid" ? "border-[var(--finance)] bg-[var(--finance-soft)] text-[var(--finance)]" : "border-[var(--urgent)] bg-[var(--urgent-soft)] text-[var(--urgent)]"}`}>
-                    {item.status === "paid" ? <CheckCircle2 aria-hidden="true" size={13} /> : <CircleAlert aria-hidden="true" size={13} />}
-                    {item.status === "paid" ? "Pagado" : "Pendiente"}
-                  </span>
-                </div>
-                <div className="mt-3 flex gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -549,9 +552,10 @@ export default function FinancesPage() {
                         items: activePeriod.items.map((current) => (current.id === item.id ? { ...current, status } : current)),
                       });
                     }}
-                    className="h-10 flex-1 rounded-full border border-[var(--surface-stroke)] bg-[var(--surface-low)] text-xs font-extrabold text-[var(--text-muted)]"
+                    className={`h-11 rounded-full border px-2 text-[10px] font-extrabold ${item.status === "paid" ? "border-[var(--finance)] bg-[var(--finance-soft)] text-[var(--finance)]" : "border-[var(--urgent)] bg-[var(--urgent-soft)] text-[var(--urgent)]"}`}
+                    aria-label={`Marcar ${item.concept} como ${item.status === "paid" ? "pendiente" : "pagado"}`}
                   >
-                    Marcar {item.status === "paid" ? "pendiente" : "pagado"}
+                    {item.status === "paid" ? "Pagado" : "Pendiente"}
                   </button>
                   <button
                     type="button"
@@ -566,15 +570,16 @@ export default function FinancesPage() {
                       setEditingBudgetId(item.id);
                       setBudgetFormOpen(true);
                     }}
-                    className="grid size-10 place-items-center rounded-full bg-[var(--surface-low)] text-[var(--text-muted)]"
+                    className="grid size-11 place-items-center rounded-full bg-[var(--surface-low)] text-[var(--text-muted)]"
                     aria-label={`Editar ${item.concept}`}
                   >
                     <Pencil aria-hidden="true" size={16} />
                   </button>
                 </div>
-              </article>
               </SwipeDeleteRow>
             ))}
+          </div>
+          <div className="mt-3 flex flex-col gap-3">
             <button
               type="button"
               onClick={() => setMiscDetailOpen((current) => !current)}
@@ -590,7 +595,7 @@ export default function FinancesPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-sm font-extrabold text-[var(--urgent)]">
+                  <span className="whitespace-nowrap text-sm font-extrabold text-[var(--urgent)]">
                     {moneyFormatter.format(summary.miscTotal)}
                   </span>
                   <ChevronRight
@@ -601,57 +606,52 @@ export default function FinancesPage() {
                 </div>
               </div>
             </button>
-          </div>
-        </section>
 
-        {miscDetailOpen ? (
-        <section id="gastos-varios" className="card p-3">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="section-title">Gastos varios</h2>
-            <span className="rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-xs font-extrabold text-[var(--urgent)]">
-              {moneyFormatter.format(summary.miscTotal)}
-            </span>
-          </div>
-          <div className="flex flex-col overflow-hidden rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)]">
-            {activePeriod.miscExpenses.length === 0 ? (
-              <p className="p-3 text-sm font-bold text-[var(--text-soft)]">Sin gastos varios en este periodo.</p>
+            {miscDetailOpen ? (
+              <div id="gastos-varios" className="overflow-hidden rounded-[20px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)]">
+                <div className="grid grid-cols-[minmax(0,1fr)_88px_44px] items-center gap-2 bg-[var(--surface-low)] px-3 py-2 text-[10px] font-extrabold uppercase text-[var(--text-soft)]">
+                  <span>Detalle</span>
+                  <span className="text-right">Valor</span>
+                  <span aria-hidden="true" />
+                </div>
+                {activePeriod.miscExpenses.length === 0 ? (
+                  <p className="border-t border-[var(--surface-stroke)] p-3 text-sm font-bold text-[var(--text-soft)]">Sin gastos varios en este periodo.</p>
+                ) : null}
+                {activePeriod.miscExpenses.map((expense) => (
+                  <SwipeDeleteRow key={expense.id} deleteLabel={`Eliminar ${expense.concept}`} onDelete={() => deleteMiscExpense(expense)}>
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_88px_44px] items-center gap-2 border-t border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 py-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-extrabold">{expense.concept}</h3>
+                        <p className="mt-0.5 truncate text-[11px] font-bold text-[var(--text-soft)]">
+                          {formatDate(expense.date)}{expense.category ? ` · ${expense.category}` : ""}
+                        </p>
+                      </div>
+                      <p className="min-w-0 truncate text-right text-xs font-extrabold text-[var(--urgent)]">{moneyFormatter.format(expense.amount)}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMiscForm({
+                            date: expense.date,
+                            concept: expense.concept,
+                            amount: String(expense.amount),
+                            category: expense.category ?? "",
+                            note: expense.note ?? "",
+                          });
+                          setEditingMiscId(expense.id);
+                          setMiscFormOpen(true);
+                        }}
+                        className="grid size-11 place-items-center rounded-full bg-[var(--surface-low)] text-[var(--text-muted)]"
+                        aria-label={`Editar ${expense.concept}`}
+                      >
+                        <Pencil aria-hidden="true" size={15} />
+                      </button>
+                    </div>
+                  </SwipeDeleteRow>
+                ))}
+              </div>
             ) : null}
-            {activePeriod.miscExpenses.map((expense) => (
-              <SwipeDeleteRow key={expense.id} deleteLabel={`Eliminar ${expense.concept}`} onDelete={() => deleteMiscExpense(expense)}>
-              <article key={expense.id} className="flex items-center gap-3 border-b border-[var(--surface-stroke)] p-3 last:border-b-0">
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-extrabold">{expense.concept}</h3>
-                  <p className="mt-0.5 truncate text-[11px] font-bold text-[var(--text-soft)]">
-                      {formatDate(expense.date)}{expense.category ? ` · ${expense.category}` : ""}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <p className="text-xs font-extrabold text-[var(--urgent)]">{moneyFormatter.format(expense.amount)}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMiscForm({
-                        date: expense.date,
-                        concept: expense.concept,
-                        amount: String(expense.amount),
-                        category: expense.category ?? "",
-                        note: expense.note ?? "",
-                      });
-                      setEditingMiscId(expense.id);
-                      setMiscFormOpen(true);
-                    }}
-                    className="grid size-9 place-items-center rounded-full bg-[var(--surface-low)] text-[var(--text-muted)]"
-                    aria-label={`Editar ${expense.concept}`}
-                  >
-                    <Pencil aria-hidden="true" size={15} />
-                  </button>
-                </div>
-              </article>
-              </SwipeDeleteRow>
-            ))}
           </div>
         </section>
-        ) : null}
       </div>
     </AppChrome>
   );

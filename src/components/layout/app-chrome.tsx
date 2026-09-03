@@ -21,8 +21,8 @@ export function AppChrome({ children }: AppChromeProps) {
         Saltar al contenido
       </a>
       <div className="mobile-frame">
-        <div className="min-h-screen bg-[var(--surface-bg)] px-5 py-5 md:min-h-[860px]">
-          <header className="mb-6 flex items-center justify-between gap-4">
+        <div className="min-h-screen bg-[var(--surface-bg)] px-4 pb-32 pt-5 min-[390px]:px-5 md:min-h-[860px]">
+          <header className="mb-6 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               {isHome ? (
                 <div className="min-w-0">
@@ -35,7 +35,7 @@ export function AppChrome({ children }: AppChromeProps) {
                   <CoquinMark />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase text-[var(--text-soft)]">COQUIN</p>
-                    <h1 className="mt-1 truncate text-[24px] font-extrabold leading-8 text-[var(--text)]">
+                    <h1 className="mt-1 truncate text-[clamp(20px,5.8vw,24px)] font-extrabold leading-8 text-[var(--text)]">
                       Gestion del hogar
                     </h1>
                   </div>
@@ -45,14 +45,14 @@ export function AppChrome({ children }: AppChromeProps) {
             <div className="flex shrink-0 gap-2">
               <Link
                 href="/calendar"
-                className="interactive-surface grid size-11 place-items-center rounded-full border border-[var(--surface-stroke)] bg-[var(--panel)] text-[var(--text)] shadow-[var(--shadow-soft)]"
+                className="interactive-surface grid size-11 shrink-0 place-items-center rounded-full border border-[var(--surface-stroke)] bg-[var(--panel)] text-[var(--text)] shadow-[var(--shadow-soft)]"
                 aria-label="Abrir agenda"
               >
                 <CalendarPlus aria-hidden="true" size={19} strokeWidth={2.4} />
               </Link>
               <Link
                 href="/market"
-                className="interactive-surface grid size-11 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
+                className="interactive-surface grid size-11 shrink-0 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-white shadow-[var(--shadow-active)]"
                 aria-label="Abrir mercado"
               >
                 <ShoppingBasket aria-hidden="true" size={20} strokeWidth={2.6} />

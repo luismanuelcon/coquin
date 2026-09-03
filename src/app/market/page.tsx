@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  CalendarDays,
   CheckCircle2,
   Plus,
   ReceiptText,
@@ -14,6 +13,7 @@ import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { marketBudget, marketPurchases } from "@/lib/data/mock";
+import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
   calculateMarketBudgetSummary,
   createMarketPurchase,
@@ -67,6 +67,9 @@ export default function MarketPage() {
   const canSubmit = Boolean(date && detail.trim() && numericAmount > 0);
   const canSaveBudget = Number(budgetDraft) >= 0;
 
+  useScrollIntoViewOnOpen(settingsOpen, "market-budget-form");
+  useScrollIntoViewOnOpen(purchaseFormOpen, "market-purchase-form");
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -104,13 +107,13 @@ export default function MarketPage() {
       <div className="page-stack">
         <PageHeading tone="market" title="Presupuesto y compras" />
 
-        <section className="card p-5">
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <div>
+        <section className="card p-4 min-[390px]:p-5">
+          <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+            <div className="min-w-0">
               <p className="text-xs font-extrabold uppercase text-[var(--text-soft)]">
                 {marketBudget.month}
               </p>
-              <h2 className="mt-2 text-[34px] font-extrabold leading-10 text-[var(--market)]">
+              <h2 className="mt-2 whitespace-nowrap text-[clamp(30px,8vw,34px)] font-extrabold leading-10 text-[var(--market)]">
                 {moneyFormatter.format(activeBudget.budget)}
               </h2>
             </div>
@@ -121,7 +124,7 @@ export default function MarketPage() {
                   setPurchaseFormOpen((current) => !current);
                   setSettingsOpen(false);
                 }}
-                className="grid size-12 place-items-center rounded-full border border-[var(--market)] bg-[var(--market-soft)] text-[var(--market)] shadow-[0_12px_22px_rgb(194_65_12_/_14%)]"
+                className="grid size-11 place-items-center rounded-full border border-[var(--market)] bg-[var(--market-soft)] text-[var(--market)] shadow-[0_12px_22px_rgb(194_65_12_/_14%)]"
                 aria-label={purchaseFormOpen ? "Cerrar compra" : "Registrar compra"}
                 aria-expanded={purchaseFormOpen}
               >
@@ -134,7 +137,7 @@ export default function MarketPage() {
                   setBudgetDraft(String(budgetAmount));
                   setPurchaseFormOpen(false);
                 }}
-                className="grid size-12 place-items-center rounded-full border border-[rgb(255_255_255_/_16%)] bg-[var(--surface-low)] text-[var(--text)]"
+                className="grid size-11 place-items-center rounded-full border border-[rgb(255_255_255_/_16%)] bg-[var(--surface-low)] text-[var(--text)]"
                 aria-label={settingsOpen ? "Cerrar presupuesto" : "Configurar presupuesto"}
                 aria-expanded={settingsOpen}
               >
@@ -151,7 +154,7 @@ export default function MarketPage() {
             <ProgressBar value={summary.spentPercent} color="var(--market)" />
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-3">
             <div className="rounded-[18px] border border-[rgb(194_65_12_/_24%)] bg-[var(--market-soft)] p-3">
               <p className="text-[10px] font-extrabold uppercase text-[var(--text-soft)]">Gastado</p>
               <p className="mt-1 text-sm font-extrabold text-[var(--market)]">
@@ -178,8 +181,8 @@ export default function MarketPage() {
         </section>
 
         {settingsOpen ? (
-          <form className="card p-3" onSubmit={handleBudgetSubmit}>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
+          <form id="market-budget-form" className="card p-3" onSubmit={handleBudgetSubmit}>
+            <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_auto]">
               <input
                 type="number"
                 inputMode="numeric"
@@ -202,9 +205,9 @@ export default function MarketPage() {
         ) : null}
 
         {purchaseFormOpen ? (
-          <section className="card p-3">
+          <section id="market-purchase-form" className="card p-3">
             <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-[128px_1fr] gap-2">
+              <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[128px_minmax(0,1fr)]">
                 <input
                   type="date"
                   value={date}
@@ -221,7 +224,7 @@ export default function MarketPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-[1fr_112px] gap-2">
+              <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_112px]">
                 <select
                   value={category}
                   onChange={(event) => setCategory(event.target.value as MarketCategory)}
@@ -280,7 +283,7 @@ export default function MarketPage() {
                 <div key={item.category}>
                   <div className="mb-2 flex items-center justify-between gap-3 text-xs font-bold">
                     <span className="text-[var(--text-muted)]">{item.category}</span>
-                    <span className="text-[var(--market)]">{moneyFormatter.format(item.total)}</span>
+                    <span className="shrink-0 whitespace-nowrap text-[var(--market)]">{moneyFormatter.format(item.total)}</span>
                   </div>
                   <ProgressBar value={value} color="var(--market)" />
                 </div>
@@ -289,31 +292,36 @@ export default function MarketPage() {
           </div>
         </section>
 
-        <section>
-          <div className="mb-3 flex items-center justify-between">
+        <section className="card overflow-hidden p-0">
+          <div className="flex items-center justify-between gap-3 p-4 pb-3">
             <h2 className="section-title">Compras registradas</h2>
             <ReceiptText aria-hidden="true" className="text-[var(--market)]" size={22} strokeWidth={2.4} />
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="border-t border-[var(--surface-stroke)]">
+            <div className="grid grid-cols-[52px_minmax(0,1fr)_96px] gap-3 bg-[var(--surface-low)] px-4 py-2 text-[10px] font-extrabold uppercase text-[var(--text-soft)]">
+              <span>Fecha</span>
+              <span>Detalle</span>
+              <span className="text-right">Valor</span>
+            </div>
             {purchases.map((purchase) => (
-              <article
+              <div
                 key={purchase.id}
-                className="interactive-surface flex items-center gap-3 rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] p-3"
+                className="grid min-w-0 grid-cols-[52px_minmax(0,1fr)_96px] items-center gap-3 border-t border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-4 py-3 first:border-t-0"
               >
-                <div className="grid size-10 shrink-0 place-items-center rounded-full border border-[rgb(194_65_12_/_24%)] bg-[var(--market-soft)] text-[var(--market)]">
-                  <CalendarDays aria-hidden="true" size={17} strokeWidth={2.4} />
-                </div>
+                <span className="text-[11px] font-extrabold uppercase leading-4 text-[var(--market)]">
+                  {dateFormatter.format(new Date(`${purchase.date}T12:00:00`))}
+                </span>
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-sm font-extrabold">{purchase.detail}</h3>
-                  <p className="mt-0.5 text-xs font-bold text-[var(--text-soft)]">
-                    {dateFormatter.format(new Date(`${purchase.date}T12:00:00`))} · {purchase.category}
+                  <p className="mt-0.5 truncate text-[11px] font-bold text-[var(--text-soft)]">
+                    {purchase.category}
                   </p>
                 </div>
-                <span className="rounded-full border border-[rgb(194_65_12_/_24%)] bg-[var(--market-soft)] px-3 py-1 text-xs font-extrabold text-[var(--market)]">
+                <span className="min-w-0 truncate text-right text-xs font-extrabold text-[var(--market)]">
                   {moneyFormatter.format(purchase.amount)}
                 </span>
-              </article>
+              </div>
             ))}
           </div>
         </section>

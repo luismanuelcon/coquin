@@ -6,6 +6,7 @@ import { AppChrome } from "@/components/layout/app-chrome";
 import { EventRow } from "@/components/ui/event-row";
 import { PageHeading } from "@/components/ui/page-heading";
 import { calendarEvents } from "@/lib/data/mock";
+import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import type { HouseholdEvent, ModuleKey } from "@/lib/types";
 
 const days = [
@@ -28,6 +29,8 @@ export default function CalendarPage() {
   const [lastAdded, setLastAdded] = useState("");
 
   const canSubmit = Boolean(title.trim() && time.trim());
+
+  useScrollIntoViewOnOpen(formOpen, "calendar-event-form");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,12 +77,12 @@ export default function CalendarPage() {
               <CalendarDays aria-hidden="true" size={18} strokeWidth={2.4} />
             </div>
           </div>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-1 min-[360px]:gap-2">
             {days.map((item) => (
               <button
                 key={item.date}
                 type="button"
-                className="interactive-surface rounded-[16px] px-2 py-3 text-center"
+                className="interactive-surface rounded-[16px] px-1.5 py-3 text-center min-[360px]:px-2"
                 aria-pressed={item.active}
                 style={{
                   background: item.active ? "var(--gradient-primary)" : "var(--surface-low)",
@@ -120,8 +123,8 @@ export default function CalendarPage() {
           </div>
 
           {formOpen ? (
-            <form className="card mb-3 p-3" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-[1fr_112px] gap-2">
+            <form id="calendar-event-form" className="card mb-3 p-3" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_112px]">
                 <input
                   type="text"
                   value={title}
@@ -137,7 +140,7 @@ export default function CalendarPage() {
                   className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--primary)]"
                 />
               </div>
-              <div className="mt-2 grid grid-cols-[1fr_128px] gap-2">
+              <div className="mt-2 grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_128px]">
                 <input
                   type="text"
                   value={meta}
@@ -148,7 +151,7 @@ export default function CalendarPage() {
                 <select
                   value={tone}
                   onChange={(event) => setTone(event.target.value as ModuleKey)}
-                  className="h-11 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--primary)]"
+                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--primary)]"
                 >
                   {tones.map((item) => (
                     <option key={item} value={item}>
