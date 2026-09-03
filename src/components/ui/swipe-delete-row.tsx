@@ -191,7 +191,7 @@ export function SwipeDeleteRow({ children, deleteLabel, onDelete }: SwipeDeleteR
         <button
           type="button"
           onClick={handleDelete}
-          className={`grid w-[68px] place-items-center rounded-[18px] bg-[var(--urgent)] text-white transition-opacity duration-150 ${isOpen ? "pointer-events-auto" : "pointer-events-none"} ${isRevealing ? "opacity-100" : "opacity-0"}`}
+          className={`grid w-[68px] place-items-center rounded-[18px] bg-[var(--danger)] text-white transition-opacity duration-150 ${isOpen ? "pointer-events-auto" : "pointer-events-none"} ${isRevealing ? "opacity-100" : "opacity-0"}`}
           aria-label={deleteLabel}
           tabIndex={isOpen ? 0 : -1}
         >

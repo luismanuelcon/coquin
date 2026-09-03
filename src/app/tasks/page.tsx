@@ -13,6 +13,17 @@ import type { ProjectTask } from "@/lib/types";
 
 const statuses = ["Pendiente", "En progreso", "Urgente", "Completada"];
 
+const statusStyles: Record<string, { color: string; soft: string }> = {
+  Pendiente: { color: "var(--warning)", soft: "var(--warning-soft)" },
+  "En progreso": { color: "var(--primary)", soft: "var(--primary-soft)" },
+  Urgente: { color: "var(--danger)", soft: "var(--danger-soft)" },
+  Completada: { color: "var(--success)", soft: "var(--success-soft)" },
+};
+
+function getStatusStyle(status: string) {
+  return statusStyles[status] ?? statusStyles.Pendiente;
+}
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<ProjectTask[]>(projectTasks);
   const [formOpen, setFormOpen] = useState(false);
@@ -184,6 +195,8 @@ export default function TasksPage() {
             ) : null}
             {tasks.map((task) => {
               const completed = task.status === "Completada";
+              const statusStyle = getStatusStyle(task.status);
+              const checkStyle = completed ? statusStyles.Completada : statusStyles.Urgente;
 
               return (
                 <SwipeDeleteRow key={task.id} deleteLabel={`Eliminar ${task.title}`} onDelete={() => deleteTask(task)}>
@@ -194,7 +207,12 @@ export default function TasksPage() {
                   <button
                     type="button"
                     onClick={() => toggleCompleted(task.id)}
-                    className="grid size-11 shrink-0 place-items-center rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] text-[var(--urgent)]"
+                    className="grid size-11 shrink-0 place-items-center rounded-full border"
+                    style={{
+                      borderColor: checkStyle.color,
+                      background: checkStyle.soft,
+                      color: checkStyle.color,
+                    }}
                     aria-label={completed ? "Marcar pendiente" : "Completar tarea"}
                     aria-pressed={completed}
                   >
@@ -211,7 +229,14 @@ export default function TasksPage() {
                       <span className="shrink-0">{task.due}</span>
                     </div>
                   </div>
-                  <span className="max-w-[88px] shrink-0 truncate rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-[11px] font-extrabold text-[var(--urgent)]">
+                  <span
+                    className="max-w-[88px] shrink-0 truncate rounded-full border px-3 py-1 text-[11px] font-extrabold"
+                    style={{
+                      borderColor: statusStyle.color,
+                      background: statusStyle.soft,
+                      color: statusStyle.color,
+                    }}
+                  >
                     {task.status}
                   </span>
                 </article>

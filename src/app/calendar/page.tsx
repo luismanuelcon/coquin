@@ -87,8 +87,8 @@ export default function CalendarPage() {
                 style={{
                   background: item.active ? "var(--gradient-primary)" : "var(--surface-low)",
                   color: item.active ? "white" : "var(--text-muted)",
-                  border: item.active ? "1px solid rgb(194 65 12 / 38%)" : "1px solid var(--surface-stroke)",
-                  boxShadow: item.active ? "0 12px 22px rgb(194 65 12 / 16%)" : "none",
+                  border: item.active ? "1px solid rgb(75 16 41 / 32%)" : "1px solid var(--surface-stroke)",
+                  boxShadow: item.active ? "0 12px 22px rgb(75 16 41 / 18%)" : "none",
                 }}
               >
                 <span className="block text-[11px] font-bold">{item.day}</span>
