@@ -18,7 +18,7 @@ export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
     href: "/",
     icon: Home,
     color: "#E04473",
-    text: "#8F143E",
+    text: "#6E0F3B",
     surface: "rgb(224 68 115 / 13%)",
   },
   calendar: {

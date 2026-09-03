@@ -16,10 +16,10 @@
   --surface-stroke: #ded2c5;
 
   --text: #160d12;
-  --text-soft: #837771;
+  --text-soft: #6b5e56;
   --text-muted: #514742;
-  --outline: #8b7d75;
-  --outline-soft: #d7c9ba;
+  --outline: #786961;
+  --outline-soft: #c9baa9;
 
   --primary: #4b1029;
   --primary-container: #fff0f6;
@@ -35,12 +35,17 @@
   --market-container: #fff0f6;
   --market-soft: rgb(159 18 57 / 10%);
 
-  --urgent: #a16207;
-  --urgent-soft: rgb(161 98 7 / 12%);
-  --gold: #a16207;
-  --rose: #e04473;
-  --purple: #5b435d;
-  --error: #b42318;
+  /* Estado (semántica reutilizable) */
+  --success: #166534;
+  --success-soft: rgb(22 101 52 / 12%);
+  --warning: #a16207;
+  --warning-soft: rgb(161 98 7 / 12%);
+  --danger: #b42318;
+  --danger-soft: rgb(180 35 24 / 12%);
+  /* Alias legado: mantener nombres previos para no romper usos existentes */
+  --urgent: var(--warning);
+  --urgent-soft: var(--warning-soft);
+  --error: var(--danger);
 
   --gradient-primary: linear-gradient(135deg, #4b1029 0%, #7a1f42 54%, #a16207 100%);
   --gradient-alert: linear-gradient(135deg, #9f1239 0%, #c2416c 58%, #a16207 100%);
@@ -119,8 +124,9 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgb(75 16 41 / 42%);
+  outline: 3px solid var(--primary);
   outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgb(255 255 255 / 85%);
 }
 
 button:active,
