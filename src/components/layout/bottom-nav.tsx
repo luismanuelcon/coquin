@@ -14,7 +14,7 @@ export function BottomNav() {
       className="bottom-nav-safe fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[520px] px-3 pb-4 min-[390px]:px-4 md:absolute md:left-1/2 md:-translate-x-1/2"
       aria-label="Navegacion principal"
     >
-      <div className="grid grid-cols-5 gap-1 rounded-[28px] border border-[var(--surface-stroke)] bg-[rgb(255_255_255_/_94%)] p-2 shadow-[0_18px_38px_rgb(22_13_18_/_14%)] backdrop-blur">
+      <div className="grid grid-cols-5 gap-1 rounded-[28px] border border-[var(--surface-stroke)] bg-[var(--nav-surface)] p-2 shadow-[0_18px_38px_rgb(0_0_0_/_14%)] backdrop-blur">
         {visibleModules.map((key) => {
           const item = moduleThemes[key];
           const active = pathname === item.href;

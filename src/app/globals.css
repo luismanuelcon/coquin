@@ -3,53 +3,73 @@
 :root {
   color-scheme: light;
 
-  --surface: #fbfaf7;
-  --surface-bg: #f2eee8;
+  /* Superficie blush cálida — dialoga con el rosa/dorado 3D sin competir */
+  --surface: #fefaf8;
+  --surface-bg: #fbf3f1;
   --surface-lowest: #ffffff;
-  --surface-low: #f8f4ee;
-  --surface-container: #eee7dd;
-  --surface-high: #dfd4c5;
-  --surface-highest: #cdbba8;
-  --surface-variant: #e8ded3;
+  --surface-low: #fdf5f2;
+  --surface-container: #f6e7e1;
+  --surface-high: #eccbc1;
+  --surface-highest: #d9a99a;
+  --surface-variant: #f2ddd4;
   --panel: #ffffff;
-  --panel-raised: #fffaf5;
-  --surface-stroke: #ded2c5;
+  --panel-raised: #fffaf7;
+  --surface-stroke: #ecd7cf;
 
-  --text: #160d12;
-  --text-soft: #6b5e56;
-  --text-muted: #514742;
-  --outline: #786961;
-  --outline-soft: #c9baa9;
+  --text: #1c0d14;
+  --text-soft: #7a5e57;
+  --text-muted: #4d3b36;
+  --outline: #86675e;
+  --outline-soft: #d9beb2;
 
-  --primary: #4b1029;
-  --primary-container: #fff0f6;
-  --primary-soft: rgb(75 16 41 / 10%);
+  /* Primario = rosa marca (accent brillante) */
+  --primary: #e63c7a;
+  --primary-container: #ffe6ef;
+  --primary-soft: rgb(230 60 122 / 12%);
   --on-primary: #ffffff;
-  --on-primary-container: #641638;
+  --on-primary-container: #7a0f3e;
+  /* Tinta profunda para bordes/textos "vino" (rol previo del primary) */
+  --primary-ink: #7a0f3e;
 
-  --finance: #174a41;
-  --finance-container: #eaf6f2;
-  --finance-soft: rgb(23 74 65 / 10%);
+  /* Dorado acento — alineado con el borde dorado de los iconos 3D */
+  --accent: #dda218;
+  --accent-container: #fff4d3;
+  --accent-soft: rgb(221 162 24 / 14%);
+  --on-accent: #ffffff;
+  --on-accent-container: #6d4c0a;
 
-  --market: #9f1239;
-  --market-container: #fff0f6;
-  --market-soft: rgb(159 18 57 / 10%);
+  --finance: #1f8a5b;
+  --finance-container: #e6f7ee;
+  --finance-soft: rgb(31 138 91 / 12%);
+  --on-finance-container: #0f5236;
+
+  --market: #b41e5c;
+  --market-container: #ffe4ee;
+  --market-soft: rgb(180 30 92 / 12%);
+  --on-market-container: #6b0f39;
 
   /* Estado (semántica reutilizable) */
-  --success: #166534;
-  --success-soft: rgb(22 101 52 / 12%);
-  --warning: #a16207;
-  --warning-soft: rgb(161 98 7 / 12%);
-  --danger: #b42318;
-  --danger-soft: rgb(180 35 24 / 12%);
-  /* Alias legado: mantener nombres previos para no romper usos existentes */
+  --success: #1f8a5b;
+  --success-soft: rgb(31 138 91 / 14%);
+  --warning: #dda218;
+  --warning-soft: rgb(221 162 24 / 16%);
+  --danger: #d93838;
+  --danger-soft: rgb(217 56 56 / 14%);
+  /* Alias legado */
   --urgent: var(--warning);
   --urgent-soft: var(--warning-soft);
   --error: var(--danger);
 
-  --gradient-primary: linear-gradient(135deg, #4b1029 0%, #7a1f42 54%, #a16207 100%);
-  --gradient-alert: linear-gradient(135deg, #9f1239 0%, #c2416c 58%, #a16207 100%);
-  --gradient-panel: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
+  /* Gradientes por modulo — cada seccion respira su hue */
+  --gradient-home: linear-gradient(135deg, #e63c7a 0%, #b41e5c 55%, #dda218 100%);
+  --gradient-calendar: linear-gradient(135deg, #f5c04b 0%, #dda218 55%, #b47a0f 100%);
+  --gradient-finances: linear-gradient(135deg, #2fc48a 0%, #1f8a5b 55%, #0f5236 100%);
+  --gradient-market: linear-gradient(135deg, #e63c7a 0%, #b41e5c 55%, #6b0f39 100%);
+  --gradient-tasks: linear-gradient(135deg, #9c7bff 0%, #7c4de0 55%, #3f2087 100%);
+  /* Alias globales: hero por defecto = home, alerta = market rojo/rosa */
+  --gradient-primary: var(--gradient-home);
+  --gradient-alert: linear-gradient(135deg, #d93838 0%, #e63c7a 55%, #dda218 100%);
+  --gradient-panel: linear-gradient(180deg, #ffffff 0%, #fff6f1 100%);
 
   --radius-sm: 0.25rem;
   --radius-md: 0.75rem;
@@ -64,13 +84,83 @@
   --space-xl: 32px;
   --space-2xl: 48px;
 
-  --shadow-soft: 0 0 0 1px var(--surface-stroke), 0 18px 38px rgb(22 13 18 / 8%);
-  --shadow-active: 0 0 0 1px rgb(75 16 41 / 28%), 0 18px 32px rgb(75 16 41 / 18%);
+  --shadow-soft: 0 0 0 1px var(--surface-stroke), 0 18px 38px rgb(122 15 62 / 8%);
+  --shadow-active: 0 0 0 1px rgb(230 60 122 / 30%), 0 18px 32px rgb(230 60 122 / 22%);
+  --nav-surface: rgb(255 255 255 / 94%);
+  --focus-halo: rgb(255 255 255 / 85%);
   --motion-fast: 150ms;
   --motion-base: 240ms;
   --motion-slow: 420ms;
   --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Superficie plum-black cálida — resalta el rosa/dorado sin ruido */
+  --surface: #1c1218;
+  --surface-bg: #150c12;
+  --surface-lowest: #0e0810;
+  --surface-low: #22161d;
+  --surface-container: #2a1e26;
+  --surface-high: #3a2c34;
+  --surface-highest: #4c3c44;
+  --surface-variant: #241820;
+  --panel: #221820;
+  --panel-raised: #2a1e26;
+  --surface-stroke: #3a2c34;
+
+  --text: #faf3f5;
+  --text-soft: #c4b0b8;
+  --text-muted: #e6d3d9;
+  --outline: #8a7079;
+  --outline-soft: #5a4650;
+
+  --primary: #ff5b91;
+  --primary-container: #3a0e22;
+  --primary-soft: rgb(255 91 145 / 14%);
+  --on-primary: #180810;
+  --on-primary-container: #ffd5e2;
+  --primary-ink: #ff8ab0;
+
+  --accent: #f2b842;
+  --accent-container: #3a2708;
+  --accent-soft: rgb(242 184 66 / 16%);
+  --on-accent: #180810;
+  --on-accent-container: #ffe9b8;
+
+  --finance: #4ce09a;
+  --finance-container: #0a2f22;
+  --finance-soft: rgb(76 224 154 / 16%);
+  --on-finance-container: #b9f2d5;
+
+  --market: #ff7bab;
+  --market-container: #3a0e22;
+  --market-soft: rgb(255 123 171 / 14%);
+  --on-market-container: #ffd5e2;
+
+  --success: #4ce09a;
+  --success-soft: rgb(76 224 154 / 16%);
+  --warning: #f2b842;
+  --warning-soft: rgb(242 184 66 / 18%);
+  --danger: #ff6b6b;
+  --danger-soft: rgb(255 107 107 / 16%);
+
+  /* Gradientes recalibrados: más luminosos para sobrevivir sobre plum-black */
+  --gradient-home: linear-gradient(135deg, #ff5b91 0%, #b41e5c 55%, #f2b842 100%);
+  --gradient-calendar: linear-gradient(135deg, #ffd166 0%, #f2b842 55%, #a06a0a 100%);
+  --gradient-finances: linear-gradient(135deg, #4ce09a 0%, #1f8a5b 55%, #0f5236 100%);
+  --gradient-market: linear-gradient(135deg, #ff7bab 0%, #d63a7b 55%, #6b0f39 100%);
+  --gradient-tasks: linear-gradient(135deg, #b399ff 0%, #7c4de0 55%, #3f2087 100%);
+  --gradient-primary: var(--gradient-home);
+  --gradient-alert: linear-gradient(135deg, #ff6b6b 0%, #ff5b91 55%, #f2b842 100%);
+  --gradient-panel: linear-gradient(180deg, #2a1e26 0%, #221820 100%);
+
+  --shadow-soft: 0 0 0 1px var(--surface-stroke), 0 18px 38px rgb(0 0 0 / 46%);
+  --shadow-active: 0 0 0 1px rgb(255 91 145 / 32%), 0 18px 32px rgb(255 91 145 / 22%);
+  --nav-surface: rgb(34 24 32 / 88%);
+  --focus-halo: rgb(21 12 18 / 85%);
 }
 
 * {
@@ -85,11 +175,15 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  background: linear-gradient(180deg, #fbfaf7 0%, #f2eee8 52%, #e9e1d8 100%);
+  background: linear-gradient(180deg, #fefaf8 0%, #fbf3f1 52%, #f4e2dc 100%);
   color: var(--text);
   font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
   overflow-x: hidden;
+}
+
+[data-theme="dark"] body {
+  background: linear-gradient(180deg, #150c12 0%, #1c1218 52%, #0e0810 100%);
 }
 
 button,
@@ -126,7 +220,7 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 3px;
-  box-shadow: 0 0 0 5px rgb(255 255 255 / 85%);
+  box-shadow: 0 0 0 5px var(--focus-halo);
 }
 
 button:active,
@@ -174,12 +268,12 @@ a {
   width: 56px;
   height: 56px;
   flex: 0 0 56px;
-  border: 1px solid rgb(224 68 115 / 24%);
+  border: 1px solid rgb(230 60 122 / 28%);
   border-radius: 20px;
   background:
-    radial-gradient(circle at 50% 40%, rgb(255 255 255 / 84%), rgb(255 240 246 / 56%) 42%, transparent 68%),
+    radial-gradient(circle at 50% 40%, rgb(255 255 255 / 88%), rgb(255 230 239 / 62%) 42%, transparent 68%),
     var(--primary-soft);
-  box-shadow: 0 12px 24px rgb(159 18 57 / 14%), 0 0 0 1px rgb(255 255 255 / 60%) inset;
+  box-shadow: 0 12px 24px rgb(230 60 122 / 18%), 0 0 0 1px rgb(255 255 255 / 60%) inset;
 }
 
 .brand-wordmark {
@@ -187,7 +281,7 @@ a {
   width: min(56vw, 244px);
   min-width: 168px;
   aspect-ratio: 2083 / 755;
-  filter: drop-shadow(0 10px 18px rgb(159 18 57 / 18%));
+  filter: drop-shadow(0 10px 18px rgb(230 60 122 / 22%));
 }
 
 .module-icon {
@@ -265,14 +359,14 @@ a {
   width: 44px;
   height: 44px;
   border-radius: var(--radius-full);
-  filter: drop-shadow(0 6px 10px rgb(159 18 57 / 22%));
+  filter: drop-shadow(0 6px 10px rgb(230 60 122 / 26%));
   transition:
     transform var(--motion-base) var(--ease-standard),
     filter var(--motion-base) var(--ease-standard);
 }
 
 .header-icon-button:hover {
-  filter: drop-shadow(0 10px 16px rgb(159 18 57 / 28%));
+  filter: drop-shadow(0 10px 16px rgb(230 60 122 / 34%));
 }
 
 .header-icon-button:active {
@@ -432,8 +526,8 @@ a {
   .interactive-surface:hover,
   .card:hover {
     transform: translateY(-2px);
-    border-color: rgb(75 16 41 / 24%);
-    box-shadow: var(--shadow-soft), 0 14px 28px rgb(22 13 18 / 7%);
+    border-color: rgb(122 15 62 / 28%);
+    box-shadow: var(--shadow-soft), 0 14px 28px rgb(28 13 20 / 8%);
   }
 
   .interactive-surface:hover::after {
