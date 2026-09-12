@@ -1,131 +1,60 @@
-import { ArrowRight, Bell } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { ArrowDownLeft, ArrowRight, CheckCheck, ChevronRight, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { ModuleIcon } from "@/components/brand/module-icon";
 import { AppChrome } from "@/components/layout/app-chrome";
+import { ModuleIcon } from "@/components/brand/module-icon";
 import { EventRow } from "@/components/ui/event-row";
-import { ModuleCard } from "@/components/ui/module-card";
-import { marketBudget, marketPurchases, overviewMetrics, projectTasks, todayEvents } from "@/lib/data/mock";
-import { moduleThemes } from "@/lib/design-system";
+import { marketBudget, marketPurchases, projectTasks, todayEvents } from "@/lib/data/mock";
 import { getHomeAttentionSummary } from "@/lib/modules/home";
 import { calculateMarketBudgetSummary } from "@/lib/modules/market";
 
+const money = (value: number) => new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(value);
+
 export default function HomePage() {
-  const attentionSummary = getHomeAttentionSummary(todayEvents, projectTasks);
-  const marketSummary = calculateMarketBudgetSummary(marketBudget, marketPurchases);
+  const [balanceVisible, setBalanceVisible] = useState(true);
+  const [view, setView] = useState<"agenda" | "tasks">("agenda");
+  const attention = getHomeAttentionSummary(todayEvents, projectTasks);
+  const market = calculateMarketBudgetSummary(marketBudget, marketPurchases);
+  const lastPurchase = marketPurchases[marketPurchases.length - 1];
 
   return (
     <AppChrome>
-      <div className="page-stack">
-        <section className="interactive-surface rounded-[30px] border border-[rgb(122_15_62_/_28%)] bg-[image:var(--gradient-primary)] p-5 text-white shadow-[var(--shadow-active)]">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase opacity-80">Resumen de hoy</p>
-              <h2 className="mt-2 text-[30px] font-extrabold leading-9">
-                {attentionSummary.eventsToday} eventos, {attentionSummary.urgentTasks} urgente
-              </h2>
-            </div>
-            <div className="grid size-12 place-items-center rounded-full bg-white/18">
-              <Bell aria-hidden="true" size={23} strokeWidth={2.4} />
-            </div>
+      <div className="page-stack home-dashboard">
+        <section className="balance-section" aria-label="Presupuesto de mercado">
+          <div className="balance-topline"><span><span className="status-dot" /> Presupuesto de mercado</span><span>{marketBudget.month} · COP</span></div>
+          <div className="balance-label">Disponible este mes <button type="button" className="balance-visibility" onClick={() => setBalanceVisible(!balanceVisible)} aria-label={balanceVisible ? "Ocultar saldo" : "Mostrar saldo"} aria-pressed={!balanceVisible} title={balanceVisible ? "Ocultar saldo" : "Mostrar saldo"}>{balanceVisible ? <Eye size={18} /> : <EyeOff size={18} />}</button></div>
+          <div className="balance-amount">{balanceVisible ? <><span>$</span>{money(market.remaining)}</> : "••••••"}</div>
+          <Link href="/market" className="balance-detail">Ver presupuesto <ArrowRight size={16} aria-hidden="true" /></Link>
+          <div className="budget-meter" role="progressbar" aria-label="Presupuesto utilizado" aria-valuemin={0} aria-valuemax={100} aria-valuenow={market.spentPercent}><span style={{ width: market.spentPercent + "%" }} /></div>
+          <div className="balance-foot"><span>{market.spentPercent}% utilizado</span><span>{balanceVisible ? "$" + money(market.budget) + " de presupuesto" : "Saldo oculto"}</span></div>
+        </section>
+        <section className="quick-actions" aria-label="Acciones rápidas">
+          {[
+            { label: "Agendar", href: "/calendar", tone: "calendar" as const },
+            { label: "Gasto", href: "/finances?quick=misc", tone: "finances" as const },
+            { label: "Mercado", href: "/market", tone: "market" as const },
+            { label: "Tareas", href: "/tasks", tone: "tasks" as const },
+          ].map(({ label, href, tone }) => <Link href={href} key={label}><span className={label === "Gasto" ? "action-icon action-pink" : "action-icon"}><ModuleIcon tone={tone} size="md" /></span><span>{label}</span></Link>)}
+        </section>
+        <section className="home-overview" aria-label="Resumen del hogar">
+          <Link href="/calendar" className="overview-item"><ModuleIcon tone="calendar" size="md" /><span><strong>{attention.eventsToday} citas</strong><small>En tu agenda de hoy</small></span><ChevronRight size={17} aria-hidden="true" /></Link>
+          <Link href="/tasks" className="overview-item"><ModuleIcon tone="tasks" size="md" /><span><strong>{attention.urgentTasks} urgente</strong><small>Pendiente del hogar</small></span><ChevronRight size={17} aria-hidden="true" /></Link>
+        </section>
+        <section className="home-activity">
+          <div className="section-heading"><h2>Tu día, en orden</h2><Link href={view === "agenda" ? "/calendar" : "/tasks"}>Ver todo <ArrowRight size={15} aria-hidden="true" /></Link></div>
+          <div className="activity-tabs" aria-label="Actividad del hogar">
+            <button type="button" aria-pressed={view === "agenda"} onClick={() => setView("agenda")}>Agenda <span>{todayEvents.length}</span></button>
+            <button type="button" aria-pressed={view === "tasks"} onClick={() => setView("tasks")}>Tareas <span>{projectTasks.length}</span></button>
           </div>
-          <p className="mt-4 text-sm font-medium leading-6 text-white/82">
-            Lo importante esta arriba: agenda inmediata, pagos por vencer, mercado al {marketSummary.spentPercent}% y tareas de hoy.
-          </p>
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link
-              href="/calendar"
-              className="interactive-surface rounded-full border border-white/70 bg-white px-4 py-3 text-center text-sm font-extrabold shadow-[0_10px_22px_rgb(122_15_62_/_20%)]"
-              style={{ color: "var(--on-primary-container)" }}
-            >
-              Abrir agenda
-            </Link>
-            <Link href="/tasks" className="interactive-surface rounded-full border border-white/24 bg-white/10 px-4 py-3 text-center text-sm font-extrabold text-white">
-              Ver tareas
-            </Link>
+          <div className="activity-list">
+            {view === "agenda" ? todayEvents.map(event => <Link href="/calendar" key={event.id}><EventRow event={event} /></Link>) : projectTasks.map(task => <Link className="home-task" key={task.id} href="/tasks"><CheckCheck size={21} aria-hidden="true" /><span><strong>{task.title}</strong><small>{task.owner} · {task.due}</small></span><span className={task.status === "Urgente" ? "task-status urgent-status" : "task-status"}>{task.status}</span></Link>)}
           </div>
         </section>
-
-        <section className="grid grid-cols-2 gap-3">
-          {overviewMetrics.map((metric) => (
-            <ModuleCard
-              key={metric.label}
-              tone={metric.tone}
-              title={metric.label}
-              value={metric.value}
-              detail={metric.detail}
-            />
-          ))}
-        </section>
-
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Agenda inmediata</h2>
-            <Link href="/calendar" className="flex items-center gap-1 text-xs font-extrabold text-[var(--primary)]">
-              Ver todo <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="flex flex-col gap-3">
-            {todayEvents.map((event) => (
-              <EventRow key={event.id} event={event} />
-            ))}
-          </div>
-        </section>
-
-        <section className="card p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="section-title">Acciones rapidas</h2>
-            <span className="rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-xs font-bold text-[var(--urgent)]">
-              {attentionSummary.urgentTasks} urgente
-            </span>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { label: "Cita", tone: "calendar" as const },
-              { label: "Gasto", tone: "finances" as const },
-              { label: "Varios", tone: "finances" as const, href: "/finances?quick=misc" },
-              { label: "Mercado", tone: "market" as const },
-            ].map((action) => {
-              const theme = moduleThemes[action.tone];
-
-              return (
-                <Link
-                  key={action.label}
-                  href={action.href ?? (action.tone === "calendar" ? "/calendar" : action.tone === "finances" ? "/finances" : "/market")}
-                  className="flex h-[82px] flex-col items-center justify-center gap-2 rounded-[20px] text-[11px] font-extrabold"
-                  style={{ background: theme.surface, color: theme.text }}
-                >
-                  <ModuleIcon tone={action.tone} size="sm" />
-                  {action.label}
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Tareas del hogar</h2>
-            <Link href="/tasks" className="text-xs font-extrabold text-[var(--urgent)]">
-              Gestionar
-            </Link>
-          </div>
-          <div className="flex flex-col gap-3">
-            {projectTasks.slice(0, 2).map((task) => (
-              <article key={task.id} className="interactive-surface rounded-[24px] border border-[var(--surface-stroke)] bg-[var(--panel)] p-4 shadow-[var(--shadow-soft)]">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-sm font-extrabold">{task.title}</h3>
-                    <p className="mt-1 text-xs font-semibold text-[var(--text-soft)]">
-                      {task.owner} · {task.due}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-[11px] font-extrabold text-[var(--urgent)]">
-                    {task.status}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
+        <section className="home-recent">
+          <div className="section-heading"><h2>Última compra</h2><Link href="/market" aria-label="Ver compras de mercado" title="Ver compras de mercado"><ArrowRight size={20} /></Link></div>
+          <Link href="/market" className="purchase-row"><span className="purchase-icon"><ArrowDownLeft size={23} aria-hidden="true" /></span><span><strong>{lastPurchase.detail}</strong><small>{lastPurchase.category} · {marketBudget.month}</small></span><b>${money(lastPurchase.amount)}</b></Link>
         </section>
       </div>
     </AppChrome>
