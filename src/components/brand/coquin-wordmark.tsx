@@ -11,8 +11,9 @@ export function CoquinWordmark({ priority = false }: CoquinWordmarkProps) {
         src="/coquin-wordmark.png"
         alt=""
         fill
+        unoptimized
         priority={priority}
-        sizes="(max-width: 430px) 56vw, 244px"
+        sizes="200px"
         className="object-contain object-left"
       />
     </div>

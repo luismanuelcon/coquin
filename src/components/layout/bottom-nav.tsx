@@ -1,45 +1,18 @@
 "use client";
 
-import clsx from "clsx";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ModuleIcon } from "@/components/brand/module-icon";
+import { usePathname } from "next/navigation";
 import { moduleThemes, visibleModules } from "@/lib/design-system";
 
 export function BottomNav() {
   const pathname = usePathname();
-
   return (
-    <nav
-      className="bottom-nav-safe fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[520px] px-3 pb-4 min-[390px]:px-4 md:absolute md:left-1/2 md:-translate-x-1/2"
-      aria-label="Navegacion principal"
-    >
-      <div className="grid grid-cols-5 gap-1 rounded-[28px] border border-[var(--surface-stroke)] bg-[var(--nav-surface)] p-2 shadow-[0_18px_38px_rgb(0_0_0_/_14%)] backdrop-blur">
-        {visibleModules.map((key) => {
+    <nav className="bottom-navigation" aria-label="Navegación principal">
+      <div className="nav-items">
+        {visibleModules.map(key => {
           const item = moduleThemes[key];
-          const active = pathname === item.href;
-
-          return (
-            <Link
-              key={item.key}
-              href={item.href}
-              className={clsx(
-                "interactive-surface flex h-14 flex-col items-center justify-center gap-1 rounded-[22px] text-[10px] font-bold transition",
-                active ? "text-[var(--active-text)] shadow-[0_10px_20px_rgb(22_13_18_/_8%)]" : "text-[var(--text-soft)]",
-              )}
-              style={
-                {
-                  background: active ? item.surface : "transparent",
-                  "--active-text": item.text,
-                  "--active-glow": item.color,
-                } as React.CSSProperties
-              }
-              aria-current={active ? "page" : undefined}
-            >
-              <ModuleIcon tone={item.key} size="nav" />
-              <span>{item.label}</span>
-            </Link>
-          );
+          return <Link key={key} href={item.href} aria-current={pathname === item.href ? "page" : undefined}><span><ModuleIcon tone={key} size="nav" /></span>{key === "calendar" ? "Agenda" : item.label}</Link>;
         })}
       </div>
     </nav>

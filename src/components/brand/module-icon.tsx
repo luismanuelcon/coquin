@@ -39,7 +39,8 @@ export function ModuleIcon({ tone, size = "md", className }: ModuleIconProps) {
           src={asset}
           alt=""
           fill
-          sizes="(max-width: 430px) 54px, 54px"
+          unoptimized
+          sizes="48px"
           className="module-icon-image"
         />
       ) : (
