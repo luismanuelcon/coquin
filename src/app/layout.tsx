@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { DataProvider } from "@/components/data/data-provider";
 
 export const metadata: Metadata = {
   applicationName: "COQUIN",
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f5f6f5",
+  themeColor: "#a13554",
 };
 
 export default function RootLayout({
@@ -27,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" data-theme="light">
-      <body>{children}</body>
+    <html lang="es" data-theme="dark">
+      <body><DataProvider>{children}</DataProvider></body>
     </html>
   );
 }

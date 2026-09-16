@@ -20,7 +20,10 @@ try {
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       if (response.status === 404 && body.code === "PGRST205") {
-        console.log("Data API: accesible; households no existe o no esta expuesta en el esquema.");
+        throw new Error("Data API accesible, pero falta aplicar la migracion de households.");
+      }
+      if (path.startsWith("/rest/") && response.status === 401 && body.code === "42501") {
+        console.log("Data API: accesible; acceso anonimo a households bloqueado correctamente.");
         continue;
       }
       throw new Error(`${path}: HTTP ${response.status} (${body.code ?? "sin codigo"})`);

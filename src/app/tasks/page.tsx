@@ -1,17 +1,30 @@
 "use client";
 
-import { Check, CheckCircle2, Hammer, Plus, UserRound, X } from "lucide-react";
+import { Check, CheckCircle2, Hammer, Pencil, Plus, UserRound, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
-import { projectTasks } from "@/lib/data/mock";
+import { DatePicker } from "@/components/ui/date-picker";
+import { useModule } from "@/components/data/data-provider";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import { calculateTaskProgress } from "@/lib/modules/tasks";
 import type { ProjectTask } from "@/lib/types";
 
 const statuses = ["Pendiente", "En progreso", "Urgente", "Completada"];
+
+const dueFormatter = new Intl.DateTimeFormat("es-CO", {
+  weekday: "short",
+  day: "2-digit",
+  month: "short",
+});
+
+function formatDueDate(iso: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  const [y, m, d] = iso.split("-").map(Number);
+  return dueFormatter.format(new Date(y, m - 1, d, 12)).replace(".", "");
+}
 
 const statusStyles: Record<string, { color: string; soft: string }> = {
   Pendiente: { color: "var(--warning)", soft: "var(--warning-soft)" },
@@ -25,7 +38,8 @@ function getStatusStyle(status: string) {
 }
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<ProjectTask[]>(projectTasks);
+  const [tasks, setTasks] = useModule("tasks");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [owner, setOwner] = useState("");
@@ -42,7 +56,7 @@ export default function TasksPage() {
 
   useScrollIntoViewOnOpen(formOpen, "task-form");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSubmit) {
@@ -50,14 +64,15 @@ export default function TasksPage() {
     }
 
     const task: ProjectTask = {
-      id: `task-${Date.now()}`,
+      id: editingId ?? crypto.randomUUID(),
       title: title.trim(),
       owner: owner.trim(),
       due: due.trim(),
       status,
     };
 
-    setTasks((current) => [task, ...current]);
+    if (!await setTasks(current => editingId ? current.map(item => item.id === editingId ? task : item) : [task, ...current])) return;
+    setEditingId(null);
     setLastAdded(task.title);
     setTitle("");
     setOwner("");
@@ -66,8 +81,8 @@ export default function TasksPage() {
     setFormOpen(false);
   }
 
-  function toggleCompleted(taskId: string) {
-    setTasks((current) =>
+  async function toggleCompleted(taskId: string) {
+    await setTasks((current) =>
       current.map((task) =>
         task.id === taskId
           ? {
@@ -79,12 +94,12 @@ export default function TasksPage() {
     );
   }
 
-  function deleteTask(task: ProjectTask) {
+  async function deleteTask(task: ProjectTask) {
     if (!window.confirm(`Eliminar ${task.title}?`)) {
       return;
     }
 
-    setTasks((current) => current.filter((currentTask) => currentTask.id !== task.id));
+    if (!await setTasks((current) => current.filter((currentTask) => currentTask.id !== task.id))) return;
     setLastAdded("Tarea eliminada");
   }
 
@@ -106,7 +121,7 @@ export default function TasksPage() {
                 <Hammer aria-hidden="true" size={20} strokeWidth={2.4} />
               </div>
               <div className="min-w-0">
-                <h3 className="truncate text-sm font-extrabold">Mantenimiento de agosto</h3>
+                <h3 className="truncate text-sm font-extrabold">Tareas del hogar</h3>
                 <p className="text-xs font-bold text-[var(--text-soft)]">
                   {completedCount} de {tasks.length} completadas
                 </p>
@@ -131,7 +146,10 @@ export default function TasksPage() {
             <h2 className="section-title">Pendientes</h2>
             <button
               type="button"
-              onClick={() => setFormOpen((current) => !current)}
+              onClick={() => {
+                setEditingId(null); setTitle(""); setOwner(""); setDue(""); setStatus("Pendiente");
+                setFormOpen((current) => !current);
+              }}
               className="grid size-11 place-items-center rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] text-[var(--urgent)]"
               aria-label={formOpen ? "Cerrar tarea" : "Crear tarea"}
               aria-expanded={formOpen}
@@ -157,12 +175,14 @@ export default function TasksPage() {
                   placeholder="Responsable"
                   className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--urgent)]"
                 />
-                <input
-                  type="text"
+                <DatePicker
                   value={due}
-                  onChange={(event) => setDue(event.target.value)}
+                  onChange={setDue}
+                  tone="tasks"
+                  ariaLabel="Fecha de vencimiento"
                   placeholder="Fecha"
-                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--urgent)]"
+                  align="end"
+                  triggerClassName="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--urgent)] text-left"
                 />
               </div>
               <select
@@ -226,7 +246,7 @@ export default function TasksPage() {
                       <UserRound aria-hidden="true" size={14} />
                       <span className="min-w-0 truncate">{task.owner}</span>
                       <span>·</span>
-                      <span className="shrink-0">{task.due}</span>
+                      <span className="shrink-0">{formatDueDate(task.due)}</span>
                     </div>
                   </div>
                   <span
@@ -239,6 +259,9 @@ export default function TasksPage() {
                   >
                     {task.status}
                   </span>
+                  <button type="button" className="row-tool" aria-label={`Editar ${task.title}`} title="Editar tarea" onClick={() => {
+                    setEditingId(task.id); setTitle(task.title); setOwner(task.owner); setDue(task.due); setStatus(task.status); setFormOpen(true);
+                  }}><Pencil size={16} /></button>
                 </article>
                 </SwipeDeleteRow>
               );

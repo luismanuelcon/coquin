@@ -17,6 +17,7 @@ export type HouseholdEvent = {
   title: string;
   meta: string;
   time: string;
+  date: string;
   tone: ModuleKey;
 };
 

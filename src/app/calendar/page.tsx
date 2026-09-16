@@ -5,28 +5,30 @@ import { FormEvent, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { EventRow } from "@/components/ui/event-row";
 import { PageHeading } from "@/components/ui/page-heading";
-import { calendarEvents } from "@/lib/data/mock";
-import { getColombiaWorkweek } from "@/lib/date";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { useModule } from "@/components/data/data-provider";
+import { getColombiaTodayIso, getColombiaWorkweek } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import type { HouseholdEvent, ModuleKey } from "@/lib/types";
 
-const tones: ModuleKey[] = ["calendar", "finances", "market", "tasks"];
-
 export default function CalendarPage() {
   const days = useMemo(() => getColombiaWorkweek(), []);
-  const [events, setEvents] = useState<HouseholdEvent[]>(calendarEvents);
+  const [events, setEvents] = useModule("calendar");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [meta, setMeta] = useState("");
   const [time, setTime] = useState("");
+  const [date, setDate] = useState(getColombiaTodayIso());
   const [tone, setTone] = useState<ModuleKey>("calendar");
   const [lastAdded, setLastAdded] = useState("");
 
-  const canSubmit = Boolean(title.trim() && time.trim());
+  const canSubmit = Boolean(title.trim() && time.trim() && date.trim());
 
   useScrollIntoViewOnOpen(formOpen, "calendar-event-form");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSubmit) {
@@ -34,28 +36,31 @@ export default function CalendarPage() {
     }
 
     const nextEvent: HouseholdEvent = {
-      id: `event-${Date.now()}`,
+      id: editingId ?? crypto.randomUUID(),
       title: title.trim(),
       meta: meta.trim() || "Sin detalle",
       time: time.trim(),
+      date,
       tone,
     };
 
-    setEvents((current) => [nextEvent, ...current]);
+    if (!await setEvents(current => editingId ? current.map(item => item.id === editingId ? nextEvent : item) : [nextEvent, ...current])) return;
+    setEditingId(null);
     setLastAdded(nextEvent.title);
     setTitle("");
     setMeta("");
     setTime("");
+    setDate(getColombiaTodayIso());
     setTone("calendar");
     setFormOpen(false);
   }
 
-  function deleteEvent(event: HouseholdEvent) {
+  async function deleteEvent(event: HouseholdEvent) {
     if (!window.confirm(`Eliminar ${event.title}?`)) {
       return;
     }
 
-    setEvents((current) => current.filter((currentEvent) => currentEvent.id !== event.id));
+    if (!await setEvents((current) => current.filter((currentEvent) => currentEvent.id !== event.id))) return;
     setLastAdded("Evento eliminado");
   }
 
@@ -107,7 +112,10 @@ export default function CalendarPage() {
             <h2 className="section-title">Proximos eventos</h2>
             <button
               type="button"
-              onClick={() => setFormOpen((current) => !current)}
+              onClick={() => {
+                setEditingId(null); setTitle(""); setMeta(""); setTime(""); setDate(getColombiaTodayIso()); setTone("calendar");
+                setFormOpen((current) => !current);
+              }}
               className="grid size-11 place-items-center rounded-full border border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary)]"
               aria-label={formOpen ? "Cerrar evento" : "Crear evento"}
               aria-expanded={formOpen}
@@ -126,33 +134,32 @@ export default function CalendarPage() {
                   placeholder="Cita, entrega, llamada..."
                   className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--primary)]"
                 />
-                <input
-                  type="text"
+                <TimePicker
                   value={time}
-                  onChange={(event) => setTime(event.target.value)}
-                  placeholder="09:30"
-                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--primary)]"
+                  onChange={setTime}
+                  tone="calendar"
+                  ariaLabel="Hora del evento"
+                  align="end"
+                  triggerClassName="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--primary)] text-left"
                 />
               </div>
-              <div className="mt-2 grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_128px]">
+              <div className="mt-2">
+                <DatePicker
+                  value={date}
+                  onChange={setDate}
+                  tone="calendar"
+                  ariaLabel="Fecha del evento"
+                  triggerClassName="h-11 w-full min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--primary)] text-left"
+                />
+              </div>
+              <div className="mt-2">
                 <input
                   type="text"
                   value={meta}
                   onChange={(event) => setMeta(event.target.value)}
                   placeholder="Lugar o detalle"
-                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--primary)]"
+                  className="h-11 w-full min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--primary)]"
                 />
-                <select
-                  value={tone}
-                  onChange={(event) => setTone(event.target.value as ModuleKey)}
-                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--primary)]"
-                >
-                  {tones.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
               </div>
               <button
                 type="submit"
@@ -171,7 +178,9 @@ export default function CalendarPage() {
               </p>
             ) : null}
             {events.map((event) => (
-              <EventRow key={event.id} event={event} onDelete={deleteEvent} />
+              <EventRow key={event.id} event={event} onDelete={deleteEvent} onEdit={item => {
+                setEditingId(item.id); setTitle(item.title); setMeta(item.meta); setTime(item.time); setDate(item.date); setTone(item.tone); setFormOpen(true);
+              }} />
             ))}
           </div>
         </section>
