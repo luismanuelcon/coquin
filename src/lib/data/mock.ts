@@ -21,6 +21,7 @@ export const todayEvents: HouseholdEvent[] = [
     title: "Revision odontologica de Sofia",
     meta: "Clinica Norte",
     time: "09:30",
+    date: "2026-09-16",
     tone: "calendar",
   },
   {
@@ -28,6 +29,7 @@ export const todayEvents: HouseholdEvent[] = [
     title: "Pago administracion",
     meta: "Vence hoy",
     time: "12:00",
+    date: "2026-09-16",
     tone: "finances",
   },
   {
@@ -35,6 +37,7 @@ export const todayEvents: HouseholdEvent[] = [
     title: "Actualizar presupuesto de mercado",
     meta: "$760.000 usados de $1.200.000",
     time: "18:00",
+    date: "2026-09-16",
     tone: "market",
   },
 ];
@@ -45,14 +48,16 @@ export const calendarEvents: HouseholdEvent[] = [
     id: "event-4",
     title: "Mantenimiento aire acondicionado",
     meta: "Tecnico confirmado",
-    time: "Manana 10:00",
+    time: "10:00",
+    date: "2026-09-17",
     tone: "tasks",
   },
   {
     id: "event-5",
     title: "Entrega proyecto escolar",
     meta: "Materiales listos",
-    time: "Vie 07:00",
+    time: "07:00",
+    date: "2026-09-18",
     tone: "calendar",
   },
 ];
@@ -176,20 +181,20 @@ export const projectTasks: ProjectTask[] = [
     title: "Cambiar filtro de agua",
     owner: "Luis",
     status: "Urgente",
-    due: "Hoy",
+    due: "2026-09-16",
   },
   {
     id: "task-2",
     title: "Organizar documentos de impuestos",
     owner: "Casa",
     status: "En progreso",
-    due: "Esta semana",
+    due: "2026-09-20",
   },
   {
     id: "task-3",
     title: "Cotizar pintura habitacion",
     owner: "Ana",
     status: "Pendiente",
-    due: "Sabado",
+    due: "2026-09-19",
   },
 ];

@@ -7,12 +7,15 @@ import {
   Settings,
   Tags,
   X,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { marketBudget, marketPurchases } from "@/lib/data/mock";
+import { DatePicker } from "@/components/ui/date-picker";
+import { useModule } from "@/components/data/data-provider";
 import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
@@ -34,7 +37,7 @@ const categories: MarketCategory[] = [
 
 const moneyFormatter = new Intl.NumberFormat("es-CO", {
   style: "currency",
-  currency: marketBudget.currency,
+  currency: "COP",
   maximumFractionDigits: 0,
 });
 
@@ -46,9 +49,12 @@ const dateFormatter = {
 };
 
 export default function MarketPage() {
-  const [purchases, setPurchases] = useState<MarketPurchase[]>(marketPurchases);
-  const [budgetAmount, setBudgetAmount] = useState(marketBudget.budget);
-  const [budgetDraft, setBudgetDraft] = useState(String(marketBudget.budget));
+  const [market, setMarket] = useModule("market");
+  const purchases = market.purchases;
+  const budgetAmount = market.budget;
+  const [budgetDraft, setBudgetDraft] = useState(String(budgetAmount));
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const marketBudget = { month: "Presupuesto del hogar", currency: "COP" };
   const [purchaseFormOpen, setPurchaseFormOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [date, setDate] = useState(getColombiaTodayIso());
@@ -73,7 +79,7 @@ export default function MarketPage() {
   useScrollIntoViewOnOpen(settingsOpen, "market-budget-form");
   useScrollIntoViewOnOpen(purchaseFormOpen, "market-purchase-form");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSubmit) {
@@ -87,21 +93,25 @@ export default function MarketPage() {
       amount: numericAmount,
     });
 
-    setPurchases((current) => [purchase, ...current]);
+    purchase.id = editingId ?? crypto.randomUUID();
+    if (!await setMarket(current => ({ ...current, purchases: editingId
+      ? current.purchases.map(item => item.id === editingId ? purchase : item)
+      : [purchase, ...current.purchases] }))) return;
+    setEditingId(null);
     setLastAdded(`${purchase.detail} registrado por ${moneyFormatter.format(purchase.amount)}`);
     setDetail("");
     setAmount("");
     setPurchaseFormOpen(false);
   }
 
-  function handleBudgetSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleBudgetSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSaveBudget) {
       return;
     }
 
-    setBudgetAmount(Number(budgetDraft));
+    if (!await setMarket(current => ({ ...current, budget: Number(budgetDraft) }))) return;
     setSettingsOpen(false);
   }
 
@@ -124,6 +134,7 @@ export default function MarketPage() {
               <button
                 type="button"
                 onClick={() => {
+                  setEditingId(null); setDate(getColombiaTodayIso()); setCategory("Aseo"); setDetail(""); setAmount("");
                   setPurchaseFormOpen((current) => !current);
                   setSettingsOpen(false);
                 }}
@@ -211,12 +222,12 @@ export default function MarketPage() {
           <section id="market-purchase-form" className="card p-3">
             <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[128px_minmax(0,1fr)]">
-                <input
-                  type="date"
+                <DatePicker
                   value={date}
-                  onChange={(event) => setDate(event.target.value)}
-                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--market)]"
-                  aria-label="Fecha"
+                  onChange={setDate}
+                  tone="market"
+                  ariaLabel="Fecha"
+                  triggerClassName="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--market)] text-left"
                 />
                 <input
                   type="text"
@@ -257,7 +268,7 @@ export default function MarketPage() {
                 disabled={!canSubmit}
                 className="h-11 rounded-full bg-[image:var(--gradient-market)] text-sm font-extrabold text-white shadow-[0_12px_22px_rgb(180_30_92_/_28%)] disabled:cursor-not-allowed disabled:opacity-45"
               >
-                Registrar compra
+                {editingId ? "Guardar cambios" : "Registrar compra"}
               </button>
             </form>
           </section>
@@ -324,6 +335,15 @@ export default function MarketPage() {
                 <span className="min-w-0 truncate text-right text-xs font-extrabold text-[var(--market)]">
                   {moneyFormatter.format(purchase.amount)}
                 </span>
+                <div className="col-span-3 flex justify-end gap-2">
+                  <button className="row-tool" type="button" aria-label={`Editar ${purchase.detail}`} title="Editar compra" onClick={() => {
+                    setEditingId(purchase.id); setDate(purchase.date); setDetail(purchase.detail); setCategory(purchase.category); setAmount(String(purchase.amount)); setPurchaseFormOpen(true);
+                  }}><Pencil size={16} /></button>
+                  <button className="row-tool" type="button" aria-label={`Eliminar ${purchase.detail}`} title="Eliminar compra" onClick={async () => {
+                    if (!window.confirm(`¿Eliminar ${purchase.detail}?`)) return;
+                    if (await setMarket(current => ({ ...current, purchases: current.purchases.filter(item => item.id !== purchase.id) }))) setLastAdded("Compra eliminada");
+                  }}><Trash2 size={16} /></button>
+                </div>
               </div>
             ))}
           </div>

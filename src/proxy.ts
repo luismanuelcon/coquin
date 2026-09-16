@@ -19,11 +19,17 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // Refresh and validate a session when present. This does not authorize access to household data.
-  await supabase.auth.getClaims();
+  const { data, error } = await supabase.auth.getClaims();
+  if ((error || !data?.claims) && request.nextUrl.pathname !== "/login") {
+    const redirect = NextResponse.redirect(new URL("/login", request.url));
+    response.cookies.getAll().forEach(cookie => redirect.cookies.set(cookie));
+    redirect.headers.set("Cache-Control", "private, no-store");
+    return redirect;
+  }
+  response.headers.set("Cache-Control", "private, no-store");
   return response;
 }
 
 export const config = {
-  matcher: ["/", "/calendar/:path*", "/finances/:path*", "/market/:path*", "/tasks/:path*"],
+  matcher: ["/", "/login", "/calendar/:path*", "/finances/:path*", "/market/:path*", "/tasks/:path*"],
 };

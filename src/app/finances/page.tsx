@@ -15,7 +15,10 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
-import { financeBudgetState } from "@/lib/data/mock";
+import { DatePicker } from "@/components/ui/date-picker";
+import { useModule } from "@/components/data/data-provider";
+import { emptyData } from "@/lib/data/empty";
+const initialFinanceState = emptyData().finances;
 import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
@@ -32,11 +35,11 @@ import type {
   FinancePaymentStatus,
 } from "@/lib/types";
 
-const storageKey = "coquin.finances.budget.v1";
+
 
 const moneyFormatter = new Intl.NumberFormat("es-CO", {
   style: "currency",
-  currency: financeBudgetState.settings.currency,
+  currency: "COP",
   maximumFractionDigits: 0,
 });
 
@@ -72,10 +75,10 @@ function emptyMiscForm(periodStart: string) {
 }
 
 export default function FinancesPage() {
-  const [budgetState, setBudgetState] = useState<FinanceBudgetState>(financeBudgetState);
-  const [loaded, setLoaded] = useState(false);
+  const [storedBudget, setBudgetState] = useModule("finances");
+  const budgetState = useMemo(() => ensureFinancePeriods(storedBudget, getColombiaTodayIso()).state, [storedBudget]);
   const [budgetForm, setBudgetForm] = useState(emptyBudgetForm);
-  const [miscForm, setMiscForm] = useState(emptyMiscForm(financeBudgetState.periods[1].startDate));
+  const [miscForm, setMiscForm] = useState(emptyMiscForm(initialFinanceState.periods[0].startDate));
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
   const [editingMiscId, setEditingMiscId] = useState<string | null>(null);
   const [budgetFormOpen, setBudgetFormOpen] = useState(false);
@@ -86,33 +89,6 @@ export default function FinancesPage() {
   const [feedback, setFeedback] = useState("");
   const [formError, setFormError] = useState("");
   const todayIso = useMemo(() => getColombiaTodayIso(), []);
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem(storageKey);
-    const shouldOpenMiscForm = new URLSearchParams(window.location.search).get("quick") === "misc";
-    const initialState = saved ? (JSON.parse(saved) as FinanceBudgetState) : financeBudgetState;
-    const ensured = ensureFinancePeriods(initialState, todayIso);
-    const active = ensured.state.periods.find((period) => period.id === ensured.state.activePeriodId);
-
-    setBudgetState(ensured.state);
-    if (active) {
-      setMiscForm(emptyMiscForm(active.startDate));
-    }
-    if (ensured.generatedCount > 0) {
-      showFeedback("Periodo actualizado con gastos fijos pendientes");
-    }
-    if (shouldOpenMiscForm) {
-      setMiscFormOpen(true);
-      window.history.replaceState(null, "", "/finances");
-    }
-    setLoaded(true);
-  }, [todayIso]);
-
-  useEffect(() => {
-    if (loaded) {
-      window.localStorage.setItem(storageKey, JSON.stringify(budgetState));
-    }
-  }, [budgetState, loaded]);
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("quick") === "misc") {
@@ -139,8 +115,8 @@ export default function FinancesPage() {
     });
   }, [activePeriod.id, activePeriod.startDate, budgetState.settings.cutoffDay, summary.base]);
 
-  function updateActivePeriod(nextPeriod: typeof activePeriod) {
-    setBudgetState((current) => upsertFinancePeriod(current, nextPeriod));
+  async function updateActivePeriod(nextPeriod: typeof activePeriod) {
+    return setBudgetState(upsertFinancePeriod(budgetState, nextPeriod));
   }
 
   function showFeedback(message: string) {
@@ -148,7 +124,7 @@ export default function FinancesPage() {
     window.setTimeout(() => setFeedback(""), 2600);
   }
 
-  function handleBudgetSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleBudgetSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const amount = Number(budgetForm.amount);
 
@@ -166,12 +142,12 @@ export default function FinancesPage() {
       note: budgetForm.note.trim() || undefined,
     };
 
-    updateActivePeriod({
+    if (!await updateActivePeriod({
       ...activePeriod,
       items: editingBudgetId
         ? activePeriod.items.map((current) => (current.id === editingBudgetId ? item : current))
         : [item, ...activePeriod.items],
-    });
+    })) return;
     setBudgetForm(emptyBudgetForm());
     setEditingBudgetId(null);
     setBudgetFormOpen(false);
@@ -179,7 +155,7 @@ export default function FinancesPage() {
     showFeedback(editingBudgetId ? "Concepto actualizado" : "Concepto creado");
   }
 
-  function handleMiscSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleMiscSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const amount = Number(miscForm.amount);
 
@@ -197,12 +173,12 @@ export default function FinancesPage() {
       note: miscForm.note.trim() || undefined,
     };
 
-    updateActivePeriod({
+    if (!await updateActivePeriod({
       ...activePeriod,
       miscExpenses: editingMiscId
         ? activePeriod.miscExpenses.map((current) => (current.id === editingMiscId ? expense : current))
         : [expense, ...activePeriod.miscExpenses],
-    });
+    })) return;
     setMiscForm(emptyMiscForm(activePeriod.startDate));
     setEditingMiscId(null);
     setMiscFormOpen(false);
@@ -211,7 +187,7 @@ export default function FinancesPage() {
     setMiscDetailOpen(true);
   }
 
-  function handleSummarySettingsSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSummarySettingsSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const base = Number(summarySettingsForm.base);
     const cutoffDay = Math.min(Math.max(Number(summarySettingsForm.cutoffDay) || 1, 1), 31);
@@ -235,7 +211,7 @@ export default function FinancesPage() {
       incomes: [baseIncome],
     };
 
-    setBudgetState((current) => ({
+    if (!await setBudgetState((current) => ({
       ...current,
       settings: {
         ...current.settings,
@@ -246,18 +222,18 @@ export default function FinancesPage() {
         .filter((period) => period.id !== activePeriod.id && period.id !== updatedPeriod.id)
         .concat(updatedPeriod)
         .sort((a, b) => a.startDate.localeCompare(b.startDate)),
-    }));
+    }))) return;
     setMiscForm(emptyMiscForm(updatedPeriod.startDate));
     setSettingsOpen(false);
     setFormError("");
     showFeedback("Resumen actualizado");
   }
 
-  function deleteBudgetItem(item: FinanceBudgetItem) {
+  async function deleteBudgetItem(item: FinanceBudgetItem) {
     if (!window.confirm(`Eliminar ${item.concept}?`)) {
       return;
     }
-    updateActivePeriod({ ...activePeriod, items: activePeriod.items.filter((current) => current.id !== item.id) });
+    if (!await updateActivePeriod({ ...activePeriod, items: activePeriod.items.filter((current) => current.id !== item.id) })) return;
     if (editingBudgetId === item.id) {
       setEditingBudgetId(null);
       setBudgetForm(emptyBudgetForm());
@@ -266,14 +242,14 @@ export default function FinancesPage() {
     showFeedback("Concepto eliminado");
   }
 
-  function deleteMiscExpense(expense: FinanceMiscExpense) {
+  async function deleteMiscExpense(expense: FinanceMiscExpense) {
     if (!window.confirm(`Eliminar gasto ${expense.concept}?`)) {
       return;
     }
-    updateActivePeriod({
+    if (!await updateActivePeriod({
       ...activePeriod,
       miscExpenses: activePeriod.miscExpenses.filter((current) => current.id !== expense.id),
-    });
+    })) return;
     if (editingMiscId === expense.id) {
       setEditingMiscId(null);
       setMiscForm(emptyMiscForm(activePeriod.startDate));
@@ -285,15 +261,15 @@ export default function FinancesPage() {
   return (
     <AppChrome>
       <div className="page-stack">
-        <PageHeading tone="finances" title="Administracion" />
+        <PageHeading tone="finances" title="Mis finanzas" />
 
-        <section className="interactive-surface rounded-[30px] border border-[rgb(15_82_54_/_30%)] bg-[image:var(--gradient-finances)] p-4 text-white shadow-[0_18px_38px_rgb(15_82_54_/_28%)] min-[390px]:p-5">
+        <section className="finance-summary text-white">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase text-white/75">
                 {formatDate(activePeriod.startDate)} - {formatDate(activePeriod.endDate)}
               </p>
-              <p className="mt-2 whitespace-nowrap text-[clamp(28px,7.6vw,32px)] font-extrabold leading-10">
+              <p className="mt-2 break-words text-[28px] font-medium leading-10">
                 {moneyFormatter.format(summary.available)}
               </p>
               <p className="mt-1 text-xs font-bold text-white/75">
@@ -374,11 +350,12 @@ export default function FinancesPage() {
               <div className="mt-2 grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_92px]">
                 <label className="flex min-w-0 flex-col gap-1 text-[10px] font-extrabold uppercase text-white/75">
                   Inicio periodo
-                  <input
-                    type="date"
+                  <DatePicker
                     value={summarySettingsForm.startDate}
-                    onChange={(event) => setSummarySettingsForm((current) => ({ ...current, startDate: event.target.value }))}
-                    className="h-11 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70"
+                    onChange={(iso) => setSummarySettingsForm((current) => ({ ...current, startDate: iso }))}
+                    tone="finances"
+                    ariaLabel="Inicio del periodo"
+                    triggerClassName="h-11 min-w-0 rounded-[14px] border border-white/22 bg-white/12 px-3 text-xs font-extrabold text-white outline-none focus:border-white/70 text-left"
                   />
                 </label>
                 <button type="submit" className="h-11 rounded-full bg-white text-xs font-extrabold text-[var(--on-primary-container)] min-[380px]:mt-5">
@@ -399,12 +376,12 @@ export default function FinancesPage() {
             </div>
             <form className="flex flex-col gap-2" onSubmit={handleMiscSubmit}>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[116px_minmax(0,1fr)]">
-                <input
-                  type="date"
+                <DatePicker
                   value={miscForm.date}
-                  onChange={(event) => setMiscForm((current) => ({ ...current, date: event.target.value }))}
-                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-2 text-[11px] font-bold text-[var(--text)] outline-none focus:border-[var(--finance)]"
-                  aria-label="Fecha del gasto"
+                  onChange={(iso) => setMiscForm((current) => ({ ...current, date: iso }))}
+                  tone="finances"
+                  ariaLabel="Fecha del gasto"
+                  triggerClassName="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-2 text-[11px] font-bold text-[var(--text)] outline-none focus:border-[var(--finance)] text-left"
                 />
                 <input
                   value={miscForm.concept}
@@ -547,9 +524,9 @@ export default function FinancesPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       const status = item.status === "paid" ? "pending" : "paid";
-                      updateActivePeriod({
+                      await updateActivePeriod({
                         ...activePeriod,
                         items: activePeriod.items.map((current) => (current.id === item.id ? { ...current, status } : current)),
                       });
