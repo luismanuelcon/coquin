@@ -34,7 +34,13 @@ const toneAccent: Record<ModuleKey, { color: string; soft: string; onAccent: str
   tasks: { color: "var(--primary)", soft: "var(--primary-soft)", onAccent: "var(--primary-ink)" },
 };
 
-const ITEM_HEIGHT = 40;
+const ITEM_HEIGHT = 44;
+
+function triggerHaptic() {
+  if (typeof window === "undefined") return;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  navigator.vibrate?.(4);
+}
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -105,8 +111,10 @@ function WheelColumn<T>({ items, index, onIndexChange, render, ariaLabel }: Colu
         if (!el) return;
         const nextIndex = Math.round(el.scrollTop / ITEM_HEIGHT);
         const clamped = Math.max(0, Math.min(items.length - 1, nextIndex));
-        if (clamped !== index) onIndexChange(clamped);
-        else if (Math.abs(el.scrollTop - clamped * ITEM_HEIGHT) > 1) {
+        if (clamped !== index) {
+          triggerHaptic();
+          onIndexChange(clamped);
+        } else if (Math.abs(el.scrollTop - clamped * ITEM_HEIGHT) > 1) {
           el.scrollTo({ top: clamped * ITEM_HEIGHT, behavior: "smooth" });
         }
       }, 90);
@@ -208,12 +216,28 @@ export function TimePicker({
   const [minuteIndex, setMinuteIndex] = useState(initial.minuteIndex);
   const [meridiemIndex, setMeridiemIndex] = useState(initial.meridiemIndex);
 
+  const initialRef = useRef(initial);
+  initialRef.current = initial;
+  const justOpenedRef = useRef(false);
+
   useEffect(() => {
     if (!open) return;
-    setHourIndex(initial.hourIndex);
-    setMinuteIndex(initial.minuteIndex);
-    setMeridiemIndex(initial.meridiemIndex);
-  }, [open, initial.hourIndex, initial.minuteIndex, initial.meridiemIndex]);
+    justOpenedRef.current = true;
+    setHourIndex(initialRef.current.hourIndex);
+    setMinuteIndex(initialRef.current.minuteIndex);
+    setMeridiemIndex(initialRef.current.meridiemIndex);
+  }, [open]);
+
+  // Commit selection live so it survives closing without pressing "Aceptar".
+  useEffect(() => {
+    if (!open) return;
+    if (justOpenedRef.current) {
+      justOpenedRef.current = false;
+      return;
+    }
+    const next = to24h(hours[hourIndex], minutes[minuteIndex], meridiems[meridiemIndex]);
+    if (next !== value) onChange(next);
+  }, [open, hourIndex, minuteIndex, meridiemIndex, hours, minutes, meridiems, value, onChange]);
 
   useEffect(() => {
     if (!open) return;
@@ -318,18 +342,8 @@ export function TimePicker({
             />
           </div>
           <div className="time-picker__foot">
-            <button
-              type="button"
-              className="time-picker__quick time-picker__quick--ghost"
-              onClick={() => {
-                setOpen(false);
-                buttonRef.current?.focus();
-              }}
-            >
-              Cancelar
-            </button>
             <button type="button" className="time-picker__quick" onClick={commit}>
-              Aceptar
+              Listo
             </button>
           </div>
         </div>

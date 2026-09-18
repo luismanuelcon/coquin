@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { financeBudgetState, financeItems } from "@/lib/data/mock";
+import type { FinanceBudgetState } from "@/lib/types";
 import {
   calculateFinanceObligations,
   calculateFinancePeriodSummary,
@@ -9,6 +10,7 @@ import {
   getFinancePeriodRangeFromStart,
   getPendingFinanceItems,
   parseCopAmount,
+  upsertFinancePeriod,
 } from "./finances";
 
 describe("finances module", () => {
@@ -90,5 +92,60 @@ describe("finances module", () => {
     expect(nextPeriod.items.every((item) => item.fixed && item.status === "pending")).toBe(true);
     expect(nextPeriod.incomes).toHaveLength(0);
     expect(nextPeriod.miscExpenses).toHaveLength(0);
+  });
+
+  it("keeps the configured period active when its start does not align to the cutoff grid", () => {
+    const configuredState: FinanceBudgetState = {
+      settings: { cutoffDay: 20, currency: "COP" },
+      activePeriodId: "period-2026-08-15",
+      periods: [
+        {
+          id: "period-2026-08-15",
+          startDate: "2026-08-15",
+          endDate: "2026-09-14",
+          incomes: [{ id: "income-base", concept: "Base", amount: 5000000 }],
+          items: [{ id: "item-1", concept: "Arriendo", amount: 1200000, fixed: true, status: "pending" }],
+          miscExpenses: [],
+        },
+      ],
+    };
+
+    const result = ensureFinancePeriods(configuredState, "2026-09-18");
+    const active = result.state.periods.find((period) => period.id === result.state.activePeriodId);
+
+    expect(result.state.activePeriodId).toBe("period-2026-08-15");
+    expect(active?.incomes).toEqual([{ id: "income-base", concept: "Base", amount: 5000000 }]);
+    expect(active?.items).toHaveLength(1);
+  });
+
+  it("does not wipe base or budget items after configuring a period and adding a concept", () => {
+    const configuredState: FinanceBudgetState = {
+      settings: { cutoffDay: 20, currency: "COP" },
+      activePeriodId: "period-2026-08-15",
+      periods: [
+        {
+          id: "period-2026-08-15",
+          startDate: "2026-08-15",
+          endDate: "2026-09-14",
+          incomes: [{ id: "income-base", concept: "Base", amount: 5000000 }],
+          items: [],
+          miscExpenses: [],
+        },
+      ],
+    };
+
+    const ensured = ensureFinancePeriods(configuredState, "2026-09-18").state;
+    const active = ensured.periods.find((period) => period.id === ensured.activePeriodId)!;
+    const withConcept = {
+      ...active,
+      items: [{ id: "item-new", concept: "Internet", amount: 90000, fixed: true, status: "pending" as const }, ...active.items],
+    };
+    const saved = upsertFinancePeriod(ensured, withConcept);
+    const reEnsured = ensureFinancePeriods(saved, "2026-09-18").state;
+    const finalActive = reEnsured.periods.find((period) => period.id === reEnsured.activePeriodId)!;
+
+    expect(finalActive.incomes).toEqual([{ id: "income-base", concept: "Base", amount: 5000000 }]);
+    expect(finalActive.items).toHaveLength(1);
+    expect(finalActive.items[0].concept).toBe("Internet");
   });
 });

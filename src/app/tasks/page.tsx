@@ -180,7 +180,7 @@ export default function TasksPage() {
           </div>
 
           {formOpen ? (
-            <form id="task-form" className="card-surface flex flex-col gap-2 p-3" onSubmit={handleSubmit}>
+            <form id="task-form" className="card-surface flex flex-col gap-2 overflow-visible p-3" onSubmit={handleSubmit}>
               <input
                 type="text"
                 value={title}
