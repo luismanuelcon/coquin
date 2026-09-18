@@ -133,7 +133,7 @@ export default function CalendarPage() {
           </div>
 
           {formOpen ? (
-            <form id="calendar-event-form" className="card-surface flex flex-col gap-2 p-3" onSubmit={handleSubmit}>
+            <form id="calendar-event-form" className="card-surface flex flex-col gap-2 overflow-visible p-3" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_120px]">
                 <input
                   type="text"

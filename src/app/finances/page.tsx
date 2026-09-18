@@ -378,7 +378,7 @@ export default function FinancesPage() {
         </section>
 
         {miscFormOpen ? (
-          <section id="finance-misc-form" className="card-surface p-3">
+          <section id="finance-misc-form" className="card-surface overflow-visible p-3">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="section-title">Registrar gasto</h2>
               <span className="pill pill--secondary">Gastos varios</span>

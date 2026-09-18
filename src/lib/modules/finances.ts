@@ -145,7 +145,12 @@ export function ensureFinancePeriods(state: FinanceBudgetState, referenceIsoDate
     generatedCount += 1;
   }
 
-  const activePeriod = existingTarget ?? periods.find((period) => period.id === targetRange.id) ?? latestPeriod;
+  const storedActive = periods.find((period) => period.id === state.activePeriodId);
+  const activePeriod =
+    existingTarget ??
+    periods.find((period) => period.id === targetRange.id) ??
+    storedActive ??
+    latestPeriod;
   const hasNextPeriod = periods.some((period) => period.startDate > activePeriod.startDate);
 
   if (!hasNextPeriod) {

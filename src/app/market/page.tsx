@@ -216,7 +216,7 @@ export default function MarketPage() {
         ) : null}
 
         {purchaseFormOpen ? (
-          <section id="market-purchase-form" className="card-surface p-3">
+          <section id="market-purchase-form" className="card-surface overflow-visible p-3">
             <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-[128px_minmax(0,1fr)]">
                 <DatePicker
