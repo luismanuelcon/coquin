@@ -1,21 +1,21 @@
-import Image from "next/image";
+import { Home } from "lucide-react";
 
 type CoquinWordmarkProps = {
   priority?: boolean;
 };
 
-export function CoquinWordmark({ priority = false }: CoquinWordmarkProps) {
+export function CoquinWordmark(_props: CoquinWordmarkProps) {
   return (
-    <div className="brand-wordmark" aria-hidden="true">
-      <Image
-        src="/coquin-wordmark.png"
-        alt=""
-        fill
-        unoptimized
-        priority={priority}
-        sizes="200px"
-        className="object-contain object-left"
-      />
+    <div className="brand-badge" aria-label="Coquín">
+      <span className="brand-badge__ring">
+        <span>
+          <Home size={18} strokeWidth={2.4} aria-hidden="true" />
+        </span>
+      </span>
+      <span className="brand-badge__stack">
+        <span className="brand-badge__title">Coquín</span>
+        <span className="brand-badge__label">Hogar</span>
+      </span>
     </div>
   );
 }

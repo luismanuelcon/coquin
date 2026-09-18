@@ -4,58 +4,74 @@ import type { IconComponent, ModuleKey } from "./types";
 export type ModuleTheme = {
   key: ModuleKey;
   label: string;
+  navLabel: string;
   href: string;
   icon: IconComponent;
+  /** Solid accent colour used for text, icons and progress fills. */
   color: string;
+  /** Light-on-dark text tint used inside filled avatars. */
   text: string;
+  /** Semi-transparent surface used behind icons and pills. */
   surface: string;
+  /** Linear-gradient string for pill CTAs and elevated highlights. */
+  gradient: string;
 };
 
 export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
   home: {
     key: "home",
     label: "Inicio",
+    navLabel: "Inicio",
     href: "/",
     icon: Home,
-    color: "#E63C7A",
-    text: "#ffc5dc",
-    surface: "rgb(230 60 122 / 14%)",
+    color: "#ff6b97",
+    text: "#ffb1c3",
+    surface: "rgb(255 107 151 / 18%)",
+    gradient: "linear-gradient(135deg, #ff6b97, #ff8fab)",
   },
   calendar: {
     key: "calendar",
-    label: "Calendario",
+    label: "Agenda",
+    navLabel: "Agenda",
     href: "/calendar",
     icon: CalendarDays,
-    color: "#DDA218",
-    text: "#f4d497",
-    surface: "rgb(221 162 24 / 16%)",
+    color: "#ffb955",
+    text: "#ffddb4",
+    surface: "rgb(255 185 85 / 18%)",
+    gradient: "linear-gradient(135deg, #ffb955, #ffddb4)",
   },
   finances: {
     key: "finances",
     label: "Finanzas",
+    navLabel: "Finanzas",
     href: "/finances",
     icon: Landmark,
-    color: "#1F8A5B",
-    text: "#a6e3c3",
-    surface: "rgb(31 138 91 / 14%)",
+    color: "#ffb1c3",
+    text: "#ffd9e0",
+    surface: "rgb(255 177 195 / 18%)",
+    gradient: "linear-gradient(135deg, #ffb1c3, #ff6b97)",
   },
   market: {
     key: "market",
     label: "Mercado",
+    navLabel: "Mercado",
     href: "/market",
     icon: ShoppingBasket,
-    color: "#B41E5C",
-    text: "#ffc5dc",
-    surface: "rgb(180 30 92 / 14%)",
+    color: "#ff8fab",
+    text: "#ffd9e0",
+    surface: "rgb(255 143 171 / 18%)",
+    gradient: "linear-gradient(135deg, #ff8fab, #ffb955)",
   },
   tasks: {
     key: "tasks",
     label: "Tareas",
+    navLabel: "Tareas",
     href: "/tasks",
     icon: CheckCircle2,
-    color: "#7C4DE0",
-    text: "#dccfff",
-    surface: "rgb(124 77 224 / 14%)",
+    color: "#ffb1c2",
+    text: "#ffd9e0",
+    surface: "rgb(232 124 152 / 20%)",
+    gradient: "linear-gradient(135deg, #e87c98, #ffb1c2)",
   },
 };
 

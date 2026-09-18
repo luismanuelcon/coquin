@@ -1,54 +1,42 @@
 import clsx from "clsx";
-import Image from "next/image";
 import { moduleThemes } from "@/lib/design-system";
 import type { ModuleKey } from "@/lib/types";
 
 type ModuleIconProps = {
   tone: ModuleKey;
   size?: "nav" | "sm" | "md" | "lg";
+  filled?: boolean;
   className?: string;
 };
 
-const moduleIconAssets: Partial<Record<ModuleKey, string>> = {
-  home: "/modules/inicio.png",
-  calendar: "/modules/calendario.png",
-  finances: "/modules/finanzas.png",
-  market: "/modules/mercado.png",
-  tasks: "/modules/tareas.png",
-};
+const sizeMap = {
+  nav: { box: 32, glyph: 18, radius: 12 },
+  sm: { box: 36, glyph: 18, radius: 12 },
+  md: { box: 40, glyph: 20, radius: 14 },
+  lg: { box: 44, glyph: 22, radius: 16 },
+} as const;
 
-export function ModuleIcon({ tone, size = "md", className }: ModuleIconProps) {
+export function ModuleIcon({ tone, size = "md", filled = false, className }: ModuleIconProps) {
   const theme = moduleThemes[tone];
   const Icon = theme.icon;
-  const asset = moduleIconAssets[tone];
+  const dims = sizeMap[size];
+
+  const style = filled
+    ? { background: theme.gradient, color: "#1f0a10", boxShadow: `0 4px 16px ${theme.color}40` }
+    : { background: theme.surface, color: theme.color };
 
   return (
     <span
-      className={clsx("module-icon", `module-icon-${size}`, asset && "module-icon-asset", className)}
-      style={
-        {
-          "--module-color": theme.color,
-          "--module-text": theme.text,
-          "--module-surface": theme.surface,
-        } as React.CSSProperties
-      }
+      className={clsx("inline-flex shrink-0 items-center justify-center", className)}
+      style={{
+        width: dims.box,
+        height: dims.box,
+        borderRadius: dims.radius,
+        ...style,
+      }}
       aria-hidden="true"
     >
-      {asset ? (
-        <Image
-          src={asset}
-          alt=""
-          fill
-          unoptimized
-          sizes="48px"
-          className="module-icon-image"
-        />
-      ) : (
-        <>
-          <span className="module-icon-orb" />
-          <Icon className="module-icon-glyph" strokeWidth={2.45} />
-        </>
-      )}
+      <Icon size={dims.glyph} strokeWidth={2.4} />
     </span>
   );
 }

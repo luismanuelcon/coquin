@@ -19,22 +19,43 @@ function formatTime12(value: string) {
 
 export function EventRow({ event, onDelete, onEdit }: EventRowProps) {
   const theme = moduleThemes[event.tone];
+  const Icon = theme.icon;
   const content = (
-    <article className="interactive-surface flex items-center gap-3 rounded-[20px] border border-[var(--surface-stroke)] bg-[var(--panel)] p-3 shadow-[var(--shadow-soft)]">
+    <article
+      className="flex items-center gap-3 rounded-2xl px-3 py-2.5"
+      style={{ background: "#241d27" }}
+    >
       <div
-        className="grid size-11 shrink-0 place-items-center rounded-full"
-        style={{ background: theme.surface, color: theme.text }}
+        className="grid size-9 shrink-0 place-items-center rounded-full"
+        style={{ background: "#2f2731", color: theme.color }}
       >
-        <Clock3 aria-hidden="true" size={19} strokeWidth={2.4} />
+        <Icon aria-hidden="true" size={18} strokeWidth={2.4} />
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="break-words text-sm font-semibold text-[var(--text)]">{event.title}</h3>
-        <p className="mt-0.5 break-words text-xs font-medium text-[var(--text-soft)]">{event.meta}</p>
+        <div className="flex items-center gap-1.5">
+          <h3 className="truncate text-[15px] font-bold leading-5 text-on-surface">{event.title}</h3>
+        </div>
+        <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] font-semibold text-on-surface-variant">
+          <Clock3 aria-hidden="true" size={13} />
+          {event.meta}
+        </p>
       </div>
-      <time className="shrink-0 rounded-full border border-[var(--outline-soft)] bg-[var(--surface-low)] px-2 py-1 text-xs font-bold text-[var(--text-muted)]">
+      <span
+        className="shrink-0 rounded-full bg-surface-container-highest px-2.5 py-1 text-[11px] font-bold text-on-surface"
+      >
         {formatTime12(event.time)}
-      </time>
-      {onEdit && <button type="button" className="row-tool" onClick={() => onEdit(event)} aria-label={`Editar ${event.title}`} title="Editar evento"><Pencil size={16} /></button>}
+      </span>
+      {onEdit ? (
+        <button
+          type="button"
+          className="row-tool"
+          onClick={() => onEdit(event)}
+          aria-label={`Editar ${event.title}`}
+          title="Editar evento"
+        >
+          <Pencil size={16} />
+        </button>
+      ) : null}
     </article>
   );
 
