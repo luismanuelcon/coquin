@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CheckCircle2, Hammer, Pencil, Plus, UserRound, X } from "lucide-react";
+import { Check, Hammer, Pencil, Plus, RefreshCw, UserRound, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
@@ -26,21 +26,25 @@ function formatDueDate(iso: string) {
   return dueFormatter.format(new Date(y, m - 1, d, 12)).replace(".", "");
 }
 
-const statusStyles: Record<string, { color: string; soft: string }> = {
-  Pendiente: { color: "var(--warning)", soft: "var(--warning-soft)" },
-  "En progreso": { color: "var(--primary)", soft: "var(--primary-soft)" },
-  Urgente: { color: "var(--danger)", soft: "var(--danger-soft)" },
-  Completada: { color: "var(--success)", soft: "var(--success-soft)" },
+const statusStyles: Record<string, { bg: string; color: string }> = {
+  Pendiente: { bg: "rgb(255 185 85 / 15%)", color: "#ffb955" },
+  "En progreso": { bg: "rgb(255 107 151 / 15%)", color: "#ff6b97" },
+  Urgente: { bg: "rgb(255 180 171 / 15%)", color: "#ffb4ab" },
+  Completada: { bg: "#2f2731", color: "#debfc4" },
 };
 
 function getStatusStyle(status: string) {
   return statusStyles[status] ?? statusStyles.Pendiente;
 }
 
+const FILTERS = ["Todos", "Pendiente", "En progreso", "Completada"] as const;
+type Filter = (typeof FILTERS)[number];
+
 export default function TasksPage() {
   const [tasks, setTasks] = useModule("tasks");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [filter, setFilter] = useState<Filter>("Todos");
   const [title, setTitle] = useState("");
   const [owner, setOwner] = useState("");
   const [due, setDue] = useState("");
@@ -54,14 +58,19 @@ export default function TasksPage() {
   const progress = calculateTaskProgress(completedCount, tasks.length || 1);
   const canSubmit = Boolean(title.trim() && owner.trim() && due.trim());
 
+  const counts = useMemo(() => {
+    const base: Record<string, number> = { Todos: tasks.length };
+    for (const f of FILTERS.slice(1)) base[f] = tasks.filter((t) => t.status === f).length;
+    return base;
+  }, [tasks]);
+
+  const filteredTasks = filter === "Todos" ? tasks : tasks.filter((task) => task.status === filter);
+
   useScrollIntoViewOnOpen(formOpen, "task-form");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    if (!canSubmit) {
-      return;
-    }
+    if (!canSubmit) return;
 
     const task: ProjectTask = {
       id: editingId ?? crypto.randomUUID(),
@@ -71,7 +80,7 @@ export default function TasksPage() {
       status,
     };
 
-    if (!await setTasks(current => editingId ? current.map(item => item.id === editingId ? task : item) : [task, ...current])) return;
+    if (!(await setTasks((current) => (editingId ? current.map((item) => (item.id === editingId ? task : item)) : [task, ...current])))) return;
     setEditingId(null);
     setLastAdded(task.title);
     setTitle("");
@@ -85,95 +94,107 @@ export default function TasksPage() {
     await setTasks((current) =>
       current.map((task) =>
         task.id === taskId
-          ? {
-              ...task,
-              status: task.status === "Completada" ? "Pendiente" : "Completada",
-            }
+          ? { ...task, status: task.status === "Completada" ? "Pendiente" : "Completada" }
           : task,
       ),
     );
   }
 
   async function deleteTask(task: ProjectTask) {
-    if (!window.confirm(`Eliminar ${task.title}?`)) {
-      return;
-    }
-
-    if (!await setTasks((current) => current.filter((currentTask) => currentTask.id !== task.id))) return;
+    if (!window.confirm(`Eliminar ${task.title}?`)) return;
+    if (!(await setTasks((current) => current.filter((currentTask) => currentTask.id !== task.id)))) return;
     setLastAdded("Tarea eliminada");
   }
+
+  const inputClass =
+    "h-11 min-w-0 rounded-2xl border border-transparent bg-surface-container-lowest px-3 text-sm font-semibold text-on-surface outline-none placeholder:text-outline focus:border-tertiary-container";
 
   return (
     <AppChrome>
       <div className="page-stack">
-        <PageHeading tone="tasks" title="Responsabilidades" />
+        <PageHeading
+          tone="tasks"
+          eyebrow="Responsabilidades"
+          title="Tareas del hogar"
+          subtitle={`${tasks.length} tareas organizadas`}
+          badge="Activo"
+        />
 
-        <section className="card p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="section-title">Proyecto activo</h2>
-            <span className="rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] px-3 py-1 text-xs font-extrabold text-[var(--urgent)]">
-              {progress}%
-            </span>
+        <section className="card-elevated" aria-label="Proyecto activo">
+          <span
+            className="glow-blob"
+            style={{ bottom: -32, right: -32, width: 112, height: 112, background: "rgb(255 107 151 / 10%)" }}
+          />
+          <div className="relative z-10 mb-3 flex items-center justify-between">
+            <h2 className="section-title">Progreso general</h2>
+            <span className="pill pill--secondary">{progress}%</span>
           </div>
-          <div className="interactive-surface rounded-[20px] border border-[var(--warning)] bg-[var(--warning-soft)] p-4 shadow-[0_12px_22px_rgb(221_162_24_/_18%)]">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="grid size-11 shrink-0 place-items-center rounded-full bg-[rgb(255_255_255_/_8%)] text-[var(--urgent)]">
-                <Hammer aria-hidden="true" size={20} strokeWidth={2.4} />
-              </div>
-              <div className="min-w-0">
-                <h3 className="truncate text-sm font-extrabold">Tareas del hogar</h3>
-                <p className="text-xs font-bold text-[var(--text-soft)]">
-                  {completedCount} de {tasks.length} completadas
-                </p>
-              </div>
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface-container-high text-secondary">
+              <Hammer aria-hidden="true" size={20} strokeWidth={2.4} />
             </div>
-            <ProgressBar value={progress} color="var(--urgent)" />
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-[15px] font-bold text-on-surface">Actividades de la semana</h3>
+              <p className="text-xs font-semibold text-on-surface-variant">
+                {completedCount} de {tasks.length} completadas
+              </p>
+            </div>
+          </div>
+          <div className="relative z-10 mt-3">
+            <ProgressBar value={progress} ariaLabel="Progreso de tareas" />
           </div>
         </section>
 
+        <div className="chip-row" aria-label="Filtros de tareas">
+          {FILTERS.map((f) => (
+            <button key={f} type="button" className="chip" data-active={filter === f} onClick={() => setFilter(f)} aria-pressed={filter === f}>
+              {f === "Todos" ? "Todos" : f}
+              <span className="chip__count">{counts[f] ?? 0}</span>
+            </button>
+          ))}
+        </div>
+
         {lastAdded ? (
-          <p
-            className="interactive-surface flex items-center gap-2 rounded-[16px] border border-[rgb(122_15_62_/_26%)] bg-[var(--primary-soft)] px-3 py-2 text-xs font-bold text-[var(--on-primary-container)]"
-            aria-live="polite"
-          >
-            <CheckCircle2 aria-hidden="true" size={16} strokeWidth={2.4} />
-            {lastAdded}
-          </p>
+          <p className="toast" aria-live="polite">{lastAdded}</p>
         ) : null}
 
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Pendientes</h2>
+        <section className="flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <h2 className="section-title">Actividades</h2>
             <button
               type="button"
               onClick={() => {
-                setEditingId(null); setTitle(""); setOwner(""); setDue(""); setStatus("Pendiente");
+                setEditingId(null);
+                setTitle("");
+                setOwner("");
+                setDue("");
+                setStatus("Pendiente");
                 setFormOpen((current) => !current);
               }}
-              className="grid size-11 place-items-center rounded-full border border-[var(--urgent)] bg-[var(--urgent-soft)] text-[var(--urgent)]"
+              className="icon-fab icon-fab--secondary"
               aria-label={formOpen ? "Cerrar tarea" : "Crear tarea"}
               aria-expanded={formOpen}
             >
-              {formOpen ? <X aria-hidden="true" size={18} strokeWidth={2.6} /> : <Plus aria-hidden="true" size={20} strokeWidth={2.8} />}
+              {formOpen ? <X aria-hidden="true" size={20} strokeWidth={2.6} /> : <Plus aria-hidden="true" size={20} strokeWidth={2.8} />}
             </button>
           </div>
 
           {formOpen ? (
-            <form id="task-form" className="card mb-3 p-3" onSubmit={handleSubmit}>
+            <form id="task-form" className="card-surface flex flex-col gap-2 p-3" onSubmit={handleSubmit}>
               <input
                 type="text"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Tarea"
-                className="h-11 w-full rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--urgent)]"
+                className={`${inputClass} w-full`}
               />
-              <div className="mt-2 grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_120px]">
+              <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_130px]">
                 <input
                   type="text"
                   value={owner}
                   onChange={(event) => setOwner(event.target.value)}
                   placeholder="Responsable"
-                  className="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--urgent)]"
+                  className={inputClass}
                 />
                 <DatePicker
                   value={due}
@@ -182,87 +203,104 @@ export default function TasksPage() {
                   ariaLabel="Fecha de vencimiento"
                   placeholder="Fecha"
                   align="end"
-                  triggerClassName="h-11 min-w-0 rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--urgent)] text-left"
+                  triggerClassName={`${inputClass} text-left`}
                 />
               </div>
-              <select
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-                className="mt-2 h-11 w-full rounded-[14px] border border-[var(--surface-stroke)] bg-[var(--surface-lowest)] px-3 text-sm font-bold text-[var(--text)] outline-none focus:border-[var(--urgent)]"
-                aria-label="Estado"
-              >
-                {statuses.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="mt-2 h-11 w-full rounded-full bg-[image:var(--gradient-tasks)] text-sm font-extrabold text-white shadow-[0_12px_22px_rgb(63_32_135_/_28%)] disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                Guardar
+              <div className="input-shell">
+                <select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Estado">
+                  {statuses.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button type="submit" disabled={!canSubmit} className="cta-pill mt-1">
+                Guardar tarea
               </button>
             </form>
           ) : null}
 
-          <div className="flex flex-col gap-2">
-            {tasks.length === 0 ? (
-              <p className="rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--panel)] p-4 text-sm font-bold text-[var(--text-soft)]">
-                No hay tareas registradas.
+          <div className="flex flex-col gap-1.5">
+            {filteredTasks.length === 0 ? (
+              <p className="rounded-2xl bg-surface-container p-4 text-sm font-semibold text-on-surface-variant">
+                No hay tareas en esta vista.
               </p>
             ) : null}
-            {tasks.map((task) => {
+            {filteredTasks.map((task) => {
               const completed = task.status === "Completada";
+              const inProgress = task.status === "En progreso";
               const statusStyle = getStatusStyle(task.status);
-              const checkStyle = completed ? statusStyles.Completada : statusStyles.Urgente;
 
               return (
                 <SwipeDeleteRow key={task.id} deleteLabel={`Eliminar ${task.title}`} onDelete={() => deleteTask(task)}>
-                <article
-                  key={task.id}
-                  className="interactive-surface flex items-center gap-3 rounded-[18px] border border-[var(--surface-stroke)] bg-[var(--panel)] p-3 shadow-[var(--shadow-soft)]"
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleCompleted(task.id)}
-                    className="grid size-11 shrink-0 place-items-center rounded-full border"
-                    style={{
-                      borderColor: checkStyle.color,
-                      background: checkStyle.soft,
-                      color: checkStyle.color,
-                    }}
-                    aria-label={completed ? "Marcar pendiente" : "Completar tarea"}
-                    aria-pressed={completed}
+                  <article
+                    className="relative flex items-center gap-2.5 overflow-hidden rounded-2xl px-3 py-2.5"
+                    style={{ background: completed ? "#201923" : "#241d27", opacity: completed ? 0.85 : 1 }}
                   >
-                    <Check aria-hidden="true" size={18} strokeWidth={2.7} />
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <h3 className={`truncate text-sm font-extrabold ${completed ? "text-[var(--text-soft)] line-through" : ""}`}>
-                      {task.title}
-                    </h3>
-                    <div className="mt-1 flex min-w-0 items-center gap-2 text-xs font-bold text-[var(--text-soft)]">
-                      <UserRound aria-hidden="true" size={14} />
-                      <span className="min-w-0 truncate">{task.owner}</span>
-                      <span>·</span>
-                      <span className="shrink-0">{formatDueDate(task.due)}</span>
+                    {inProgress ? (
+                      <span
+                        className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full"
+                        style={{ background: "#ff6b97", boxShadow: "0 0 8px rgb(255 107 151 / 80%)" }}
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => toggleCompleted(task.id)}
+                      className="grid size-8 shrink-0 place-items-center rounded-full"
+                      style={
+                        completed
+                          ? { background: "#ff6b97", color: "#66002c" }
+                          : inProgress
+                            ? { background: "rgb(255 107 151 / 20%)", color: "#ff6b97" }
+                            : { background: "#120c15", color: "#a58a8f" }
+                      }
+                      aria-label={completed ? "Marcar pendiente" : "Completar tarea"}
+                      aria-pressed={completed}
+                    >
+                      {inProgress && !completed ? (
+                        <RefreshCw aria-hidden="true" size={15} strokeWidth={2.6} />
+                      ) : (
+                        <Check aria-hidden="true" size={16} strokeWidth={2.8} />
+                      )}
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className={`min-w-0 truncate text-[14px] font-bold ${completed ? "text-on-surface-variant line-through" : "text-on-surface"}`}>
+                          {task.title}
+                        </h3>
+                        <span
+                          className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold"
+                          style={{ background: statusStyle.bg, color: statusStyle.color }}
+                        >
+                          {task.status}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] font-semibold text-on-surface-variant">
+                        <UserRound aria-hidden="true" size={13} />
+                        <span className="min-w-0 truncate">{task.owner}</span>
+                        <span>·</span>
+                        <span className="shrink-0">{formatDueDate(task.due)}</span>
+                      </div>
                     </div>
-                  </div>
-                  <span
-                    className="max-w-[88px] shrink-0 truncate rounded-full border px-3 py-1 text-[11px] font-extrabold"
-                    style={{
-                      borderColor: statusStyle.color,
-                      background: statusStyle.soft,
-                      color: statusStyle.color,
-                    }}
-                  >
-                    {task.status}
-                  </span>
-                  <button type="button" className="row-tool" aria-label={`Editar ${task.title}`} title="Editar tarea" onClick={() => {
-                    setEditingId(task.id); setTitle(task.title); setOwner(task.owner); setDue(task.due); setStatus(task.status); setFormOpen(true);
-                  }}><Pencil size={16} /></button>
-                </article>
+                    <button
+                      type="button"
+                      className="row-tool"
+                      aria-label={`Editar ${task.title}`}
+                      title="Editar tarea"
+                      onClick={() => {
+                        setEditingId(task.id);
+                        setTitle(task.title);
+                        setOwner(task.owner);
+                        setDue(task.due);
+                        setStatus(task.status);
+                        setFormOpen(true);
+                      }}
+                    >
+                      <Pencil size={15} />
+                    </button>
+                  </article>
                 </SwipeDeleteRow>
               );
             })}

@@ -1,23 +1,34 @@
 type ProgressBarProps = {
   value: number;
-  color: string;
+  color?: string;
+  gradient?: string;
+  ariaLabel?: string;
+  className?: string;
 };
 
-export function ProgressBar({ value, color }: ProgressBarProps) {
-  const clampedValue = Math.max(0, Math.min(value, 100));
+export function ProgressBar({ value, color, gradient, ariaLabel, className }: ProgressBarProps) {
+  const safe = Math.max(0, Math.min(100, value));
+  const fillStyle: React.CSSProperties = {
+    width: `${safe}%`,
+  };
+  if (gradient) {
+    fillStyle.background = gradient;
+    fillStyle.boxShadow = "0 0 12px rgb(255 185 85 / 45%)";
+  } else if (color) {
+    fillStyle.background = color;
+    fillStyle.boxShadow = `0 0 8px ${color}66`;
+  }
 
   return (
     <div
-      className="progress-track"
+      className={`progress-track${className ? " " + className : ""}`}
       role="progressbar"
+      aria-label={ariaLabel}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={clampedValue}
+      aria-valuenow={safe}
     >
-      <div
-        className="progress-fill"
-        style={{ width: `${clampedValue}%`, background: color, boxShadow: `0 0 14px ${color}` }}
-      />
+      <span className="progress-fill" style={fillStyle} />
     </div>
   );
 }
