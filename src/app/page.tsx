@@ -86,9 +86,9 @@ function FinanceBars({ bars }: { bars: Bar[] }) {
             <stop offset="100%" stopColor="#ffd9e0" />
           </linearGradient>
         </defs>
-        <line x1="0" x2="320" y1="20" y2="20" stroke="#ebdfec" strokeOpacity="0.06" strokeDasharray="3 3" />
-        <line x1="0" x2="320" y1="62" y2="62" stroke="#ebdfec" strokeOpacity="0.06" strokeDasharray="3 3" />
-        <line x1="0" x2="320" y1="104" y2="104" stroke="#ebdfec" strokeOpacity="0.08" />
+        <line x1="0" x2="320" y1="20" y2="20" stroke="var(--text)" strokeOpacity="0.06" strokeDasharray="3 3" />
+        <line x1="0" x2="320" y1="62" y2="62" stroke="var(--text)" strokeOpacity="0.06" strokeDasharray="3 3" />
+        <line x1="0" x2="320" y1="104" y2="104" stroke="var(--text)" strokeOpacity="0.08" />
         {points.map((point) => (
           <g key={point.label}>
             <rect
@@ -97,7 +97,7 @@ function FinanceBars({ bars }: { bars: Bar[] }) {
               width={barWidth}
               height={usable}
               rx={8}
-              fill="#ebdfec"
+              fill="var(--text)"
               fillOpacity="0.05"
             />
             <rect
@@ -106,14 +106,14 @@ function FinanceBars({ bars }: { bars: Bar[] }) {
               width={barWidth - 6}
               height={point.height}
               rx={6}
-              fill={point.highlight ? "url(#barGlow)" : "#3a323c"}
+              fill={point.highlight ? "url(#barGlow)" : "var(--surface-highest)"}
               fillOpacity={point.highlight ? 1 : 0.85}
               filter={point.highlight ? "drop-shadow(0 0 8px rgba(255,107,151,0.5))" : undefined}
             />
           </g>
         ))}
         <path d={trend} fill="none" stroke="url(#trendLine)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx={points[points.length - 1].cx} cy={points[points.length - 1].y - 6} r="4.5" fill="#ffb955" stroke="#17111a" strokeWidth="2" />
+        <circle cx={points[points.length - 1].cx} cy={points[points.length - 1].y - 6} r="4.5" fill="#ffb955" stroke="var(--surface-bg)" strokeWidth="2" />
       </svg>
       <div className="mt-1 grid grid-cols-4 text-center text-[11px] font-semibold text-on-surface-variant">
         {bars.map((bar) => (
@@ -164,7 +164,7 @@ export default function HomePage() {
   const quickActions = [
     { label: "+ Gasto", href: "/finances?quick=misc", icon: Plus, gradient: "linear-gradient(135deg, #ff6b97, #ffb1c3)", color: "#66002c" },
     { label: "Nueva cita", href: "/calendar", icon: CalendarPlus, gradient: "linear-gradient(135deg, #ffb955, #ffddb4)", color: "#452b00" },
-    { label: "Crear tarea", href: "/tasks", icon: ListPlus, gradient: "linear-gradient(135deg, #3e3741, #3a323c)", color: "#ffb1c3" },
+    { label: "Crear tarea", href: "/tasks", icon: ListPlus, gradient: "linear-gradient(135deg, #e87c98, #ffb1c2)", color: "#5f0f2c" },
     { label: "Lista despensa", href: "/market", icon: ShoppingCart, gradient: "linear-gradient(135deg, #e87c98, #ffb1c2)", color: "#5f0f2c" },
   ];
 
@@ -313,7 +313,7 @@ export default function HomePage() {
                   key={event.id}
                   href="/calendar"
                   className="flex flex-col gap-1 rounded-xl p-2.5"
-                  style={{ background: index === 0 ? "#2f2731" : "#201923" }}
+                  style={{ background: index === 0 ? "var(--surface-high)" : "var(--surface-low)" }}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="min-w-0 truncate text-[14px] font-bold text-on-surface">{event.title}</span>
@@ -356,7 +356,7 @@ export default function HomePage() {
                     style={
                       urgentTask.status === "Urgente"
                         ? { background: "rgb(255 180 171 / 25%)", color: "#ffb4ab" }
-                        : { background: "#2f2731", color: "#debfc4" }
+                        : { background: "var(--surface-high)", color: "var(--text-soft)" }
                     }
                   >
                     {urgentTask.status}
@@ -401,7 +401,7 @@ export default function HomePage() {
         {/* Coquín insight */}
         <section
           className="card-surface flex items-start gap-3"
-          style={{ background: "linear-gradient(90deg, #2f2731, #241d27, #2f2731)" }}
+          style={{ background: "linear-gradient(90deg, var(--surface-high), var(--surface-container), var(--surface-high))" }}
           aria-label="Consejo de Coquín"
         >
           <span className="glow-blob" style={{ top: 0, right: 0, width: 128, height: 128, background: "rgb(255 185 85 / 10%)" }} />

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { DataProvider } from "@/components/data/data-provider";
+import { TapGlow } from "@/components/layout/tap-glow";
+import { SuccessBurst } from "@/components/layout/success-burst";
 
 export const metadata: Metadata = {
   applicationName: "COQUIN",
@@ -31,8 +33,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" data-theme="dark">
+    <html lang="es" data-theme="dark" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('coquin-theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}",
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
@@ -42,6 +50,8 @@ export default function RootLayout({
       </head>
       <body>
         <DataProvider>{children}</DataProvider>
+        <TapGlow />
+        <SuccessBurst />
       </body>
     </html>
   );

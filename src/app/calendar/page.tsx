@@ -8,6 +8,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { useModule } from "@/components/data/data-provider";
+import { celebrate } from "@/lib/ui/celebrate";
 import { getColombiaTodayIso, getColombiaWorkweek } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import type { HouseholdEvent, ModuleKey } from "@/lib/types";
@@ -47,6 +48,7 @@ export default function CalendarPage() {
     if (!(await setEvents((current) => (editingId ? current.map((item) => (item.id === editingId ? nextEvent : item)) : [nextEvent, ...current])))) return;
     setEditingId(null);
     setLastAdded(nextEvent.title);
+    celebrate();
     setTitle("");
     setMeta("");
     setTime("");
@@ -94,11 +96,11 @@ export default function CalendarPage() {
                         color: "#452b00",
                         boxShadow: "0 8px 24px rgb(255 185 85 / 40%)",
                       }
-                    : { background: "#2f2731", color: "#debfc4" }
+                    : { background: "var(--surface-high)", color: "var(--text-soft)" }
                 }
               >
                 <span className="text-[11px] font-bold">{item.day}</span>
-                <span className="text-xl font-extrabold" style={{ color: item.active ? "#452b00" : "#ebdfec" }}>
+                <span className="text-xl font-extrabold" style={{ color: item.active ? "#452b00" : "var(--text)" }}>
                   {item.date}
                 </span>
               </button>

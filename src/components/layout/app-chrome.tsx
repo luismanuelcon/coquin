@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, Home as HomeIcon } from "lucide-react";
+import { Bell, Home as HomeIcon, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "./bottom-nav";
 import { SignOutButton, useAppData } from "@/components/data/data-provider";
@@ -21,6 +21,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const tone = pathToTone[pathname] ?? "home";
   const theme = moduleThemes[tone];
+  const headerLabel = pathname === "/settings" ? "Ajustes" : theme.label;
   const { householdName } = useAppData();
   return (
     <main className="app-shell">
@@ -36,10 +37,19 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
               </span>
               <span className="brand-badge__stack">
                 <span className="brand-badge__title">Coquín</span>
-                <span className="brand-badge__label">{theme.label}</span>
+                <span className="brand-badge__label">{headerLabel}</span>
               </span>
             </Link>
             <div className="header-actions">
+              <Link
+                href="/settings"
+                className="header-icon-button"
+                aria-label="Ajustes"
+                title="Ajustes"
+                aria-current={pathname === "/settings" ? "page" : undefined}
+              >
+                <Settings size={22} strokeWidth={2.2} aria-hidden="true" />
+              </Link>
               <button
                 type="button"
                 className="header-icon-button"

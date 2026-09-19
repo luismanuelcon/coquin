@@ -23,11 +23,11 @@ export function EventRow({ event, onDelete, onEdit }: EventRowProps) {
   const content = (
     <article
       className="flex items-center gap-3 rounded-2xl px-3 py-2.5"
-      style={{ background: "#241d27" }}
+      style={{ background: "var(--surface-container)" }}
     >
       <div
         className="grid size-9 shrink-0 place-items-center rounded-full"
-        style={{ background: "#2f2731", color: theme.color }}
+        style={{ background: "var(--surface-high)", color: theme.color }}
       >
         <Icon aria-hidden="true" size={18} strokeWidth={2.4} />
       </div>
