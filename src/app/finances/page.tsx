@@ -5,26 +5,32 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleAlert,
+  Eye,
+  EyeOff,
   Pencil,
   Plus,
   ReceiptText,
   Settings,
   TrendingUp,
+  Wallet,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { DatePicker } from "@/components/ui/date-picker";
+import { CategoryDonut } from "@/components/ui/category-donut";
+import { MoneyInput } from "@/components/ui/money-input";
 import { useModule } from "@/components/data/data-provider";
-import { emptyData } from "@/lib/data/empty";
-const initialFinanceState = emptyData().finances;
+import { celebrate } from "@/lib/ui/celebrate";
 import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
   calculateFinancePeriodSummary,
   ensureFinancePeriods,
+  EXPENSE_CATEGORIES,
   getFinancePeriodRangeFromStart,
+  summarizeMiscByCategory,
   upsertFinancePeriod,
 } from "@/lib/modules/finances";
 import type {
@@ -67,8 +73,8 @@ function emptyBudgetForm(): BudgetForm {
   return { concept: "", amount: "", fixed: true, status: "pending", note: "" };
 }
 
-function emptyMiscForm(periodStart: string) {
-  return { date: periodStart, concept: "", amount: "", category: "", note: "" };
+function emptyMiscForm() {
+  return { date: getColombiaTodayIso(), concept: "", amount: "", category: "", note: "" };
 }
 
 const INPUT =
@@ -78,11 +84,12 @@ export default function FinancesPage() {
   const [storedBudget, setBudgetState] = useModule("finances");
   const budgetState = useMemo(() => ensureFinancePeriods(storedBudget, getColombiaTodayIso()).state, [storedBudget]);
   const [budgetForm, setBudgetForm] = useState(emptyBudgetForm);
-  const [miscForm, setMiscForm] = useState(emptyMiscForm(initialFinanceState.periods[0].startDate));
+  const [miscForm, setMiscForm] = useState(emptyMiscForm());
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
   const [editingMiscId, setEditingMiscId] = useState<string | null>(null);
   const [budgetFormOpen, setBudgetFormOpen] = useState(false);
   const [miscDetailOpen, setMiscDetailOpen] = useState(false);
+  const [miscChartOpen, setMiscChartOpen] = useState(false);
   const [miscFormOpen, setMiscFormOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [summarySettingsForm, setSummarySettingsForm] = useState({ base: "", cutoffDay: "", startDate: "" });
@@ -101,6 +108,7 @@ export default function FinancesPage() {
     [budgetState],
   );
   const summary = useMemo(() => calculateFinancePeriodSummary(activePeriod), [activePeriod]);
+  const miscSummary = useMemo(() => summarizeMiscByCategory(activePeriod), [activePeriod]);
   const paidPercent = summary.totalPayments === 0 ? 0 : Math.round((summary.paid / summary.totalPayments) * 100);
 
   useScrollIntoViewOnOpen(budgetFormOpen, "finance-budget-form");
@@ -152,6 +160,7 @@ export default function FinancesPage() {
     setEditingBudgetId(null);
     setBudgetFormOpen(false);
     setFormError("");
+    celebrate();
     showFeedback(editingBudgetId ? "Concepto actualizado" : "Concepto creado");
   }
 
@@ -179,10 +188,11 @@ export default function FinancesPage() {
       }))
     )
       return;
-    setMiscForm(emptyMiscForm(activePeriod.startDate));
+    setMiscForm(emptyMiscForm());
     setEditingMiscId(null);
     setMiscFormOpen(false);
     setFormError("");
+    celebrate();
     showFeedback(editingMiscId ? "Gasto actualizado" : "Gasto varios registrado");
     setMiscDetailOpen(true);
   }
@@ -220,9 +230,10 @@ export default function FinancesPage() {
       })))
     )
       return;
-    setMiscForm(emptyMiscForm(updatedPeriod.startDate));
+    setMiscForm(emptyMiscForm());
     setSettingsOpen(false);
     setFormError("");
+    celebrate();
     showFeedback("Resumen actualizado");
   }
 
@@ -242,17 +253,17 @@ export default function FinancesPage() {
     if (!(await updateActivePeriod({ ...activePeriod, miscExpenses: activePeriod.miscExpenses.filter((current) => current.id !== expense.id) }))) return;
     if (editingMiscId === expense.id) {
       setEditingMiscId(null);
-      setMiscForm(emptyMiscForm(activePeriod.startDate));
+      setMiscForm(emptyMiscForm());
       setMiscFormOpen(false);
     }
     showFeedback("Gasto eliminado");
   }
 
   const metrics = [
-    { label: "Base", value: summary.base, icon: Banknote, color: "#ffb1c3" },
-    { label: "Comprometido", value: summary.totalPayments, icon: ReceiptText, color: "#e87c98" },
-    { label: "Pagado", value: summary.paid, icon: CheckCircle2, color: "#ffb955" },
-    { label: "Por pagar", value: summary.pending, icon: CircleAlert, color: "#ff6b97" },
+    { label: "Base", value: summary.base, icon: Banknote, color: "var(--primary)" },
+    { label: "Comprometido", value: summary.totalPayments, icon: ReceiptText, color: "var(--tertiary)" },
+    { label: "Pagado", value: summary.paid, icon: CheckCircle2, color: "var(--secondary)" },
+    { label: "Por pagar", value: summary.pending, icon: CircleAlert, color: "var(--primary)" },
   ];
 
   return (
@@ -266,7 +277,7 @@ export default function FinancesPage() {
           badge="Período en curso"
         />
 
-        <section className="card-elevated" aria-label="Resumen del período">
+        <section className={`card-elevated${settingsOpen ? " overflow-visible" : ""}`} aria-label="Resumen del período">
           <span
             className="glow-blob"
             style={{ top: -48, right: -32, width: 128, height: 128, background: "rgb(255 107 151 / 15%)" }}
@@ -283,27 +294,28 @@ export default function FinancesPage() {
                 {moneyFormatter.format(summary.available)}
               </p>
             </div>
-            <div className="flex shrink-0 flex-col gap-2">
+            <div className="flex shrink-0 flex-col items-end gap-2">
               <button
                 type="button"
                 onClick={() => {
                   setEditingMiscId(null);
-                  setMiscForm(emptyMiscForm(activePeriod.startDate));
+                  setMiscForm(emptyMiscForm());
                   setMiscFormOpen(true);
                 }}
-                className="icon-fab"
+                className="expense-cta"
                 aria-label="Registrar gasto varios"
               >
-                <Plus aria-hidden="true" size={20} strokeWidth={2.6} />
+                <Wallet aria-hidden="true" size={18} strokeWidth={2.4} />
+                <span>Gasto</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSettingsOpen((current) => !current)}
-                className="icon-fab icon-fab--ghost"
+                className="icon-fab icon-fab--ghost icon-fab--sm"
                 aria-label="Configurar resumen financiero"
                 aria-expanded={settingsOpen}
               >
-                <Settings aria-hidden="true" size={20} strokeWidth={2.4} />
+                <Settings aria-hidden="true" size={18} strokeWidth={2.4} />
               </button>
             </div>
           </div>
@@ -339,11 +351,11 @@ export default function FinancesPage() {
                 <label className="field">
                   <span>Base</span>
                   <div className="input-shell input-shell--muted">
-                    <input
-                      type="number"
-                      min="0"
+                    <span className="text-secondary font-bold">$</span>
+                    <MoneyInput
                       value={summarySettingsForm.base}
-                      onChange={(event) => setSummarySettingsForm((current) => ({ ...current, base: event.target.value }))}
+                      onChange={(raw) => setSummarySettingsForm((current) => ({ ...current, base: raw }))}
+                      ariaLabel="Base del período"
                     />
                   </div>
                 </label>
@@ -401,21 +413,25 @@ export default function FinancesPage() {
                 />
               </div>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_120px]">
-                <input
+                <select
                   value={miscForm.category}
                   onChange={(event) => setMiscForm((current) => ({ ...current, category: event.target.value }))}
-                  placeholder="Categoría"
-                  className={INPUT}
+                  className={`${INPUT} appearance-none`}
                   aria-label="Categoría del gasto"
-                />
-                <input
-                  type="number"
-                  min="0"
+                >
+                  <option value="">Categoría</option>
+                  {EXPENSE_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <MoneyInput
                   value={miscForm.amount}
-                  onChange={(event) => setMiscForm((current) => ({ ...current, amount: event.target.value }))}
+                  onChange={(raw) => setMiscForm((current) => ({ ...current, amount: raw }))}
                   placeholder="Valor"
                   className={INPUT}
-                  aria-label="Valor del gasto"
+                  ariaLabel="Valor del gasto"
                 />
               </div>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_120px]">
@@ -427,7 +443,7 @@ export default function FinancesPage() {
                   onClick={() => {
                     setMiscFormOpen(false);
                     setEditingMiscId(null);
-                    setMiscForm(emptyMiscForm(activePeriod.startDate));
+                    setMiscForm(emptyMiscForm());
                   }}
                   className="cta-ghost"
                 >
@@ -474,14 +490,12 @@ export default function FinancesPage() {
                 aria-label="Concepto presupuestado"
               />
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_130px]">
-                <input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   value={budgetForm.amount}
-                  onChange={(event) => setBudgetForm((current) => ({ ...current, amount: event.target.value }))}
+                  onChange={(raw) => setBudgetForm((current) => ({ ...current, amount: raw }))}
                   placeholder="Valor"
                   className={INPUT}
-                  aria-label="Valor presupuestado"
+                  ariaLabel="Valor presupuestado"
                 />
                 <div className="input-shell">
                   <select
@@ -521,7 +535,7 @@ export default function FinancesPage() {
                 <div className="flex items-center gap-2.5 rounded-2xl bg-surface-container px-3 py-2.5">
                   <span
                     className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-container-high"
-                    style={{ color: item.status === "paid" ? "#ffb955" : "#ff6b97" }}
+                    style={{ color: item.status === "paid" ? "var(--secondary)" : "var(--primary)" }}
                   >
                     <ReceiptText size={17} aria-hidden="true" />
                   </span>
@@ -543,8 +557,8 @@ export default function FinancesPage() {
                     className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold"
                     style={
                       item.status === "paid"
-                        ? { background: "rgb(255 185 85 / 15%)", color: "#ffb955" }
-                        : { background: "rgb(255 107 151 / 15%)", color: "#ff6b97" }
+                        ? { background: "rgb(255 185 85 / 15%)", color: "var(--secondary)" }
+                        : { background: "rgb(255 107 151 / 15%)", color: "var(--primary)" }
                     }
                     aria-label={`Marcar ${item.concept} como ${item.status === "paid" ? "pendiente" : "pagado"}`}
                   >
@@ -573,27 +587,65 @@ export default function FinancesPage() {
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setMiscDetailOpen((current) => !current)}
-            className="card-surface flex items-start justify-between gap-3 p-3 text-left"
-            aria-expanded={miscDetailOpen}
-            aria-controls="gastos-varios"
-          >
-            <div className="min-w-0">
-              <h3 className="truncate text-[14px] font-bold text-on-surface">Gastos varios</h3>
-              <p className="mt-0.5 text-[11px] font-semibold text-on-surface-variant">
-                Variable · {activePeriod.miscExpenses.length} movimientos
-              </p>
+          <div className="flex items-stretch gap-2">
+            <button
+              type="button"
+              onClick={() => setMiscDetailOpen((current) => !current)}
+              className="card-surface flex flex-1 items-start justify-between gap-3 p-3 text-left"
+              aria-expanded={miscDetailOpen}
+              aria-controls="gastos-varios"
+            >
+              <div className="min-w-0">
+                <h3 className="truncate text-[14px] font-bold text-on-surface">Gastos varios</h3>
+                <p className="mt-0.5 text-[11px] font-semibold text-on-surface-variant">
+                  Variable · {activePeriod.miscExpenses.length} movimientos
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="whitespace-nowrap text-[14px] font-bold text-secondary">{moneyFormatter.format(summary.miscTotal)}</span>
+                <ChevronRight aria-hidden="true" className={`text-secondary ${miscDetailOpen ? "rotate-90" : ""}`} size={18} />
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMiscChartOpen((current) => !current)}
+              className="icon-fab icon-fab--ghost shrink-0 self-stretch !h-auto"
+              aria-label={miscChartOpen ? "Ocultar resumen por categoría" : "Ver resumen por categoría"}
+              aria-expanded={miscChartOpen}
+              aria-controls="gastos-varios-chart"
+            >
+              {miscChartOpen ? (
+                <EyeOff aria-hidden="true" size={20} strokeWidth={2.2} />
+              ) : (
+                <Eye aria-hidden="true" size={20} strokeWidth={2.2} />
+              )}
+            </button>
+          </div>
+
+          {miscChartOpen ? (
+            <div id="gastos-varios-chart">
+              <CategoryDonut
+                total={miscSummary.total}
+                slices={miscSummary.slices}
+                formatAmount={(amount) => moneyFormatter.format(amount)}
+              />
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <span className="whitespace-nowrap text-[14px] font-bold text-secondary">{moneyFormatter.format(summary.miscTotal)}</span>
-              <ChevronRight aria-hidden="true" className={`text-secondary ${miscDetailOpen ? "rotate-90" : ""}`} size={18} />
-            </div>
-          </button>
+          ) : null}
 
           {miscDetailOpen ? (
             <div id="gastos-varios" className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingMiscId(null);
+                  setMiscForm(emptyMiscForm());
+                  setMiscFormOpen(true);
+                }}
+                className="expense-cta expense-cta--block"
+              >
+                <Wallet aria-hidden="true" size={18} strokeWidth={2.4} />
+                <span>Agregar gasto</span>
+              </button>
               {activePeriod.miscExpenses.length === 0 ? (
                 <p className="rounded-2xl bg-surface-container p-4 text-sm font-semibold text-on-surface-variant">
                   Sin gastos varios en este período.

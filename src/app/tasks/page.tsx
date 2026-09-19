@@ -8,6 +8,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useModule } from "@/components/data/data-provider";
+import { celebrate } from "@/lib/ui/celebrate";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import { calculateTaskProgress } from "@/lib/modules/tasks";
 import type { ProjectTask } from "@/lib/types";
@@ -30,7 +31,7 @@ const statusStyles: Record<string, { bg: string; color: string }> = {
   Pendiente: { bg: "rgb(255 185 85 / 15%)", color: "#ffb955" },
   "En progreso": { bg: "rgb(255 107 151 / 15%)", color: "#ff6b97" },
   Urgente: { bg: "rgb(255 180 171 / 15%)", color: "#ffb4ab" },
-  Completada: { bg: "#2f2731", color: "#debfc4" },
+  Completada: { bg: "var(--surface-high)", color: "var(--text-soft)" },
 };
 
 function getStatusStyle(status: string) {
@@ -83,6 +84,7 @@ export default function TasksPage() {
     if (!(await setTasks((current) => (editingId ? current.map((item) => (item.id === editingId ? task : item)) : [task, ...current])))) return;
     setEditingId(null);
     setLastAdded(task.title);
+    celebrate();
     setTitle("");
     setOwner("");
     setDue("");
@@ -236,7 +238,7 @@ export default function TasksPage() {
                 <SwipeDeleteRow key={task.id} deleteLabel={`Eliminar ${task.title}`} onDelete={() => deleteTask(task)}>
                   <article
                     className="relative flex items-center gap-2.5 overflow-hidden rounded-2xl px-3 py-2.5"
-                    style={{ background: completed ? "#201923" : "#241d27", opacity: completed ? 0.85 : 1 }}
+                    style={{ background: completed ? "var(--surface-low)" : "var(--surface-container)", opacity: completed ? 0.85 : 1 }}
                   >
                     {inProgress ? (
                       <span
@@ -254,7 +256,7 @@ export default function TasksPage() {
                           ? { background: "#ff6b97", color: "#66002c" }
                           : inProgress
                             ? { background: "rgb(255 107 151 / 20%)", color: "#ff6b97" }
-                            : { background: "#120c15", color: "#a58a8f" }
+                            : { background: "var(--surface-lowest)", color: "var(--outline)" }
                       }
                       aria-label={completed ? "Marcar pendiente" : "Completar tarea"}
                       aria-pressed={completed}

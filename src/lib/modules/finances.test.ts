@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { financeBudgetState, financeItems } from "@/lib/data/mock";
-import type { FinanceBudgetState } from "@/lib/types";
+import type { FinanceBudgetState, FinancePeriod } from "@/lib/types";
 import {
   calculateFinanceObligations,
   calculateFinancePeriodSummary,
@@ -9,7 +9,9 @@ import {
   getFinancePeriodRange,
   getFinancePeriodRangeFromStart,
   getPendingFinanceItems,
+  normalizeExpenseCategory,
   parseCopAmount,
+  summarizeMiscByCategory,
   upsertFinancePeriod,
 } from "./finances";
 
@@ -147,5 +149,51 @@ describe("finances module", () => {
     expect(finalActive.incomes).toEqual([{ id: "income-base", concept: "Base", amount: 5000000 }]);
     expect(finalActive.items).toHaveLength(1);
     expect(finalActive.items[0].concept).toBe("Internet");
+  });
+
+  it("normalizes unknown or empty categories into 'Otros'", () => {
+    expect(normalizeExpenseCategory("comida")).toBe("Comida");
+    expect(normalizeExpenseCategory("  Salud ")).toBe("Salud");
+    expect(normalizeExpenseCategory("")).toBe("Otros");
+    expect(normalizeExpenseCategory(undefined)).toBe("Otros");
+    expect(normalizeExpenseCategory("Criptomonedas")).toBe("Otros");
+  });
+
+  it("summarizes misc expenses by category sorted by spend", () => {
+    const period: FinancePeriod = {
+      id: "period-2026-08-15",
+      startDate: "2026-08-15",
+      endDate: "2026-09-14",
+      incomes: [],
+      items: [],
+      miscExpenses: [
+        { id: "m1", date: "2026-08-16", concept: "Almuerzo", amount: 30000, category: "Comida" },
+        { id: "m2", date: "2026-08-17", concept: "Cena", amount: 20000, category: "comida" },
+        { id: "m3", date: "2026-08-18", concept: "Cine", amount: 40000, category: "Entretenimiento" },
+        { id: "m4", date: "2026-08-19", concept: "Propina", amount: 10000 },
+      ],
+    };
+
+    const { total, slices } = summarizeMiscByCategory(period);
+
+    expect(total).toBe(100000);
+    expect(slices).toEqual([
+      { category: "Comida", amount: 50000, percent: 0.5 },
+      { category: "Entretenimiento", amount: 40000, percent: 0.4 },
+      { category: "Otros", amount: 10000, percent: 0.1 },
+    ]);
+  });
+
+  it("returns an empty summary when there are no misc expenses", () => {
+    const period: FinancePeriod = {
+      id: "period-empty",
+      startDate: "2026-08-15",
+      endDate: "2026-09-14",
+      incomes: [],
+      items: [],
+      miscExpenses: [],
+    };
+
+    expect(summarizeMiscByCategory(period)).toEqual({ total: 0, slices: [] });
   });
 });

@@ -1,5 +1,58 @@
 import type { FinanceBudgetItem, FinanceBudgetState, FinanceItem, FinancePeriod } from "@/lib/types";
 
+export const EXPENSE_CATEGORIES = [
+  "Comida",
+  "Transporte",
+  "Parqueadero",
+  "Entretenimiento",
+  "Ropa",
+  "Salud",
+  "Viaje",
+  "Hogar",
+  "Servicios",
+  "Educación",
+  "Mascotas",
+  "Otros",
+] as const;
+
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
+
+const OTHER_CATEGORY: ExpenseCategory = "Otros";
+
+export function normalizeExpenseCategory(value?: string): ExpenseCategory {
+  const match = EXPENSE_CATEGORIES.find(
+    (category) => category.toLowerCase() === (value ?? "").trim().toLowerCase(),
+  );
+  return match ?? OTHER_CATEGORY;
+}
+
+export type MiscCategorySlice = {
+  category: ExpenseCategory;
+  amount: number;
+  percent: number;
+};
+
+export function summarizeMiscByCategory(period: FinancePeriod): {
+  total: number;
+  slices: MiscCategorySlice[];
+} {
+  const totals = new Map<ExpenseCategory, number>();
+  for (const expense of period.miscExpenses) {
+    const category = normalizeExpenseCategory(expense.category);
+    totals.set(category, (totals.get(category) ?? 0) + expense.amount);
+  }
+  const total = [...totals.values()].reduce((sum, value) => sum + value, 0);
+  const slices = [...totals.entries()]
+    .map(([category, amount]) => ({
+      category,
+      amount,
+      percent: total === 0 ? 0 : amount / total,
+    }))
+    .sort((a, b) => b.amount - a.amount || a.category.localeCompare(b.category));
+
+  return { total, slices };
+}
+
 export function parseCopAmount(amount: string) {
   return Number(amount.replaceAll(".", "").replaceAll("$", "").trim());
 }

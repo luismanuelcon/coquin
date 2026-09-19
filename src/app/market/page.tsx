@@ -16,7 +16,9 @@ import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { DatePicker } from "@/components/ui/date-picker";
+import { MoneyInput } from "@/components/ui/money-input";
 import { useModule } from "@/components/data/data-provider";
+import { celebrate } from "@/lib/ui/celebrate";
 import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
@@ -86,6 +88,7 @@ export default function MarketPage() {
       return;
     setEditingId(null);
     setLastAdded(`${purchase.detail} registrado por ${moneyFormatter.format(purchase.amount)}`);
+    celebrate();
     setDetail("");
     setAmount("");
     setPurchaseFormOpen(false);
@@ -96,6 +99,7 @@ export default function MarketPage() {
     if (!canSaveBudget) return;
     if (!(await setMarket((current) => ({ ...current, budget: Number(budgetDraft) })))) return;
     setSettingsOpen(false);
+    celebrate();
   }
 
   const inputClass =
@@ -199,14 +203,10 @@ export default function MarketPage() {
           <form id="market-budget-form" className="card-surface flex flex-col gap-2 p-3" onSubmit={handleBudgetSubmit}>
             <div className="input-shell">
               <span className="text-secondary font-bold">$</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min="0"
-                step="10000"
+              <MoneyInput
                 value={budgetDraft}
-                onChange={(event) => setBudgetDraft(event.target.value)}
-                aria-label="Presupuesto mensual"
+                onChange={setBudgetDraft}
+                ariaLabel="Presupuesto mensual"
               />
             </div>
             <button type="submit" disabled={!canSaveBudget} className="cta-pill">
@@ -244,15 +244,12 @@ export default function MarketPage() {
                     ))}
                   </select>
                 </div>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min="0"
-                  step="1000"
+                <MoneyInput
                   value={amount}
-                  onChange={(event) => setAmount(event.target.value)}
+                  onChange={setAmount}
                   placeholder="Valor"
                   className={inputClass}
+                  ariaLabel="Valor de la compra"
                 />
               </div>
               <button type="submit" disabled={!canSubmit} className="cta-pill">
