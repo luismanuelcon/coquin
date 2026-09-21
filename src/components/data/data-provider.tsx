@@ -7,9 +7,13 @@ import { emptyData, type AppData, type DataModule } from "@/lib/data/empty";
 import { CoquinWordmark } from "@/components/brand/coquin-wordmark";
 import { validateData } from "@/lib/data/validation";
 
+type HouseholdRole = "admin" | "member";
 type ContextValue = {
   data: AppData;
   householdName: string;
+  householdCode: string;
+  role: HouseholdRole;
+  rotateCode: () => Promise<string | null>;
   save: <K extends DataModule>(module: K, value: SetStateAction<AppData[K]>) => Promise<boolean>;
 };
 const DataContext = createContext<ContextValue | null>(null);
@@ -23,7 +27,11 @@ function ProtectedData({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [householdName, setHouseholdName] = useState("");
+  const [householdCode, setHouseholdCode] = useState("");
+  const [role, setRole] = useState<HouseholdRole>("member");
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [mode, setMode] = useState<"create" | "join">("create");
   const [saved, setSaved] = useState(false);
 
   const load = useCallback(async () => {
@@ -34,11 +42,11 @@ function ProtectedData({ children }: { children: ReactNode }) {
       const { data: auth, error: authError } = await client.auth.getUser();
       if (authError || !auth.user) { window.location.replace("/login"); return; }
       const { data: member, error: memberError } = await client.from("household_members")
-        .select("household_id").eq("user_id", auth.user.id).maybeSingle();
+        .select("household_id, role").eq("user_id", auth.user.id).maybeSingle();
       if (memberError) throw memberError;
       if (!member) { setState("household"); return; }
       const { data: household, error: householdError } = await client.from("households")
-        .select("name").eq("id", member.household_id).single();
+        .select("name, join_code").eq("id", member.household_id).single();
       if (householdError) throw householdError;
       const { data: rows, error: readError } = await client.from("module_documents").select("module,data,version");
       if (readError) throw readError;
@@ -53,6 +61,8 @@ function ProtectedData({ children }: { children: ReactNode }) {
       versions.current = nextVersions;
       setData(next);
       setHouseholdName(household.name);
+      setHouseholdCode(household.join_code);
+      setRole(member.role === "admin" ? "admin" : "member");
       setState("ready");
     } catch {
       setError("No pudimos cargar tu hogar. Revisa la conexión y que la base de datos esté habilitada.");
@@ -101,15 +111,48 @@ function ProtectedData({ children }: { children: ReactNode }) {
     } catch { setError("No pudimos crear el hogar. Intenta de nuevo."); }
     finally { setBusy(false); }
   }
+  async function joinHousehold(event: React.FormEvent) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true); setError("");
+    try {
+      const { error: joinError } = await createClient().rpc("join_household", { code });
+      if (joinError) throw joinError;
+      await load();
+    } catch (err) {
+      const message = typeof err === "object" && err && "message" in err ? String(err.message) : "";
+      setError(message.includes("HOUSEHOLD_EXISTS")
+        ? "Ya perteneces a un hogar."
+        : message.includes("INVALID_CODE")
+        ? "El código no es válido. Verifícalo con quien creó el hogar."
+        : "No pudimos unirte al hogar. Intenta de nuevo.");
+    } finally { setBusy(false); }
+  }
+  async function rotateCode() {
+    try {
+      const { data: newCode, error: rotateError } = await createClient().rpc("rotate_join_code");
+      if (rotateError) throw rotateError;
+      setHouseholdCode(String(newCode));
+      return String(newCode);
+    } catch { return null; }
+  }
   if (state !== "ready") return <main className="auth-screen">
     <CoquinWordmark priority />
-    <h1>{state === "household" ? "Crea tu hogar" : state === "loading" ? "Abriendo tu hogar..." : "No pudimos conectar"}</h1>
+    <h1>{state === "household" ? "Tu hogar" : state === "loading" ? "Abriendo tu hogar..." : "No pudimos conectar"}</h1>
     {error && <p role="alert" className="auth-error">{error}</p>}
-    {state === "household" && <form onSubmit={createHousehold} className="auth-form"><label>Nombre del hogar<input value={name} onChange={e => setName(e.target.value)} maxLength={80} required /></label><button className="auth-submit" disabled={busy || !name.trim()}>{busy ? "Creando..." : "Crear hogar"}</button></form>}
+    {state === "household" && <div className="household-setup">
+      <div className="household-switch" role="tablist" aria-label="Crear o unirse a un hogar">
+        <button type="button" role="tab" aria-selected={mode === "create"} data-active={mode === "create" || undefined} onClick={() => { setMode("create"); setError(""); }}>Crear hogar</button>
+        <button type="button" role="tab" aria-selected={mode === "join"} data-active={mode === "join" || undefined} onClick={() => { setMode("join"); setError(""); }}>Unirme con código</button>
+      </div>
+      {mode === "create"
+        ? <form onSubmit={createHousehold} className="auth-form"><label>Nombre del hogar<input value={name} onChange={e => setName(e.target.value)} maxLength={80} required /></label><button className="auth-submit" disabled={busy || !name.trim()}>{busy ? "Creando..." : "Crear hogar"}</button></form>
+        : <form onSubmit={joinHousehold} className="auth-form"><label>Código de familia<input value={code} onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} autoCapitalize="characters" autoComplete="off" spellCheck={false} inputMode="text" maxLength={8} placeholder="K9F4QM7P" required /></label><button className="auth-submit" disabled={busy || code.trim().length < 8}>{busy ? "Uniéndote..." : "Unirme al hogar"}</button></form>}
+    </div>}
     {state === "error" && <button className="auth-submit" onClick={load}>Reintentar</button>}
     {state !== "loading" && <SignOutButton />}
   </main>;
-  return <DataContext.Provider value={{ data, save, householdName }}>
+  return <DataContext.Provider value={{ data, save, householdName, householdCode, role, rotateCode }}>
     <div className="sync-status" aria-live="polite">
       {error ? <span role="alert">{error} <button onClick={() => { if (window.confirm("¿Recargar los datos? Se descartarán los formularios sin guardar.")) void load(); }}>Recargar</button></span> : busy ? "Guardando..." : saved ? "Guardado" : null}
     </div>

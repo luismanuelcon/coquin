@@ -1,5 +1,6 @@
--- Run in the SQL Editor as postgres after both migrations.
--- All fixtures are rolled back, including the two users (no credentials created).
+-- Run in the SQL Editor as postgres after applying all migrations
+-- (including 202609210001_family_join_code.sql).
+-- All fixtures are rolled back, including the users (no credentials created).
 begin;
 select set_config('coquin.test_a', gen_random_uuid()::text, true);
 select set_config('coquin.test_b', gen_random_uuid()::text, true);
@@ -63,6 +64,51 @@ do $$ begin
   perform public.save_module('tasks', '[]', 3, gen_random_uuid());
 end $$;
 reset role;
+-- Family join code: invalid code, join, one-household guard and non-admin rotate.
+select set_config('coquin.test_c', gen_random_uuid()::text, true);
+insert into auth.users(id) values (current_setting('coquin.test_c')::uuid);
+select set_config('coquin.code_a', (
+  select h.join_code from public.households h
+  join public.household_members m on m.household_id = h.id
+  where m.user_id = current_setting('coquin.test_a')::uuid
+), true);
+select set_config('request.jwt.claim.sub', current_setting('coquin.test_c'), true);
+set local role authenticated;
+do $$ begin
+  begin
+    perform public.join_household('BADCODE9');
+    raise exception 'Invalid code was accepted';
+  exception when raise_exception then
+    if sqlerrm <> 'INVALID_CODE' then raise; end if;
+  end;
+  perform public.join_household(current_setting('coquin.code_a'));
+  if (select household_id from public.household_members where user_id = current_setting('coquin.test_c')::uuid)
+     is distinct from (select household_id from public.household_members where user_id = current_setting('coquin.test_a')::uuid)
+  then raise exception 'Join did not link to household'; end if;
+  begin
+    perform public.join_household(current_setting('coquin.code_a'));
+    raise exception 'Second join was accepted';
+  exception when raise_exception then
+    if sqlerrm <> 'HOUSEHOLD_EXISTS' then raise; end if;
+  end;
+  begin
+    perform public.rotate_join_code();
+    raise exception 'Non-admin rotate was accepted';
+  exception when raise_exception then
+    if sqlerrm <> 'NOT_ADMIN' then raise; end if;
+  end;
+end $$;
+reset role;
+-- Admin rotate replaces the code; the previous code stops resolving.
+select set_config('request.jwt.claim.sub', current_setting('coquin.test_a'), true);
+set local role authenticated;
+select public.rotate_join_code();
+reset role;
+do $$ begin
+  if exists(select 1 from public.households where join_code = current_setting('coquin.code_a')) then
+    raise exception 'Old code still valid after rotate';
+  end if;
+end $$;
 select set_config('request.jwt.claim.sub', '', true);
 set local role anon;
 do $$ begin
@@ -77,4 +123,4 @@ do $$ begin
 end $$;
 reset role;
 rollback;
-select 'PASS: CRUD, rollback, retry, conflicts, validation, household RLS, private finances and anonymous access' as result;
+select 'PASS: CRUD, rollback, retry, conflicts, validation, household RLS, join codes, private finances and anonymous access' as result;

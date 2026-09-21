@@ -1,8 +1,10 @@
 "use client";
 
-import { Check, Moon, Sun } from "lucide-react";
+import { useState } from "react";
+import { Check, Copy, Moon, RefreshCw, Sun } from "lucide-react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
+import { useAppData } from "@/components/data/data-provider";
 import { useTheme, type ThemeName } from "@/lib/hooks/use-theme";
 
 const THEME_OPTIONS: {
@@ -14,6 +16,65 @@ const THEME_OPTIONS: {
   { value: "dark", label: "Oscuro", description: "Tema por defecto, plum profundo", icon: Moon },
   { value: "light", label: "Claro", description: "Fondos claros y suaves", icon: Sun },
 ];
+
+function FamilyCodeSection() {
+  const { householdName, householdCode, role, rotateCode } = useAppData();
+  const [copied, setCopied] = useState(false);
+  const [rotating, setRotating] = useState(false);
+  const formatted = `${householdCode.slice(0, 4)}-${householdCode.slice(4)}`;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(householdCode);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard no disponible */ }
+  }
+  async function rotate() {
+    if (rotating) return;
+    if (!window.confirm("¿Generar un código nuevo? El código actual dejará de funcionar. Los miembros actuales no se ven afectados.")) return;
+    setRotating(true);
+    await rotateCode();
+    setRotating(false);
+  }
+
+  return (
+    <section className="card-surface flex flex-col gap-3 p-4" aria-label="Código de familia">
+      <div className="flex flex-col gap-1">
+        <h2 className="section-title">Código de familia</h2>
+        <p className="text-[12px] font-semibold text-on-surface-variant">
+          Compártelo para que otras personas se unan a {householdName}.
+        </p>
+      </div>
+      <div className="flex items-center justify-between gap-3 rounded-2xl bg-black/20 px-4 py-3">
+        <span className="text-[22px] font-extrabold tracking-[0.12em] text-on-surface">{formatted}</span>
+        <button
+          type="button"
+          onClick={copy}
+          aria-label="Copiar código"
+          className="grid h-11 w-11 place-items-center rounded-full bg-white/5 text-on-surface"
+        >
+          {copied ? <Check size={18} strokeWidth={2.8} /> : <Copy size={18} strokeWidth={2.2} />}
+        </button>
+      </div>
+      {role === "admin" ? (
+        <button
+          type="button"
+          onClick={rotate}
+          disabled={rotating}
+          className="flex items-center justify-center gap-2 rounded-full border border-white/10 px-4 py-3 text-[13px] font-bold text-on-surface disabled:opacity-50"
+        >
+          <RefreshCw size={16} strokeWidth={2.4} />
+          {rotating ? "Generando..." : "Generar nuevo código"}
+        </button>
+      ) : (
+        <p className="text-[12px] font-semibold text-on-surface-variant">
+          Solo el administrador del hogar puede generar un código nuevo.
+        </p>
+      )}
+    </section>
+  );
+}
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -28,6 +89,8 @@ export default function SettingsPage() {
           subtitle="Adapta Coquín a tu gusto"
           badge="Portal"
         />
+
+        <FamilyCodeSection />
 
         <section className="card-surface flex flex-col gap-3 p-4" aria-label="Tema de la aplicación">
           <div className="flex flex-col gap-1">
