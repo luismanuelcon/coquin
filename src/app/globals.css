@@ -1050,6 +1050,29 @@ input, select, textarea { min-height: 44px; font-size: 16px; max-width: 100%; }
 }
 .auth-submit:disabled { opacity: 0.5; box-shadow: none; }
 .auth-error { color: #ffb4ab; font-size: 13px; line-height: 1.5; }
+.household-setup { display: flex; flex-direction: column; gap: 16px; }
+.household-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 9999px;
+  border: 1px solid #574145;
+  background: #120c15;
+}
+.household-switch button {
+  min-height: 44px;
+  border-radius: 9999px;
+  border: 0;
+  background: transparent;
+  color: #debfc4;
+  font-size: 13px;
+  font-weight: 700;
+}
+.household-switch button[data-active] {
+  background: linear-gradient(90deg, #ff6b97, #ffb955);
+  color: #66002c;
+}
 .password-input { position: relative; }
 .password-input input { padding-right: 54px; }
 .password-input button {

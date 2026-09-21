@@ -10,9 +10,11 @@ Migraciones, en orden:
 
 1. `supabase/migrations/202609150001_household_data.sql`
 2. `supabase/migrations/202609160001_validate_documents.sql`
+3. `supabase/migrations/202609210001_family_join_code.sql`
 
-Ambas se aplicaron al proyecto `vyeecoajzdeuxuuczjmf` el 16 de septiembre de 2026.
+Las dos primeras se aplicaron al proyecto `vyeecoajzdeuxuuczjmf` el 16 de septiembre de 2026.
 La segunda función de validación se corrigió y volvió a aplicar durante la prueba.
+La tercera añade el código de familia (`join_code`) y las funciones para unirse y rotar.
 
 ## Login básico de prueba
 
@@ -32,7 +34,11 @@ gestiona las sesiones; la aplicación no almacena contraseñas.
 ## Persistencia y permisos
 
 - `src/proxy.ts` comprueba los claims, renueva cookies y redirige a `/login`.
-- `DataProvider` obtiene el usuario y sus documentos; el primer acceso crea un hogar.
+- `DataProvider` obtiene el usuario y sus documentos; si no tiene hogar, ofrece
+  crear uno o unirse con un código de familia.
+- `create_household` genera un `join_code` único; `join_household` asocia por
+  código como `member`; `rotate_join_code` (solo `admin`) lo renueva sin expulsar
+  a los miembros actuales. Ver `docs/registro-familia.md`.
 - Agenda, tareas y mercado pertenecen al hogar; finanzas pertenece al usuario.
 - Las tablas tienen RLS. Los clientes no pueden escribir directamente.
 - `create_household` y `save_module` derivan usuario y hogar de `auth.uid()`.
