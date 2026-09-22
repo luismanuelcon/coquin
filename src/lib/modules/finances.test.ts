@@ -12,6 +12,7 @@ import {
   normalizeExpenseCategory,
   parseCopAmount,
   summarizeMiscByCategory,
+  summarizeMiscFlags,
   upsertFinancePeriod,
 } from "./finances";
 
@@ -56,6 +57,29 @@ describe("finances module", () => {
       paid: 306500,
       pending: 1660000,
       available: 4583500,
+    });
+  });
+
+  it("summarizes weekend and owed misc totals", () => {
+    const period: FinancePeriod = {
+      id: "period-flags",
+      startDate: "2026-09-01",
+      endDate: "2026-09-30",
+      incomes: [],
+      items: [],
+      miscExpenses: [
+        { id: "m1", date: "2026-09-05", concept: "Cine", amount: 30000, weekend: true },
+        { id: "m2", date: "2026-09-06", concept: "Mercado", amount: 50000, weekend: true, owed: true },
+        { id: "m3", date: "2026-09-08", concept: "Café", amount: 20000 },
+      ],
+    };
+
+    expect(summarizeMiscFlags(period)).toEqual({
+      total: 100000,
+      weekendTotal: 80000,
+      weekdayTotal: 20000,
+      weekendPercent: 0.8,
+      owedTotal: 50000,
     });
   });
 

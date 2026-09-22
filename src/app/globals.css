@@ -1085,6 +1085,24 @@ input, select, textarea { min-height: 44px; font-size: 16px; max-width: 100%; }
   text-align: center;
 }
 .household-skip:disabled { opacity: 0.5; }
+.misc-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 16px;
+  background: var(--color-surface-container-lowest);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  cursor: pointer;
+}
+.misc-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+}
 .household-switch {
   display: grid;
   grid-template-columns: 1fr 1fr;

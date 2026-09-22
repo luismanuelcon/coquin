@@ -54,6 +54,8 @@ export type FinanceMiscExpense = {
   amount: number;
   category?: string;
   note?: string;
+  weekend?: boolean;
+  owed?: boolean;
 };
 
 export type FinancePeriod = {
