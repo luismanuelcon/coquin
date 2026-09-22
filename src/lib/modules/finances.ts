@@ -133,7 +133,9 @@ export function calculateFinancePeriodSummary(period: FinancePeriod) {
   const miscTotal = getMiscExpensesTotal(period);
   const budgetedTotal = period.items.reduce((sum, item) => sum + item.amount, 0);
   const totalPayments = budgetedTotal + miscTotal;
-  const paid = period.items.reduce((sum, item) => sum + (item.status === "paid" ? item.amount : 0), 0);
+  const itemsPaid = period.items.reduce((sum, item) => sum + (item.status === "paid" ? item.amount : 0), 0);
+  // Misc expenses are money already spent, so they count as paid, not pending.
+  const paid = itemsPaid + miscTotal;
   const base = period.incomes.reduce((sum, income) => sum + income.amount, 0);
 
   return {
