@@ -129,6 +129,23 @@ export function getMiscExpensesTotal(period: FinancePeriod) {
   return period.miscExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 }
 
+export function summarizeMiscFlags(period: FinancePeriod) {
+  let weekendTotal = 0;
+  let owedTotal = 0;
+  for (const expense of period.miscExpenses) {
+    if (expense.weekend) weekendTotal += expense.amount;
+    if (expense.owed) owedTotal += expense.amount;
+  }
+  const total = getMiscExpensesTotal(period);
+  return {
+    total,
+    weekendTotal,
+    weekdayTotal: total - weekendTotal,
+    weekendPercent: total === 0 ? 0 : weekendTotal / total,
+    owedTotal,
+  };
+}
+
 export function calculateFinancePeriodSummary(period: FinancePeriod) {
   const miscTotal = getMiscExpensesTotal(period);
   const budgetedTotal = period.items.reduce((sum, item) => sum + item.amount, 0);

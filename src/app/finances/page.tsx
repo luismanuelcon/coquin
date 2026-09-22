@@ -20,6 +20,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { DatePicker } from "@/components/ui/date-picker";
 import { CategoryDonut } from "@/components/ui/category-donut";
+import { MiscWeekendChart } from "@/components/ui/misc-weekend-chart";
 import { MoneyInput } from "@/components/ui/money-input";
 import { useModule } from "@/components/data/data-provider";
 import { celebrate } from "@/lib/ui/celebrate";
@@ -31,6 +32,7 @@ import {
   EXPENSE_CATEGORIES,
   getFinancePeriodRangeFromStart,
   summarizeMiscByCategory,
+  summarizeMiscFlags,
   upsertFinancePeriod,
 } from "@/lib/modules/finances";
 import type {
@@ -74,7 +76,7 @@ function emptyBudgetForm(): BudgetForm {
 }
 
 function emptyMiscForm() {
-  return { date: getColombiaTodayIso(), concept: "", amount: "", category: "", note: "" };
+  return { date: getColombiaTodayIso(), concept: "", amount: "", category: "", note: "", weekend: false, owed: false };
 }
 
 const INPUT =
@@ -109,6 +111,7 @@ export default function FinancesPage() {
   );
   const summary = useMemo(() => calculateFinancePeriodSummary(activePeriod), [activePeriod]);
   const miscSummary = useMemo(() => summarizeMiscByCategory(activePeriod), [activePeriod]);
+  const miscFlags = useMemo(() => summarizeMiscFlags(activePeriod), [activePeriod]);
   const paidPercent = summary.totalPayments === 0 ? 0 : Math.round((summary.paid / summary.totalPayments) * 100);
 
   useScrollIntoViewOnOpen(budgetFormOpen, "finance-budget-form");
@@ -178,6 +181,8 @@ export default function FinancesPage() {
       amount,
       category: miscForm.category.trim() || undefined,
       note: miscForm.note.trim() || undefined,
+      weekend: miscForm.weekend || undefined,
+      owed: miscForm.owed || undefined,
     };
     if (
       !(await updateActivePeriod({
@@ -434,6 +439,24 @@ export default function FinancesPage() {
                   ariaLabel="Valor del gasto"
                 />
               </div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="misc-check">
+                  <input
+                    type="checkbox"
+                    checked={miscForm.weekend}
+                    onChange={(event) => setMiscForm((current) => ({ ...current, weekend: event.target.checked }))}
+                  />
+                  <span>Fin de semana</span>
+                </label>
+                <label className="misc-check">
+                  <input
+                    type="checkbox"
+                    checked={miscForm.owed}
+                    onChange={(event) => setMiscForm((current) => ({ ...current, owed: event.target.checked }))}
+                  />
+                  <span>Me deben</span>
+                </label>
+              </div>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_120px]">
                 <button type="submit" className="cta-pill">
                   {editingMiscId ? "Guardar gasto" : "Registrar gasto"}
@@ -623,10 +646,17 @@ export default function FinancesPage() {
           </div>
 
           {miscChartOpen ? (
-            <div id="gastos-varios-chart">
+            <div id="gastos-varios-chart" className="flex flex-col gap-2">
               <CategoryDonut
                 total={miscSummary.total}
                 slices={miscSummary.slices}
+                formatAmount={(amount) => moneyFormatter.format(amount)}
+              />
+              <MiscWeekendChart
+                weekendTotal={miscFlags.weekendTotal}
+                weekdayTotal={miscFlags.weekdayTotal}
+                weekendPercent={miscFlags.weekendPercent}
+                owedTotal={miscFlags.owedTotal}
                 formatAmount={(amount) => moneyFormatter.format(amount)}
               />
             </div>
@@ -657,7 +687,7 @@ export default function FinancesPage() {
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-[14px] font-bold text-on-surface">{expense.concept}</h3>
                       <p className="truncate text-[11px] font-semibold text-on-surface-variant">
-                        {formatDate(expense.date)}{expense.category ? ` · ${expense.category}` : ""}
+                        {formatDate(expense.date)}{expense.category ? ` · ${expense.category}` : ""}{expense.weekend ? " · Finde" : ""}{expense.owed ? " · Me deben" : ""}
                       </p>
                     </div>
                     <span className="shrink-0 whitespace-nowrap text-[14px] font-bold text-secondary">
@@ -672,6 +702,8 @@ export default function FinancesPage() {
                           amount: String(expense.amount),
                           category: expense.category ?? "",
                           note: expense.note ?? "",
+                          weekend: expense.weekend ?? false,
+                          owed: expense.owed ?? false,
                         });
                         setEditingMiscId(expense.id);
                         setMiscFormOpen(true);
