@@ -136,11 +136,22 @@ function ProtectedData({ children }: { children: ReactNode }) {
       return String(newCode);
     } catch { return null; }
   }
+  async function continueSolo() {
+    if (busy) return;
+    setBusy(true); setError("");
+    try {
+      const { error: createError } = await createClient().rpc("create_household", { household_name: "Mi hogar" });
+      if (createError) throw createError;
+      await load();
+    } catch { setError("No pudimos continuar. Intenta de nuevo."); }
+    finally { setBusy(false); }
+  }
   if (state !== "ready") return <main className="auth-screen">
     <CoquinWordmark priority />
     <h1>{state === "household" ? "Tu hogar" : state === "loading" ? "Abriendo tu hogar..." : "No pudimos conectar"}</h1>
     {error && <p role="alert" className="auth-error">{error}</p>}
     {state === "household" && <div className="household-setup">
+      <p className="household-hint">Coquín organiza tu hogar en familia: la agenda, el mercado y las tareas se comparten con quienes se unan. Crea una familia, únete con un código o continúa solo por ahora.</p>
       <div className="household-switch" role="tablist" aria-label="Crear o unirse a un hogar">
         <button type="button" role="tab" aria-selected={mode === "create"} data-active={mode === "create" || undefined} onClick={() => { setMode("create"); setError(""); }}>Crear hogar</button>
         <button type="button" role="tab" aria-selected={mode === "join"} data-active={mode === "join" || undefined} onClick={() => { setMode("join"); setError(""); }}>Unirme con código</button>
@@ -148,6 +159,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
       {mode === "create"
         ? <form onSubmit={createHousehold} className="auth-form"><label>Nombre del hogar<input value={name} onChange={e => setName(e.target.value)} maxLength={80} required /></label><button className="auth-submit" disabled={busy || !name.trim()}>{busy ? "Creando..." : "Crear hogar"}</button></form>
         : <form onSubmit={joinHousehold} className="auth-form"><label>Código de familia<input value={code} onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} autoCapitalize="characters" autoComplete="off" spellCheck={false} inputMode="text" maxLength={8} placeholder="K9F4QM7P" required /></label><button className="auth-submit" disabled={busy || code.trim().length < 8}>{busy ? "Uniéndote..." : "Unirme al hogar"}</button></form>}
+      <button type="button" className="household-skip" onClick={continueSolo} disabled={busy}>No deseo crear ni unirme a una familia; continuar solo</button>
     </div>}
     {state === "error" && <button className="auth-submit" onClick={load}>Reintentar</button>}
     {state !== "loading" && <SignOutButton />}

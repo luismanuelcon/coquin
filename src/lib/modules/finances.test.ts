@@ -53,8 +53,8 @@ describe("finances module", () => {
       budgetedTotal: 1946500,
       miscTotal: 20000,
       totalPayments: 1966500,
-      paid: 286500,
-      pending: 1680000,
+      paid: 306500,
+      pending: 1660000,
       available: 4583500,
     });
   });

@@ -1011,6 +1011,25 @@ input, select, textarea { min-height: 44px; font-size: 16px; max-width: 100%; }
   color: #ffb1c3;
   letter-spacing: 0.02em;
 }
+.auth-mascot {
+  display: block;
+  margin: 0 auto -4px;
+  filter: drop-shadow(0 10px 24px rgb(255 107 151 / 35%));
+}
+.auth-wordmark {
+  display: block;
+  width: min(260px, 72%);
+  height: auto;
+  margin: 0 auto;
+  filter: drop-shadow(0 10px 24px rgb(255 107 151 / 30%));
+}
+.auth-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #debfc4 !important;
+  letter-spacing: 0 !important;
+}
 .auth-form { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
 .auth-form label {
   display: flex;
@@ -1051,6 +1070,21 @@ input, select, textarea { min-height: 44px; font-size: 16px; max-width: 100%; }
 .auth-submit:disabled { opacity: 0.5; box-shadow: none; }
 .auth-error { color: #ffb4ab; font-size: 13px; line-height: 1.5; }
 .household-setup { display: flex; flex-direction: column; gap: 16px; }
+.household-hint {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #debfc4;
+}
+.household-skip {
+  align-self: center;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffb955;
+  text-align: center;
+}
+.household-skip:disabled { opacity: 0.5; }
 .household-switch {
   display: grid;
   grid-template-columns: 1fr 1fr;

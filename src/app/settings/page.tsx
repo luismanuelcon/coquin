@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check, Copy, Moon, RefreshCw, Sun } from "lucide-react";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
-import { useAppData } from "@/components/data/data-provider";
+import { useAppData, SignOutButton } from "@/components/data/data-provider";
 import { useTheme, type ThemeName } from "@/lib/hooks/use-theme";
 
 const THEME_OPTIONS: {
@@ -131,6 +131,18 @@ export default function SettingsPage() {
                 </button>
               );
             })}
+          </div>
+        </section>
+
+        <section className="card-surface flex flex-col gap-3 p-4" aria-label="Sesión">
+          <div className="flex flex-col gap-1">
+            <h2 className="section-title">Sesión</h2>
+            <p className="text-[12px] font-semibold text-on-surface-variant">
+              Cierra la sesión en este dispositivo. Tu hogar y tus datos se conservan.
+            </p>
+          </div>
+          <div className="flex justify-start">
+            <SignOutButton />
           </div>
         </section>
       </div>
