@@ -6,6 +6,13 @@ describe("module document validation", () => {
   it("accepts the initial empty documents", () => {
     for (const [module, value] of Object.entries(emptyData())) expect(validateData(module, value)).toBe(true);
   });
+  it("accepts legacy owners and validates account IDs on new assignments", () => {
+    const task = { id: "one", title: "Comprar", owner: "Ana", due: "2026-09-25", status: "Pendiente" };
+    expect(validateData("tasks", [task])).toBe(true);
+    expect(validateData("tasks", [{ ...task, ownerId: "11111111-1111-4111-8111-111111111111" }])).toBe(true);
+    expect(validateData("tasks", [{ ...task, ownerId: "Ana" }])).toBe(false);
+    expect(validateData("tasks", [{ ...task, ownerId: null }])).toBe(false);
+  });
   it("rejects duplicate IDs and malformed records", () => {
     const task = { id: "one", title: "Comprar", owner: "Prueba", due: "Hoy", status: "Pendiente" };
     expect(validateData("tasks", [task, task])).toBe(false);

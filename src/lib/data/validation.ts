@@ -17,7 +17,7 @@ function list(v: unknown, check: (row: Record<string, unknown>) => boolean): boo
 export function validateData(module: string, v: unknown): boolean {
   if (module === "calendar") return list(v, row => text(row.title) && text(row.time) && date(row.date) &&
     typeof row.meta === "string" && row.meta.length <= 500 && ["calendar", "finances", "market", "tasks", "home"].includes(String(row.tone)));
-  if (module === "tasks") return list(v, row => text(row.title) && text(row.owner) && date(row.due) &&
+  if (module === "tasks") return list(v, row => text(row.title) && text(row.owner) && (row.ownerId === undefined || (typeof row.ownerId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.ownerId))) && date(row.due) &&
     ["Pendiente", "En progreso", "Urgente", "Completada"].includes(String(row.status)));
   if (!object(v)) return false;
   if (module === "market") return amount(v.budget) && list(v.purchases, row =>

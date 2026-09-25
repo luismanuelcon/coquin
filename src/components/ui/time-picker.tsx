@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { pickerAccents } from "@/lib/design-system";
 import type { ModuleKey } from "@/lib/types";
 
 type Meridiem = "AM" | "PM";
@@ -26,13 +27,7 @@ type TimePickerProps = {
   align?: "start" | "end";
 };
 
-const toneAccent: Record<ModuleKey, { color: string; soft: string; onAccent: string }> = {
-  home: { color: "var(--primary)", soft: "var(--primary-soft)", onAccent: "var(--primary-ink)" },
-  calendar: { color: "var(--warning)", soft: "var(--warning-soft)", onAccent: "#1a120b" },
-  finances: { color: "var(--finance)", soft: "var(--finance-soft)", onAccent: "#0f2018" },
-  market: { color: "var(--market)", soft: "var(--market-soft)", onAccent: "#3a1526" },
-  tasks: { color: "var(--primary)", soft: "var(--primary-soft)", onAccent: "var(--primary-ink)" },
-};
+
 
 const ITEM_HEIGHT = 44;
 
@@ -189,7 +184,7 @@ export function TimePicker({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [flipUp, setFlipUp] = useState(false);
-  const accent = toneAccent[tone];
+  const accent = pickerAccents[tone];
 
   const hours = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
   const minutes = useMemo(() => {

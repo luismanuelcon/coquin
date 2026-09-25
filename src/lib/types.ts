@@ -101,10 +101,16 @@ export type MarketBudget = {
   currency: string;
 };
 
+export type HouseholdMember = {
+  userId: string;
+  displayName: string;
+};
+
 export type ProjectTask = {
   id: string;
   title: string;
   owner: string;
+  ownerId?: string;
   status: string;
   due: string;
 };

@@ -22,7 +22,7 @@ export function ModuleIcon({ tone, size = "md", filled = false, className }: Mod
   const dims = sizeMap[size];
 
   const style = filled
-    ? { background: theme.gradient, color: "#1f0a10", boxShadow: `0 4px 16px ${theme.color}40` }
+    ? { background: theme.gradient, color: "#1f0a10", boxShadow: `0 4px 16px color-mix(in srgb, ${theme.color} 25%, transparent)` }
     : { background: theme.surface, color: theme.color };
 
   return (

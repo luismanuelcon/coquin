@@ -193,7 +193,7 @@ export default function MarketPage() {
           </div>
 
           {summary.isOverBudget ? (
-            <div className="relative z-10 mt-3 rounded-xl bg-[rgb(147_0_10_/_30%)] px-3 py-2 text-xs font-bold text-error">
+            <div className="relative z-10 mt-3 rounded-xl bg-[var(--error-surface)] px-3 py-2 text-xs font-bold text-error">
               Sobrepasado por {moneyFormatter.format(Math.abs(summary.remaining))}
             </div>
           ) : null}

@@ -9,6 +9,7 @@ import { phoneLoginEmail } from "@/lib/auth/phone";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -40,7 +41,7 @@ export default function LoginPage() {
             setError("Las contraseñas no coinciden.");
             return;
           }
-          await registerAccount(client, email, password);
+          await registerAccount(client, email, password, displayName);
           setRegistered(true);
           setPassword("");
           setConfirm("");
@@ -65,7 +66,7 @@ export default function LoginPage() {
     <div className="auth-intro">
       <p>Tu hogar, conectado</p>
       <h1>{mode === "signin" ? <>Qué bueno<br />tenerte aquí.</> : <>Crea tu<br />cuenta.</>}</h1>
-      {mode === "signup" && <p className="auth-hint">Regístrate con tu celular y una contraseña. Si tu familia ya usa Coquín, puedes unirte con el código que te compartieron.</p>}
+      {mode === "signup" && <p className="auth-hint">Regístrate con tu nombre, celular y una contraseña. Si tu familia ya usa Coquín, puedes unirte con el código que te compartieron.</p>}
     </div>
     <div className="household-switch" role="group" aria-label="Entrar o crear cuenta">
       <button type="button" disabled={busy || registered} aria-pressed={mode === "signin"} data-active={mode === "signin" || undefined} onClick={() => { setMode("signin"); setError(""); setConfirm(""); }}>Entrar</button>
@@ -74,6 +75,7 @@ export default function LoginPage() {
     <form onSubmit={submit} className="auth-form" aria-busy={busy}>
       {registered && <p role="status" className="auth-hint">Tu cuenta ya está creada. Puedes completar la unión a tu familia o continuar sin código.</p>}
       {!registered && <>
+      {mode === "signup" && <label>Tu nombre<input autoComplete="name" value={displayName} onChange={e => setDisplayName(e.target.value)} maxLength={80} placeholder="¿Cómo te llamas?" required disabled={busy} aria-describedby="display-name-help" /><span id="display-name-help" className="auth-hint">Tu familia verá este nombre al asignar tareas.</span></label>}
       <label>Celular<input autoComplete="username" type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="300 123 4567" required disabled={busy} /></label>
       <label>Contraseña<span className="password-input"><input autoComplete={mode === "signup" ? "new-password" : "current-password"} type={visible ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} minLength={mode === "signup" ? 8 : undefined} required disabled={busy} /><button type="button" aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"} aria-pressed={visible} onClick={() => setVisible(!visible)}>{visible ? <EyeOff size={20} /> : <Eye size={20} />}</button></span></label>
       {mode === "signup" && <label>Repetir contraseña<span className="password-input"><input autoComplete="new-password" type={visible ? "text" : "password"} value={confirm} onChange={e => setConfirm(e.target.value)} minLength={8} required disabled={busy} /></span></label>}

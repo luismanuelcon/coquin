@@ -11,6 +11,7 @@ Migraciones, en orden:
 1. `supabase/migrations/202609150001_household_data.sql`
 2. `supabase/migrations/202609160001_validate_documents.sql`
 3. `supabase/migrations/202609210001_family_join_code.sql`
+4. `supabase/migrations/202609250001_member_names.sql`
 
 Las dos primeras se aplicaron al proyecto `vyeecoajzdeuxuuczjmf` el 16 de septiembre de 2026.
 La segunda función de validación se corrigió y volvió a aplicar durante la prueba.
@@ -76,3 +77,21 @@ Ejecutar `supabase/tests/transactional_crud.sql` como postgres en el SQL Editor 
 probar CRUD, versiones, reintentos, validación y RLS con dos usuarios temporales.
 La prueba completa finaliza con `ROLLBACK`: no deja usuarios, hogares ni documentos.
 El resultado remoto fue PASS el 16 de septiembre de 2026.
+
+## Nombres y responsables de tareas
+
+- El registro guarda `display_name` en los metadatos del usuario de Supabase Auth.
+  Las cuentas existentes sin un nombre válido deben completarlo tras autenticarse,
+  antes de acceder al hogar. Este dato es de presentación, nunca de autorización.
+- `get_household_members()` devuelve únicamente IDs y nombres del hogar del usuario
+  autenticado. No expone teléfonos ni correos, ni acepta un hogar arbitrario.
+- Tareas selecciona responsables del listado y guarda `ownerId` junto con `owner`
+  como nombre histórico. Las tareas antiguas conservan su texto y pueden reasignarse.
+  Los nombres duplicados se distinguen con parte del ID; la propia cuenta indica «tú».
+- La lista se actualiza al abrir el formulario y con «Actualizar integrantes».
+  Los integrantes antiguos sin nombre aparecen cuando lo completen al ingresar.
+- La migración 4 rechaza asignaciones nuevas a cuentas de otros hogares y permite
+  conservar asignaciones históricas. Debe aplicarse antes de publicar esta versión.
+- `supabase/tests/member_names.sql` verifica nombres, aislamiento entre hogares,
+  permisos anónimos, asignaciones y compatibilidad. Usa datos sintéticos y `ROLLBACK`.
+  La migración 4 y esta prueba SQL están pendientes de ejecución remota.
