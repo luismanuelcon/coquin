@@ -7,7 +7,7 @@ import { emptyData, type AppData, type DataModule } from "@/lib/data/empty";
 import { CoquinWordmark } from "@/components/brand/coquin-wordmark";
 import { validateData } from "@/lib/data/validation";
 
-import { profileName, saveDisplayName } from "@/lib/auth/profile";
+import { profileEmail, profileName, saveContactEmail, saveDisplayName } from "@/lib/auth/profile";
 import type { HouseholdMember } from "@/lib/types";
 
 type HouseholdRole = "admin" | "member";
@@ -16,6 +16,8 @@ type ContextValue = {
   householdName: string;
   userId: string;
   displayName: string;
+  contactEmail: string;
+  saveEmail: (value: string) => Promise<string>;
   members: HouseholdMember[];
   membersError: string;
   refreshMembers: () => Promise<void>;
@@ -42,6 +44,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<"create" | "join">("create");
   const [userId, setUserId] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [profileDraft, setProfileDraft] = useState("");
   const [members, setMembers] = useState<HouseholdMember[]>([]);
   const [membersError, setMembersError] = useState("");
@@ -69,6 +72,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
       setUserId(auth.user.id);
       const currentName = profileName(auth.user.user_metadata);
       setDisplayName(currentName);
+      setContactEmail(profileEmail(auth.user.user_metadata));
       if (!currentName) { setState("profile"); return; }
       const { data: member, error: memberError } = await client.from("household_members")
         .select("household_id, role").eq("user_id", auth.user.id).maybeSingle();
@@ -178,6 +182,11 @@ function ProtectedData({ children }: { children: ReactNode }) {
       return String(newCode);
     } catch { return null; }
   }
+  async function saveEmail(value: string) {
+    const email = await saveContactEmail(createClient(), value);
+    setContactEmail(email);
+    return email;
+  }
   async function continueSolo() {
     if (busy) return;
     setBusy(true); setError("");
@@ -211,7 +220,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
     {state === "error" && <button className="auth-submit" onClick={load}>Reintentar</button>}
     {state !== "loading" && <SignOutButton />}
   </main>;
-  return <DataContext.Provider value={{ data, save, userId, displayName, members, membersError, refreshMembers, householdName, householdCode, role, rotateCode }}>
+  return <DataContext.Provider value={{ data, save, userId, displayName, contactEmail, saveEmail, members, membersError, refreshMembers, householdName, householdCode, role, rotateCode }}>
     <div className="sync-status" aria-live="polite">
       {error ? <span role="alert">{error} <button onClick={() => { if (window.confirm("¿Recargar los datos? Se descartarán los formularios sin guardar.")) void load(); }}>Recargar</button></span> : busy ? "Guardando..." : saved ? "Guardado" : null}
     </div>

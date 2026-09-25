@@ -24,6 +24,18 @@ describe("registration and optional family membership", () => {
     expect(signUp).toHaveBeenCalledWith({ email: "phone@example.invalid", password: "password123", options: { data: { display_name: "Ana María" } } });
   });
 
+  it("stores an optional contact email when provided", async () => {
+    const { client, signUp } = clientStub();
+    await registerAccount(client, "phone@example.invalid", "password123", "Ana", "  Ana@Correo.COM ");
+    expect(signUp).toHaveBeenCalledWith({ email: "phone@example.invalid", password: "password123", options: { data: { display_name: "Ana", contact_email: "ana@correo.com" } } });
+  });
+
+  it("omits the contact email when left blank", async () => {
+    const { client, signUp } = clientStub();
+    await registerAccount(client, "phone@example.invalid", "password123", "Ana", "   ");
+    expect(signUp).toHaveBeenCalledWith({ email: "phone@example.invalid", password: "password123", options: { data: { display_name: "Ana" } } });
+  });
+
   it("does not treat an unconfirmed signup as an active account", async () => {
     const { client } = clientStub(null);
     await expect(registerAccount(client, "phone@example.invalid", "password123", "Ana")).rejects.toThrow("activar");
