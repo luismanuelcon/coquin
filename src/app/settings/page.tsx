@@ -76,6 +76,63 @@ function FamilyCodeSection() {
   );
 }
 
+function ContactEmailSection() {
+  const { contactEmail, saveEmail } = useAppData();
+  const [value, setValue] = useState(contactEmail);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const dirty = value.trim() !== contactEmail;
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    setSaved(false);
+    try {
+      await saveEmail(value);
+      setSaved(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pudimos guardar tu correo.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="card-surface flex flex-col gap-3 p-4" aria-label="Correo de contacto">
+      <div className="flex flex-col gap-1">
+        <h2 className="section-title">Correo</h2>
+        <p className="text-[12px] font-semibold text-on-surface-variant">
+          Opcional. Lo usaremos para ayudarte a recuperar tu cuenta.
+        </p>
+      </div>
+      <form onSubmit={submit} className="flex flex-col gap-3">
+        <input
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          value={value}
+          onChange={(event) => { setValue(event.target.value); setSaved(false); setError(""); }}
+          maxLength={254}
+          placeholder="nombre@correo.com"
+          disabled={saving}
+          className="rounded-2xl bg-surface-container-highest px-4 py-3 text-[15px] font-semibold text-on-surface outline-none"
+        />
+        {error && <p role="alert" className="text-[12px] font-bold text-error">{error}</p>}
+        <button
+          type="submit"
+          disabled={saving || !dirty}
+          className="flex items-center justify-center gap-2 rounded-full border border-outline px-4 py-3 text-[13px] font-bold text-on-surface disabled:opacity-50"
+        >
+          {saving ? "Guardando..." : saved && !dirty ? "Guardado" : "Guardar correo"}
+        </button>
+      </form>
+    </section>
+  );
+}
+
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
@@ -91,6 +148,8 @@ export default function SettingsPage() {
         />
 
         <FamilyCodeSection />
+
+        <ContactEmailSection />
 
         <section className="card-surface flex flex-col gap-3 p-4" aria-label="Tema de la aplicación">
           <div className="flex flex-col gap-1">

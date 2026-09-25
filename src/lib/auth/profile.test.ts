@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { normalizeDisplayName, profileName, saveDisplayName } from "./profile";
+import { normalizeContactEmail, normalizeDisplayName, profileEmail, profileName, saveDisplayName } from "./profile";
 
 describe("display names", () => {
   it("normalizes whitespace and preserves accents", () => {
@@ -23,5 +23,21 @@ describe("display names", () => {
   it("keeps a failed profile update retryable", async () => {
     const client = { auth: { updateUser: vi.fn().mockResolvedValue({ error: {} }) } } as unknown as SupabaseClient;
     await expect(saveDisplayName(client, "Ana")).rejects.toThrow("Intenta de nuevo");
+  });
+});
+
+describe("contact email", () => {
+  it("treats an empty value as not provided", () => {
+    expect(normalizeContactEmail("   ")).toBe("");
+  });
+  it("trims and lowercases valid emails", () => {
+    expect(normalizeContactEmail("  Ana@Correo.COM ")).toBe("ana@correo.com");
+  });
+  it.each(["ana", "ana@", "ana@correo", "a b@correo.com", `${"a".repeat(250)}@correo.com`])("rejects invalid emails", (value) => {
+    expect(() => normalizeContactEmail(value)).toThrow();
+  });
+  it("reads the stored contact email", () => {
+    expect(profileEmail({ contact_email: "ana@correo.com" })).toBe("ana@correo.com");
+    expect(profileEmail({})).toBe("");
   });
 });

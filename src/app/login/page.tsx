@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [joinFamily, setJoinFamily] = useState(false);
@@ -41,7 +42,7 @@ export default function LoginPage() {
             setError("Las contraseñas no coinciden.");
             return;
           }
-          await registerAccount(client, email, password, displayName);
+          await registerAccount(client, email, password, displayName, contactEmail);
           setRegistered(true);
           setPassword("");
           setConfirm("");
@@ -77,6 +78,7 @@ export default function LoginPage() {
       {!registered && <>
       {mode === "signup" && <label>Tu nombre<input autoComplete="name" value={displayName} onChange={e => setDisplayName(e.target.value)} maxLength={80} placeholder="¿Cómo te llamas?" required disabled={busy} aria-describedby="display-name-help" /><span id="display-name-help" className="auth-hint">Tu familia verá este nombre al asignar tareas.</span></label>}
       <label>Celular<input autoComplete="username" type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="300 123 4567" required disabled={busy} /></label>
+      {mode === "signup" && <label>Correo (opcional)<input autoComplete="email" type="email" inputMode="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} maxLength={254} placeholder="nombre@correo.com" disabled={busy} aria-describedby="contact-email-help" /><span id="contact-email-help" className="auth-hint">Lo usaremos para ayudarte a recuperar tu cuenta. Puedes dejarlo vacío.</span></label>}
       <label>Contraseña<span className="password-input"><input autoComplete={mode === "signup" ? "new-password" : "current-password"} type={visible ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} minLength={mode === "signup" ? 8 : undefined} required disabled={busy} /><button type="button" aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"} aria-pressed={visible} onClick={() => setVisible(!visible)}>{visible ? <EyeOff size={20} /> : <Eye size={20} />}</button></span></label>
       {mode === "signup" && <label>Repetir contraseña<span className="password-input"><input autoComplete="new-password" type={visible ? "text" : "password"} value={confirm} onChange={e => setConfirm(e.target.value)} minLength={8} required disabled={busy} /></span></label>}
       </>}

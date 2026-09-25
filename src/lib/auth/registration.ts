@@ -1,15 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { normalizeDisplayName } from "./profile";
+import { normalizeContactEmail, normalizeDisplayName } from "./profile";
 
-export async function registerAccount(client: SupabaseClient, email: string, password: string, name: string) {
+export async function registerAccount(client: SupabaseClient, email: string, password: string, name: string, contactEmail = "") {
   const displayName = normalizeDisplayName(name);
-  const { data, error } = await client.auth.signUp({ email, password, options: { data: { display_name: displayName } } });
+  const data: Record<string, string> = { display_name: displayName };
+  const contact = normalizeContactEmail(contactEmail);
+  if (contact) data.contact_email = contact;
+  const { data: result, error } = await client.auth.signUp({ email, password, options: { data } });
   if (error) {
     throw new Error("No pudimos crear la cuenta. Si ya registraste este celular, selecciona Entrar.");
   }
   // Internal phone identifiers cannot receive confirmation emails.
-  if (!data.session) {
+  if (!result.session) {
     throw new Error("No pudimos activar el acceso a tu cuenta. Contacta al administrador. Si ya tienes una cuenta activa, selecciona Entrar.");
   }
 }
