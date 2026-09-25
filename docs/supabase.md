@@ -25,6 +25,16 @@ email/password. Este identificador no es un correo real ni verifica la propiedad
 del número. Las cuentas de prueba se crean confirmadas desde Authentication > Users
 o mediante la API administrativa, sin enviar correo.
 
+El registro desde la app requiere que Email esté habilitado, los registros estén
+permitidos y **Confirm email** esté desactivado: el identificador interno no puede
+recibir correos. La app solo considera el registro activo si Supabase devuelve una
+sesión. No se intenta un segundo login después de crear la cuenta.
+
+El formulario permite marcar «Quiero unirme a mi familia con un código». Después
+de crear la cuenta, llama a `join_household` con la sesión recién creada. Si falla
+el código, permite corregirlo sin crear otra cuenta, o continuar sin código hacia
+la configuración del hogar. Sin código se conserva la configuración posterior.
+
 El proveedor Phone permanece deshabilitado: el panel exige credenciales de un
 servicio SMS para habilitarlo. Este flujo de prueba no envía SMS y no sirve para
 recuperar contraseñas por correo. Antes de abrir registros públicos hay que adoptar

@@ -1259,3 +1259,19 @@ input, select, textarea { min-height: 44px; font-size: 16px; max-width: 100%; }
 .time-picker__quick--ghost {
   background: transparent; color: var(--text-soft); border-color: var(--surface-stroke);
 }
+
+.auth-form .auth-family-option {
+  flex-direction: row;
+  align-items: center;
+  min-height: 44px;
+  text-transform: none;
+  font-size: 14px;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+.auth-form .auth-family-option input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: #ff8fab;
+}
