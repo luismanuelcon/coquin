@@ -24,7 +24,7 @@ export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
     navLabel: "Inicio",
     href: "/",
     icon: Home,
-    color: "#ff6b97",
+    color: "var(--tone-home)",
     text: "#ffb1c3",
     surface: "rgb(255 107 151 / 18%)",
     gradient: "linear-gradient(135deg, #ff6b97, #ff8fab)",
@@ -35,7 +35,7 @@ export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
     navLabel: "Agenda",
     href: "/calendar",
     icon: CalendarDays,
-    color: "#ffb955",
+    color: "var(--tone-calendar)",
     text: "#ffddb4",
     surface: "rgb(255 185 85 / 18%)",
     gradient: "linear-gradient(135deg, #ffb955, #ffddb4)",
@@ -46,7 +46,7 @@ export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
     navLabel: "Finanzas",
     href: "/finances",
     icon: Landmark,
-    color: "#ffb1c3",
+    color: "var(--tone-finances)",
     text: "#ffd9e0",
     surface: "rgb(255 177 195 / 18%)",
     gradient: "linear-gradient(135deg, #ffb1c3, #ff6b97)",
@@ -57,7 +57,7 @@ export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
     navLabel: "Mercado",
     href: "/market",
     icon: ShoppingBasket,
-    color: "#ff8fab",
+    color: "var(--tone-market)",
     text: "#ffd9e0",
     surface: "rgb(255 143 171 / 18%)",
     gradient: "linear-gradient(135deg, #ff8fab, #ffb955)",
@@ -68,7 +68,7 @@ export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
     navLabel: "Tareas",
     href: "/tasks",
     icon: CheckCircle2,
-    color: "#ffb1c2",
+    color: "var(--tone-tasks)",
     text: "#ffd9e0",
     surface: "rgb(232 124 152 / 20%)",
     gradient: "linear-gradient(135deg, #e87c98, #ffb1c2)",
@@ -76,3 +76,12 @@ export const moduleThemes: Record<ModuleKey, ModuleTheme> = {
 };
 
 export const visibleModules: ModuleKey[] = ["home", "calendar", "finances", "market", "tasks"];
+
+/** Picker accents always pair a solid theme colour with contrasting text. */
+export const pickerAccents = Object.fromEntries(
+  visibleModules.map((key) => [key, {
+    color: `var(--tone-${key})`,
+    soft: `color-mix(in srgb, var(--tone-${key}) 14%, transparent)`,
+    onAccent: "var(--primary-ink)",
+  }]),
+) as Record<ModuleKey, { color: string; soft: string; onAccent: string }>;

@@ -355,7 +355,7 @@ export default function HomePage() {
                     className="rounded-full px-2 py-0.5 text-[11px] font-bold"
                     style={
                       urgentTask.status === "Urgente"
-                        ? { background: "rgb(255 180 171 / 25%)", color: "#ffb4ab" }
+                        ? { background: "rgb(255 180 171 / 25%)", color: "var(--color-error)" }
                         : { background: "var(--surface-high)", color: "var(--text-soft)" }
                     }
                   >

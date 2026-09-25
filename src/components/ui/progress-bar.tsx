@@ -16,7 +16,7 @@ export function ProgressBar({ value, color, gradient, ariaLabel, className }: Pr
     fillStyle.boxShadow = "0 0 12px rgb(255 185 85 / 45%)";
   } else if (color) {
     fillStyle.background = color;
-    fillStyle.boxShadow = `0 0 8px ${color}66`;
+    fillStyle.boxShadow = `0 0 8px color-mix(in srgb, ${color} 40%, transparent)`;
   }
 
   return (

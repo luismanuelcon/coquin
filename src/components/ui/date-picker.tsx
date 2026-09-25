@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { getColombiaTodayIso } from "@/lib/date";
+import { pickerAccents } from "@/lib/design-system";
 import type { ModuleKey } from "@/lib/types";
 
 type DatePickerProps = {
@@ -27,13 +28,7 @@ type DatePickerProps = {
   align?: "start" | "end";
 };
 
-const toneAccent: Record<ModuleKey, { color: string; soft: string; onAccent: string }> = {
-  home: { color: "var(--primary)", soft: "var(--primary-soft)", onAccent: "var(--primary-ink)" },
-  calendar: { color: "var(--warning)", soft: "var(--warning-soft)", onAccent: "#1a120b" },
-  finances: { color: "var(--finance)", soft: "var(--finance-soft)", onAccent: "#0f2018" },
-  market: { color: "var(--market)", soft: "var(--market-soft)", onAccent: "#3a1526" },
-  tasks: { color: "var(--primary)", soft: "var(--primary-soft)", onAccent: "var(--primary-ink)" },
-};
+
 
 const weekdays = ["L", "M", "M", "J", "V", "S", "D"];
 const monthFormatter = new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric" });
@@ -162,7 +157,7 @@ export function DatePicker({
   const cells = useMemo(() => buildMonthGrid(viewMonth.year, viewMonth.month), [viewMonth]);
   const minDate = min ? toLocalNoonDate(min) : null;
   const maxDate = max ? toLocalNoonDate(max) : null;
-  const accent = toneAccent[tone];
+  const accent = pickerAccents[tone];
 
   const handleSelect = useCallback(
     (year: number, month: number, day: number) => {

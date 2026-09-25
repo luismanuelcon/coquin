@@ -7,10 +7,18 @@ import { emptyData, type AppData, type DataModule } from "@/lib/data/empty";
 import { CoquinWordmark } from "@/components/brand/coquin-wordmark";
 import { validateData } from "@/lib/data/validation";
 
+import { profileName, saveDisplayName } from "@/lib/auth/profile";
+import type { HouseholdMember } from "@/lib/types";
+
 type HouseholdRole = "admin" | "member";
 type ContextValue = {
   data: AppData;
   householdName: string;
+  userId: string;
+  displayName: string;
+  members: HouseholdMember[];
+  membersError: string;
+  refreshMembers: () => Promise<void>;
   householdCode: string;
   role: HouseholdRole;
   rotateCode: () => Promise<string | null>;
@@ -23,7 +31,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
   const dataRef = useRef(data);
   const versions = useRef<Record<string, number>>({});
   const saving = useRef(false);
-  const [state, setState] = useState<"loading" | "household" | "ready" | "error">("loading");
+  const [state, setState] = useState<"loading" | "profile" | "household" | "ready" | "error">("loading");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [householdName, setHouseholdName] = useState("");
@@ -32,6 +40,23 @@ function ProtectedData({ children }: { children: ReactNode }) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [mode, setMode] = useState<"create" | "join">("create");
+  const [userId, setUserId] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [profileDraft, setProfileDraft] = useState("");
+  const [members, setMembers] = useState<HouseholdMember[]>([]);
+  const [membersError, setMembersError] = useState("");
+  const refreshMembers = useCallback(async () => {
+    try {
+      const { data: rows, error: rosterError } = await createClient().rpc("get_household_members");
+      if (rosterError) throw rosterError;
+      setMembers((rows ?? []).map((row: { user_id: string; display_name: string | null }) => ({
+        userId: row.user_id, displayName: profileName({ display_name: row.display_name }),
+      })));
+      setMembersError("");
+    } catch {
+      setMembersError("No pudimos cargar los integrantes de tu familia. Reintenta para elegir un responsable.");
+    }
+  }, []);
   const [saved, setSaved] = useState(false);
 
   const load = useCallback(async () => {
@@ -41,6 +66,10 @@ function ProtectedData({ children }: { children: ReactNode }) {
       const client = createClient();
       const { data: auth, error: authError } = await client.auth.getUser();
       if (authError || !auth.user) { window.location.replace("/login"); return; }
+      setUserId(auth.user.id);
+      const currentName = profileName(auth.user.user_metadata);
+      setDisplayName(currentName);
+      if (!currentName) { setState("profile"); return; }
       const { data: member, error: memberError } = await client.from("household_members")
         .select("household_id, role").eq("user_id", auth.user.id).maybeSingle();
       if (memberError) throw memberError;
@@ -63,12 +92,13 @@ function ProtectedData({ children }: { children: ReactNode }) {
       setHouseholdName(household.name);
       setHouseholdCode(household.join_code);
       setRole(member.role === "admin" ? "admin" : "member");
+      await refreshMembers();
       setState("ready");
     } catch {
       setError("No pudimos cargar tu hogar. Revisa la conexión y que la base de datos esté habilitada.");
       setState("error");
     }
-  }, []);
+  }, [refreshMembers]);
   useEffect(() => { void load(); }, [load]);
 
   async function save<K extends DataModule>(module: K, value: SetStateAction<AppData[K]>) {
@@ -94,11 +124,23 @@ function ProtectedData({ children }: { children: ReactNode }) {
       return true;
     } catch (err) {
       const message = typeof err === "object" && err && "message" in err ? String(err.message) : "";
-      setError(message.includes("VERSION_CONFLICT")
+      setError(message.includes("INVALID_TASK_OWNER")
+        ? "Ese responsable ya no pertenece a tu familia. Actualiza los integrantes y selecciona otra persona."
+        : message.includes("VERSION_CONFLICT")
         ? "Otra persona modificó estos datos. Recarga antes de volver a guardar."
         : "No se confirmó el guardado. Conservamos el formulario; recarga para comprobar el estado antes de reintentar.");
       return false;
     } finally { saving.current = false; setBusy(false); }
+  }
+  async function completeProfile(event: React.FormEvent) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true); setError("");
+    try {
+      await saveDisplayName(createClient(), profileDraft);
+      await load();
+    } catch (err) { setError(err instanceof Error ? err.message : "No pudimos guardar tu nombre."); }
+    finally { setBusy(false); }
   }
   async function createHousehold(event: React.FormEvent) {
     event.preventDefault();
@@ -148,8 +190,13 @@ function ProtectedData({ children }: { children: ReactNode }) {
   }
   if (state !== "ready") return <main className="auth-screen">
     <CoquinWordmark priority />
-    <h1>{state === "household" ? "Tu hogar" : state === "loading" ? "Abriendo tu hogar..." : "No pudimos conectar"}</h1>
+    <h1>{state === "profile" ? "¿Cómo te llamas?" : state === "household" ? "Tu hogar" : state === "loading" ? "Abriendo tu hogar..." : "No pudimos conectar"}</h1>
     {error && <p role="alert" className="auth-error">{error}</p>}
+    {state === "profile" && <form onSubmit={completeProfile} className="auth-form" aria-busy={busy}>
+      <p className="household-hint" id="profile-help">Elige el nombre que verá tu familia al asignar las tareas. Solo necesitas hacerlo una vez.</p>
+      <label>Tu nombre<input autoComplete="name" value={profileDraft} onChange={e => setProfileDraft(e.target.value)} maxLength={80} required disabled={busy} aria-describedby="profile-help" /></label>
+      <button className="auth-submit" disabled={busy || !profileDraft.trim()}>{busy ? "Guardando..." : "Guardar y continuar"}</button>
+    </form>}
     {state === "household" && <div className="household-setup">
       <p className="household-hint">Coquín organiza tu hogar en familia: la agenda, el mercado y las tareas se comparten con quienes se unan. Crea una familia, únete con un código o continúa solo por ahora.</p>
       <div className="household-switch" role="tablist" aria-label="Crear o unirse a un hogar">
@@ -164,7 +211,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
     {state === "error" && <button className="auth-submit" onClick={load}>Reintentar</button>}
     {state !== "loading" && <SignOutButton />}
   </main>;
-  return <DataContext.Provider value={{ data, save, householdName, householdCode, role, rotateCode }}>
+  return <DataContext.Provider value={{ data, save, userId, displayName, members, membersError, refreshMembers, householdName, householdCode, role, rotateCode }}>
     <div className="sync-status" aria-live="polite">
       {error ? <span role="alert">{error} <button onClick={() => { if (window.confirm("¿Recargar los datos? Se descartarán los formularios sin guardar.")) void load(); }}>Recargar</button></span> : busy ? "Guardando..." : saved ? "Guardado" : null}
     </div>

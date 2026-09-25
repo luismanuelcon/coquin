@@ -1,7 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function registerAccount(client: SupabaseClient, email: string, password: string) {
-  const { data, error } = await client.auth.signUp({ email, password });
+import { normalizeDisplayName } from "./profile";
+
+export async function registerAccount(client: SupabaseClient, email: string, password: string, name: string) {
+  const displayName = normalizeDisplayName(name);
+  const { data, error } = await client.auth.signUp({ email, password, options: { data: { display_name: displayName } } });
   if (error) {
     throw new Error("No pudimos crear la cuenta. Si ya registraste este celular, selecciona Entrar.");
   }

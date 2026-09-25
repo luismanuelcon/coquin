@@ -22,7 +22,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const tone = pathToTone[pathname] ?? "home";
   const theme = moduleThemes[tone];
   const headerLabel = pathname === "/settings" ? "Ajustes" : theme.label;
-  const { householdName } = useAppData();
+  const { householdName, displayName } = useAppData();
   return (
     <main className="app-shell">
       <a href="#main-content" className="skip-link">Saltar al contenido</a>
@@ -74,7 +74,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         </header>
         <div className="app-content">
           <div className="household-session">
-            <span>{householdName}</span>
+            <span>{displayName} · {householdName}</span>
             <SignOutButton />
           </div>
           <div id="main-content">{children}</div>

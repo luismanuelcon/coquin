@@ -46,13 +46,13 @@ function FamilyCodeSection() {
           Compártelo para que otras personas se unan a {householdName}.
         </p>
       </div>
-      <div className="flex items-center justify-between gap-3 rounded-2xl bg-black/20 px-4 py-3">
-        <span className="text-[22px] font-extrabold tracking-[0.12em] text-on-surface">{formatted}</span>
+      <div className="flex items-center justify-between gap-3 rounded-2xl bg-surface-container-highest px-4 py-3">
+        <span className="break-all text-[22px] font-extrabold tracking-[0.08em] text-on-surface">{formatted}</span>
         <button
           type="button"
           onClick={copy}
           aria-label="Copiar código"
-          className="grid h-11 w-11 place-items-center rounded-full bg-white/5 text-on-surface"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface-container text-on-surface"
         >
           {copied ? <Check size={18} strokeWidth={2.8} /> : <Copy size={18} strokeWidth={2.2} />}
         </button>
@@ -62,7 +62,7 @@ function FamilyCodeSection() {
           type="button"
           onClick={rotate}
           disabled={rotating}
-          className="flex items-center justify-center gap-2 rounded-full border border-white/10 px-4 py-3 text-[13px] font-bold text-on-surface disabled:opacity-50"
+          className="flex items-center justify-center gap-2 rounded-full border border-outline px-4 py-3 text-[13px] font-bold text-on-surface disabled:opacity-50"
         >
           <RefreshCw size={16} strokeWidth={2.4} />
           {rotating ? "Generando..." : "Generar nuevo código"}
@@ -101,7 +101,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex flex-col gap-2" role="radiogroup" aria-label="Selecciona un tema">
-            {THEME_OPTIONS.map((option) => {
+            {THEME_OPTIONS.map((option, index) => {
               const Icon = option.icon;
               const selected = theme === option.value;
               return (
@@ -110,6 +110,18 @@ export default function SettingsPage() {
                   type="button"
                   role="radio"
                   aria-checked={selected}
+                  tabIndex={selected ? 0 : -1}
+                  onKeyDown={(event) => {
+                    const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1
+                      : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+                    if (!step && event.key !== "Home" && event.key !== "End") return;
+                    event.preventDefault();
+                    const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? THEME_OPTIONS.length - 1
+                      : (index + step + THEME_OPTIONS.length) % THEME_OPTIONS.length;
+                    setTheme(THEME_OPTIONS[nextIndex].value);
+                    const buttons = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+                    buttons?.[nextIndex]?.focus();
+                  }}
                   onClick={() => setTheme(option.value)}
                   className="theme-option"
                   data-selected={selected || undefined}

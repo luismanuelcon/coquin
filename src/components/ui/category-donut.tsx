@@ -3,21 +3,21 @@
 import type { MiscCategorySlice } from "@/lib/modules/finances";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Comida: "#ff6b97",
-  Transporte: "#ffb955",
-  Parqueadero: "#c58bff",
-  Entretenimiento: "#5cc8ff",
-  Ropa: "#ff8fab",
-  Salud: "#5fd6a4",
-  Viaje: "#ffd166",
-  Hogar: "#e87c98",
-  Servicios: "#7c9bff",
-  Educación: "#ffb1c2",
-  Mascotas: "#ffa06b",
-  Otros: "#a58a8f",
+  Comida: "var(--chart-food, #ff6b97)",
+  Transporte: "var(--chart-transport, #ffb955)",
+  Parqueadero: "var(--chart-parking, #c58bff)",
+  Entretenimiento: "var(--chart-entertainment, #5cc8ff)",
+  Ropa: "var(--chart-clothing, #ff8fab)",
+  Salud: "var(--chart-health, #5fd6a4)",
+  Viaje: "var(--chart-travel, #ffd166)",
+  Hogar: "var(--chart-household, #e87c98)",
+  Servicios: "var(--chart-services, #7c9bff)",
+  Educación: "var(--chart-education, #ffb1c2)",
+  Mascotas: "var(--chart-pets, #ffa06b)",
+  Otros: "var(--chart-other, #a58a8f)",
 };
 
-const FALLBACK_COLOR = "#a58a8f";
+const FALLBACK_COLOR = "var(--chart-other, #a58a8f)";
 const RADIUS = 52;
 const STROKE = 20;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -85,7 +85,7 @@ export function CategoryDonut({ total, slices, formatAmount }: CategoryDonutProp
             {formatAmount(total)}
           </p>
           <p className="mt-1 text-[12px] font-semibold text-on-surface-variant">
-            Más gastas en <span className="font-bold" style={{ color: colorFor(top.category) }}>{top.category}</span>{" "}
+            Más gastas en <span className="font-bold text-on-surface">{top.category}</span>{" "}
             ({Math.round(top.percent * 100)}%)
           </p>
         </div>

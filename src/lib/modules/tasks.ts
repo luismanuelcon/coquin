@@ -18,3 +18,12 @@ export function calculateTaskProgress(completed: number, total: number) {
 
   return Math.round((completed / total) * 100);
 }
+
+export function taskOwnerName(task: ProjectTask, members: import("@/lib/types").HouseholdMember[]) {
+  return members.find((member) => member.userId === task.ownerId)?.displayName || task.owner;
+}
+
+export function memberOptionLabel(member: import("@/lib/types").HouseholdMember, members: import("@/lib/types").HouseholdMember[], currentUserId: string) {
+  const duplicate = members.some((other) => other.userId !== member.userId && other.displayName.toLocaleLowerCase() === member.displayName.toLocaleLowerCase());
+  return `${member.displayName}${duplicate ? ` · ${member.userId.slice(0, 8)}` : ""}${member.userId === currentUserId ? " (tú)" : ""}`;
+}

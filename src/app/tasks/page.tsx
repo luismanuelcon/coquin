@@ -7,10 +7,10 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { DatePicker } from "@/components/ui/date-picker";
-import { useModule } from "@/components/data/data-provider";
+import { useAppData, useModule } from "@/components/data/data-provider";
 import { celebrate } from "@/lib/ui/celebrate";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
-import { calculateTaskProgress } from "@/lib/modules/tasks";
+import { calculateTaskProgress, taskOwnerName, memberOptionLabel } from "@/lib/modules/tasks";
 import type { ProjectTask } from "@/lib/types";
 
 const statuses = ["Pendiente", "En progreso", "Urgente", "Completada"];
@@ -28,9 +28,9 @@ function formatDueDate(iso: string) {
 }
 
 const statusStyles: Record<string, { bg: string; color: string }> = {
-  Pendiente: { bg: "rgb(255 185 85 / 15%)", color: "#ffb955" },
-  "En progreso": { bg: "rgb(255 107 151 / 15%)", color: "#ff6b97" },
-  Urgente: { bg: "rgb(255 180 171 / 15%)", color: "#ffb4ab" },
+  Pendiente: { bg: "rgb(255 185 85 / 15%)", color: "var(--secondary)" },
+  "En progreso": { bg: "rgb(255 107 151 / 15%)", color: "var(--primary)" },
+  Urgente: { bg: "rgb(255 180 171 / 15%)", color: "var(--color-error)" },
   Completada: { bg: "var(--surface-high)", color: "var(--text-soft)" },
 };
 
@@ -42,6 +42,7 @@ const FILTERS = ["Todos", "Pendiente", "En progreso", "Completada"] as const;
 type Filter = (typeof FILTERS)[number];
 
 export default function TasksPage() {
+  const { members, membersError, refreshMembers, userId } = useAppData();
   const [tasks, setTasks] = useModule("tasks");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -57,7 +58,10 @@ export default function TasksPage() {
     [tasks],
   );
   const progress = calculateTaskProgress(completedCount, tasks.length || 1);
-  const canSubmit = Boolean(title.trim() && owner.trim() && due.trim());
+  const editingTask = tasks.find((task) => task.id === editingId);
+  const selectedMember = members.find((member) => member.userId === owner && member.displayName);
+  const keepingPreviousOwner = owner === "previous" && !!editingTask;
+  const canSubmit = Boolean(title.trim() && due.trim() && (keepingPreviousOwner || (selectedMember && !membersError)));
 
   const counts = useMemo(() => {
     const base: Record<string, number> = { Todos: tasks.length };
@@ -76,7 +80,10 @@ export default function TasksPage() {
     const task: ProjectTask = {
       id: editingId ?? crypto.randomUUID(),
       title: title.trim(),
-      owner: owner.trim(),
+      owner: keepingPreviousOwner ? editingTask!.owner : selectedMember!.displayName,
+      ...(keepingPreviousOwner
+        ? editingTask!.ownerId ? { ownerId: editingTask!.ownerId } : {}
+        : { ownerId: selectedMember!.userId }),
       due: due.trim(),
       status,
     };
@@ -166,6 +173,7 @@ export default function TasksPage() {
             <button
               type="button"
               onClick={() => {
+                void refreshMembers();
                 setEditingId(null);
                 setTitle("");
                 setOwner("");
@@ -188,16 +196,21 @@ export default function TasksPage() {
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Tarea"
+                aria-label="Nombre de la tarea"
+                required
                 className={`${inputClass} w-full`}
               />
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_130px]">
-                <input
-                  type="text"
-                  value={owner}
-                  onChange={(event) => setOwner(event.target.value)}
-                  placeholder="Responsable"
-                  className={inputClass}
-                />
+                <label className="field text-xs font-semibold text-on-surface-variant">
+                  Responsable
+                  <select value={owner} onChange={(event) => setOwner(event.target.value)} className={inputClass} required aria-describedby="task-owner-help">
+                    <option value="" disabled>Elige un integrante</option>
+                    {editingTask && <option value="previous">{taskOwnerName(editingTask, members)} (responsable actual)</option>}
+                    {members.filter((member) => member.displayName).map((member) => (
+                      <option key={member.userId} value={member.userId}>{memberOptionLabel(member, members, userId)}</option>
+                    ))}
+                  </select>
+                </label>
                 <DatePicker
                   value={due}
                   onChange={setDue}
@@ -208,6 +221,9 @@ export default function TasksPage() {
                   triggerClassName={`${inputClass} text-left`}
                 />
               </div>
+              <p id="task-owner-help" className="text-xs text-on-surface-variant">Aparecen los integrantes de tu familia que ya guardaron su nombre.</p>
+              {membersError && <p role="alert" className="auth-error">{membersError}</p>}
+              <button type="button" className="back-link" onClick={() => void refreshMembers()}>Actualizar integrantes</button>
               <div className="input-shell">
                 <select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Estado">
                   {statuses.map((item) => (
@@ -255,7 +271,7 @@ export default function TasksPage() {
                         completed
                           ? { background: "#ff6b97", color: "#66002c" }
                           : inProgress
-                            ? { background: "rgb(255 107 151 / 20%)", color: "#ff6b97" }
+                            ? { background: "rgb(255 107 151 / 20%)", color: "var(--primary)" }
                             : { background: "var(--surface-lowest)", color: "var(--outline)" }
                       }
                       aria-label={completed ? "Marcar pendiente" : "Completar tarea"}
@@ -281,7 +297,7 @@ export default function TasksPage() {
                       </div>
                       <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] font-semibold text-on-surface-variant">
                         <UserRound aria-hidden="true" size={13} />
-                        <span className="min-w-0 truncate">{task.owner}</span>
+                        <span className="min-w-0 truncate">{taskOwnerName(task, members)}</span>
                         <span>·</span>
                         <span className="shrink-0">{formatDueDate(task.due)}</span>
                       </div>
@@ -294,7 +310,8 @@ export default function TasksPage() {
                       onClick={() => {
                         setEditingId(task.id);
                         setTitle(task.title);
-                        setOwner(task.owner);
+                        void refreshMembers();
+                        setOwner("previous");
                         setDue(task.due);
                         setStatus(task.status);
                         setFormOpen(true);
