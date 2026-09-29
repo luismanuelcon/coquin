@@ -17,6 +17,23 @@ import {
 } from "./finances";
 
 describe("finances module", () => {
+  it("recalculates the base and available balance as multiple income sources change", () => {
+    const period: FinancePeriod = {
+      id: "period-2026-09-01", startDate: "2026-09-01", endDate: "2026-09-30",
+      incomes: [{ id: "legacy", concept: "Base", amount: 1000000 }],
+      items: [{ id: "rent", concept: "Arriendo", amount: 500000, fixed: true, status: "pending" }],
+      miscExpenses: [],
+    };
+    period.incomes.push({ id: "sales", concept: "Ventas", amount: 200000 }, { id: "freelance", concept: "Consultoría", amount: 300000 });
+    expect(calculateFinancePeriodSummary(period)).toMatchObject({ base: 1500000, available: 1000000, pending: 500000 });
+    period.incomes = period.incomes.map((income) => income.id === "sales" ? { ...income, amount: 400000 } : income);
+    expect(calculateFinancePeriodSummary(period)).toMatchObject({ base: 1700000, available: 1200000 });
+    period.incomes = period.incomes.filter((income) => income.id !== "legacy");
+    expect(calculateFinancePeriodSummary(period)).toMatchObject({ base: 700000, available: 200000 });
+    period.incomes = [];
+    expect(calculateFinancePeriodSummary(period)).toMatchObject({ base: 0, available: -500000 });
+  });
+
   it("parses COP display amounts into numeric values", () => {
     expect(parseCopAmount("$1.240.000")).toBe(1240000);
   });
