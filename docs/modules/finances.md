@@ -30,3 +30,13 @@ Valida:
 - Conversion de montos COP a valores numericos.
 - Deteccion de pagos pendientes.
 - Calculo de obligaciones totales, pendientes y programadas.
+
+## Ingresos del período
+
+- Cada período admite varios ingresos, con concepto libre, valor en COP y nota opcional.
+- La sección «Ingresos del período» permite agregar, editar y eliminar cada registro.
+- La base se calcula sumando todos los ingresos; el disponible resta los compromisos y gastos varios.
+- Los ingresos nuevos o editados requieren concepto y un valor entero positivo y seguro.
+- Configurar fechas o corte conserva los ingresos existentes, incluidos registros antiguos llamados «Base».
+- Sin ingresos, la base es cero. Los ingresos no se copian automáticamente al siguiente período.
+- Se conserva el formato de datos existente; no requiere migración de base de datos.

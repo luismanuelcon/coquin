@@ -32,6 +32,8 @@ export type FinanceItem = {
 export type FinancePaymentStatus = "paid" | "pending";
 
 export type FinanceIncome = {
+  /** Optional for records saved before income dates were introduced. */
+  date?: string;
   id: string;
   concept: string;
   amount: number;

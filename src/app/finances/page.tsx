@@ -21,6 +21,7 @@ import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { DatePicker } from "@/components/ui/date-picker";
 import { CategoryDonut } from "@/components/ui/category-donut";
 import { MiscWeekendChart } from "@/components/ui/misc-weekend-chart";
+import { FinanceIncomes } from "@/components/finances/finance-incomes";
 import { MoneyInput } from "@/components/ui/money-input";
 import { useModule } from "@/components/data/data-provider";
 import { celebrate } from "@/lib/ui/celebrate";
@@ -37,7 +38,6 @@ import {
 } from "@/lib/modules/finances";
 import type {
   FinanceBudgetItem,
-  FinanceIncome,
   FinanceMiscExpense,
   FinancePaymentStatus,
 } from "@/lib/types";
@@ -94,7 +94,7 @@ export default function FinancesPage() {
   const [miscChartOpen, setMiscChartOpen] = useState(false);
   const [miscFormOpen, setMiscFormOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [summarySettingsForm, setSummarySettingsForm] = useState({ base: "", cutoffDay: "", startDate: "" });
+  const [summarySettingsForm, setSummarySettingsForm] = useState({ cutoffDay: "", startDate: "" });
   const [feedback, setFeedback] = useState("");
   const [formError, setFormError] = useState("");
 
@@ -120,11 +120,10 @@ export default function FinancesPage() {
 
   useEffect(() => {
     setSummarySettingsForm({
-      base: String(summary.base),
       cutoffDay: String(budgetState.settings.cutoffDay),
       startDate: activePeriod.startDate,
     });
-  }, [activePeriod.id, activePeriod.startDate, budgetState.settings.cutoffDay, summary.base]);
+  }, [activePeriod.id, activePeriod.startDate, budgetState.settings.cutoffDay]);
 
   async function updateActivePeriod(nextPeriod: typeof activePeriod) {
     return setBudgetState(upsertFinancePeriod(budgetState, nextPeriod));
@@ -204,24 +203,17 @@ export default function FinancesPage() {
 
   async function handleSummarySettingsSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const base = Number(summarySettingsForm.base);
     const cutoffDay = Math.min(Math.max(Number(summarySettingsForm.cutoffDay) || 1, 1), 31);
-    if (!summarySettingsForm.startDate || base < 0) {
-      setFormError("Agrega una base y una fecha valida.");
+    if (!summarySettingsForm.startDate) {
+      setFormError("Agrega una fecha válida.");
       return;
     }
     const range = getFinancePeriodRangeFromStart(summarySettingsForm.startDate);
-    const baseIncome: FinanceIncome = {
-      id: activePeriod.incomes.find((income) => income.concept === "Base")?.id ?? newId("income-base"),
-      concept: "Base",
-      amount: base,
-    };
     const updatedPeriod = {
       ...activePeriod,
       id: range.id,
       startDate: range.startDate,
       endDate: range.endDate,
-      incomes: [baseIncome],
     };
     if (
       !(await setBudgetState((current) => ({
@@ -265,7 +257,7 @@ export default function FinancesPage() {
   }
 
   const metrics = [
-    { label: "Base", value: summary.base, icon: Banknote, color: "var(--primary)" },
+    { label: "Ingresos", value: summary.base, icon: Banknote, color: "var(--primary)" },
     { label: "Comprometido", value: summary.totalPayments, icon: ReceiptText, color: "var(--tertiary)" },
     { label: "Pagado", value: summary.paid, icon: CheckCircle2, color: "var(--secondary)" },
     { label: "Por pagar", value: summary.pending, icon: CircleAlert, color: "var(--primary)" },
@@ -354,17 +346,6 @@ export default function FinancesPage() {
             <form id="finance-settings-form" className="relative z-10 mt-4 rounded-xl bg-surface-container p-3" onSubmit={handleSummarySettingsSubmit}>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_96px]">
                 <label className="field">
-                  <span>Base</span>
-                  <div className="input-shell input-shell--muted">
-                    <span className="text-secondary font-bold">$</span>
-                    <MoneyInput
-                      value={summarySettingsForm.base}
-                      onChange={(raw) => setSummarySettingsForm((current) => ({ ...current, base: raw }))}
-                      ariaLabel="Base del período"
-                    />
-                  </div>
-                </label>
-                <label className="field">
                   <span>Corte</span>
                   <div className="input-shell input-shell--muted">
                     <input
@@ -393,6 +374,12 @@ export default function FinancesPage() {
             </form>
           ) : null}
         </section>
+
+        <FinanceIncomes
+          key={activePeriod.id}
+          incomes={activePeriod.incomes}
+          onSave={(incomes) => updateActivePeriod({ ...activePeriod, incomes })}
+        />
 
         {miscFormOpen ? (
           <section id="finance-misc-form" className="card-surface overflow-visible p-3">
