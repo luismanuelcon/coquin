@@ -568,11 +568,10 @@ export default function FinancesPage() {
             ) : null}
             {activePeriod.items.map((item) => {
               const totals = summarizeBudgetItem(item);
-              const partial = totals.consumed > 0 && totals.consumed < item.amount;
               return (
               <div key={item.id}>
               <SwipeDeleteRow deleteLabel={`Eliminar ${item.concept}`} onDelete={() => deleteBudgetItem(item)}>
-                <div className={`flex items-center gap-2.5 bg-surface-container px-3 py-2.5 ${openConsumptionId === item.id ? "rounded-t-2xl" : "rounded-2xl"}`}>
+                <div className={`flex items-center gap-2 bg-surface-container px-3 py-2.5 ${openConsumptionId === item.id ? "rounded-t-2xl" : "rounded-2xl"}`}>
                   <span
                     className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-container-high"
                     style={{ color: item.status === "paid" ? "var(--secondary)" : "var(--primary)" }}
@@ -582,30 +581,44 @@ export default function FinancesPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-[14px] font-bold text-on-surface">{item.concept}</h3>
                     <p className="truncate text-[11px] font-semibold text-on-surface-variant">
-                      {item.fixed ? "Recurrente" : "Ocasional"} · {moneyFormatter.format(item.amount)}
-                      {partial ? <span className="text-secondary"> ({moneyFormatter.format(totals.consumed)})</span> : null}
+                      {item.fixed ? "Recurrente" : "Ocasional"}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const status = item.status === "paid" ? "pending" : "paid";
-                      await updateActivePeriod({
-                        ...activePeriod,
-                        items: activePeriod.items.map((current) => (current.id === item.id ? { ...current, status } : current)),
-                      });
-                    }}
-                    className="min-h-11 shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold"
-                    style={
-                      item.status === "paid"
-                        ? { background: "rgb(255 185 85 / 15%)", color: "var(--secondary)" }
-                        : { background: "rgb(255 107 151 / 15%)", color: "var(--primary)" }
-                    }
-                    disabled={item.consumptions !== undefined}
-                    aria-label={item.consumptions !== undefined ? `Estado de ${item.concept}: calculado según consumos` : `Marcar ${item.concept} como ${item.status === "paid" ? "pendiente" : "pagado"}`}
-                  >
-                    {item.consumptions !== undefined ? (summarizeBudgetItem(item).excess > 0 ? "Excedido" : summarizeBudgetItem(item).remaining > 0 ? "Reservado" : "Consumido") : item.status === "paid" ? "Pagado" : "Por pagar"}
-                  </button>
+                  <div className="flex shrink-0 flex-col items-end gap-0.5">
+                    <span className="text-[13px] font-bold tabular-nums text-on-surface">{moneyFormatter.format(item.amount)}</span>
+                    {item.consumptions !== undefined ? (
+                      <span
+                        className="text-[10px] font-bold tabular-nums"
+                        style={{ color: totals.excess > 0 ? "var(--primary)" : "var(--secondary)" }}
+                      >
+                        {totals.excess > 0
+                          ? `Excedido ${moneyFormatter.format(totals.excess)}`
+                          : totals.remaining > 0
+                            ? `Reservado ${moneyFormatter.format(totals.remaining)}`
+                            : "Consumido"}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const status = item.status === "paid" ? "pending" : "paid";
+                          await updateActivePeriod({
+                            ...activePeriod,
+                            items: activePeriod.items.map((current) => (current.id === item.id ? { ...current, status } : current)),
+                          });
+                        }}
+                        className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={
+                          item.status === "paid"
+                            ? { background: "rgb(255 185 85 / 15%)", color: "var(--secondary)" }
+                            : { background: "rgb(255 107 151 / 15%)", color: "var(--primary)" }
+                        }
+                        aria-label={`Marcar ${item.concept} como ${item.status === "paid" ? "pendiente" : "pagado"}`}
+                      >
+                        {item.status === "paid" ? "Pagado" : "Por pagar"}
+                      </button>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
@@ -619,7 +632,7 @@ export default function FinancesPage() {
                       setEditingBudgetId(item.id);
                       setBudgetFormOpen(true);
                     }}
-                    className="row-tool !h-11 !w-11 shrink-0"
+                    className="grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary"
                     aria-label={`Editar ${item.concept}`}
                   >
                     <Pencil aria-hidden="true" size={15} />
@@ -627,7 +640,7 @@ export default function FinancesPage() {
                   <button
                     type="button"
                     onClick={() => setOpenConsumptionId((current) => (current === item.id ? null : item.id))}
-                    className="row-tool !h-11 !w-11 shrink-0"
+                    className="grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary"
                     aria-expanded={openConsumptionId === item.id}
                     aria-label={`${openConsumptionId === item.id ? "Ocultar" : "Ver"} consumos de ${item.concept}`}
                   >

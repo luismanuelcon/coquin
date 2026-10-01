@@ -1,5 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { MoneyInput } from "@/components/ui/money-input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { getColombiaTodayIso } from "@/lib/date";
@@ -7,7 +8,7 @@ import { summarizeBudgetItem } from "@/lib/modules/finances";
 import type { FinanceBudgetItem, FinanceConsumption } from "@/lib/types";
 
 const money = (value: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(value);
-const formatDate = (value: string) => new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+const formatDate = (value: string) => new Intl.DateTimeFormat("es-CO", { day: "2-digit", month: "short", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
 const input = "h-10 w-full rounded-xl bg-surface-container-lowest px-3 text-sm focus-visible:outline-2 focus-visible:outline-primary";
 export function BudgetConsumptions({ item, onSave }: { item: FinanceBudgetItem; onSave: (entries: FinanceConsumption[]) => Promise<boolean> }) {
   const [date, setDate] = useState(getColombiaTodayIso);
@@ -37,10 +38,16 @@ export function BudgetConsumptions({ item, onSave }: { item: FinanceBudgetItem; 
   }
   return <div className="rounded-b-2xl bg-surface-container px-3 pb-3 pt-0.5">
     <p className="text-xs font-bold text-secondary">Reservado: {money(totals.remaining)}{totals.excess ? ` · Excedido: ${money(totals.excess)}` : ""}</p>
-    {item.consumptions?.map(entry => <div key={entry.id} className="mt-2 flex items-center gap-2 rounded-xl bg-surface-container-lowest px-3 py-2">
-      <p className="min-w-0 flex-1 break-words text-xs">{formatDate(entry.date)} · {money(entry.amount)}{entry.note ? ` · ${entry.note}` : ""}</p>
-      <button type="button" disabled={busy} className="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-primary hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50" onClick={() => { setEditing(entry.id); setDate(entry.date); setAmount(String(entry.amount)); setNote(entry.note ?? ""); setMessage(""); setError(false); }}>Editar</button><button type="button" disabled={busy} className="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-primary hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50" onClick={() => { if (window.confirm("¿Eliminar este consumo? El saldo reservado se recalculará.")) void save(item.consumptions!.filter(e => e.id !== entry.id)); }}>Eliminar</button>
-    </div>)}
+    {item.consumptions?.length ? <div className="mt-2 overflow-hidden rounded-xl bg-surface-container-lowest">
+      {item.consumptions.map(entry => <div key={entry.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-2 border-t border-white/5 px-3 py-1.5 text-xs first:border-t-0">
+        <span className="shrink-0 tabular-nums text-on-surface-variant">{formatDate(entry.date)}</span>
+        <span className="min-w-0 truncate text-right font-semibold tabular-nums">{money(entry.amount)}{entry.note ? <span className="ml-1 font-normal text-on-surface-variant">· {entry.note}</span> : null}</span>
+        <span className="flex shrink-0 gap-0.5">
+          <button type="button" disabled={busy} aria-label="Editar consumo" className="grid size-7 place-items-center rounded-lg text-primary hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50" onClick={() => { setEditing(entry.id); setDate(entry.date); setAmount(String(entry.amount)); setNote(entry.note ?? ""); setMessage(""); setError(false); }}><Pencil size={14} aria-hidden="true" /></button>
+          <button type="button" disabled={busy} aria-label="Eliminar consumo" className="grid size-7 place-items-center rounded-lg text-primary hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50" onClick={() => { if (window.confirm("¿Eliminar este consumo? El saldo reservado se recalculará.")) void save(item.consumptions!.filter(e => e.id !== entry.id)); }}><Trash2 size={14} aria-hidden="true" /></button>
+        </span>
+      </div>)}
+    </div> : null}
     <form className="mt-3" onSubmit={submit}><fieldset disabled={busy} className="flex min-w-0 flex-col gap-2">
       <legend className="mb-1 text-xs font-bold">{editing ? "Editar consumo" : "Registrar consumo"}</legend>
       <div className="flex gap-2">
