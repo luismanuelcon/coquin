@@ -40,3 +40,18 @@ Valida:
 - Configurar fechas o corte conserva los ingresos existentes, incluidos registros antiguos llamados «Base».
 - Sin ingresos, la base es cero. Los ingresos no se copian automáticamente al siguiente período.
 - Se conserva el formato de datos existente; no requiere migración de base de datos.
+
+## Corte y cierre confirmado
+
+- El día de corte es el primer día del siguiente período; el período termina el día anterior.
+- Finanzas e Inicio mantienen el período guardado hasta que el usuario confirme su cierre.
+- Después del vencimiento, se puede seguir registrando o cerrar y comenzar el siguiente período.
+- Los períodos anteriores se conservan y se pueden consultar en el historial.
+- El siguiente período reutiliza únicamente obligaciones fijas, como pendientes, sin ingresos ni gastos varios.
+- Los cortes 29–31 se ajustan al último día en meses cortos, sin desplazar el corte de los meses siguientes.
+
+## Gastos del período y consumos
+
+Los gastos se identifican como recurrentes u ocasionales. Cada gasto admite consumos con fecha, valor y detalle opcional; pueden editarse o eliminarse desde el desglose. El presupuesto completo está comprometido: consumirlo aumenta lo pagado y reduce la reserva, sin descontarlo dos veces. Si los consumos exceden el presupuesto, el exceso incrementa el compromiso y reduce el disponible.
+
+Los registros sin desglose conservan el estado pagado/pendiente anterior. Al agregar consumos, el estado se calcula a partir del detalle; un gasto que figuraba pagado pide confirmar esta conversión. Los consumos se conservan en Históricos pero se vacían al abrir el siguiente período. Editar el presupuesto conserva los consumos existentes.

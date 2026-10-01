@@ -63,7 +63,10 @@ export default function LoginPage() {
     } finally { setBusy(false); }
   }
   return <main className="auth-screen">
-    <Image src="/coquin-wordmark.png" alt="Coquín" width={260} height={94} priority className="auth-wordmark" />
+    <div className="auth-logo-entrance">
+      <span className="auth-logo-entrance__glow" aria-hidden="true" />
+      <Image src="/coquin-wordmark.png" alt="Coquín" width={260} height={94} priority className="auth-wordmark" />
+    </div>
     <div className="auth-intro">
       <p>Tu hogar, conectado</p>
       <h1>{mode === "signin" ? <>Qué bueno<br />tenerte aquí.</> : <>Crea tu<br />cuenta.</>}</h1>

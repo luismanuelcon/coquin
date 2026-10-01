@@ -1308,3 +1308,37 @@ html[data-theme="light"] .chart-glow__svg { filter: none; }
 html[data-theme="light"] .progress-track { background: var(--surface-highest); }
 html[data-theme="light"] .progress-fill { background: var(--primary); box-shadow: none; }
 html[data-theme="light"] .progress-fill--secondary { background: var(--secondary); }
+
+/* A single welcome gesture, with no delay to the sign-in form. */
+.auth-logo-entrance {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+}
+.auth-logo-entrance .auth-wordmark {
+  animation: coquin-welcome 850ms cubic-bezier(.22, 1, .36, 1) both;
+}
+.auth-logo-entrance__glow {
+  position: absolute;
+  z-index: -1;
+  inset: 10% 20%;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, var(--primary) 0%, transparent 70%);
+  opacity: 0;
+  animation: coquin-welcome-glow 1400ms ease-out both;
+}
+@keyframes coquin-welcome {
+  from { opacity: 0; transform: translateY(12px) scale(.94); }
+  65% { opacity: 1; transform: translateY(-2px) scale(1.015); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes coquin-welcome-glow {
+  from { opacity: 0; transform: scale(.75); }
+  40% { opacity: .24; }
+  to { opacity: 0; transform: scale(1.25); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-logo-entrance .auth-wordmark { animation: none; }
+  .auth-logo-entrance__glow { display: none; animation: none; }
+}
