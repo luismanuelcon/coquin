@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   Banknote,
   CheckCircle2,
@@ -15,12 +17,15 @@ import {
   Wallet,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { PeriodCloseNotice } from "@/components/ui/period-close-notice";
+import { closeFinancePeriod, dayBefore, nextCutoff } from "@/lib/modules/period-close";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { SwipeDeleteRow } from "@/components/ui/swipe-delete-row";
 import { DatePicker } from "@/components/ui/date-picker";
 import { CategoryDonut } from "@/components/ui/category-donut";
 import { MiscWeekendChart } from "@/components/ui/misc-weekend-chart";
+import { BudgetConsumptions } from "@/components/finances/budget-consumptions";
 import { FinanceIncomes } from "@/components/finances/finance-incomes";
 import { MoneyInput } from "@/components/ui/money-input";
 import { useModule } from "@/components/data/data-provider";
@@ -29,7 +34,7 @@ import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
   calculateFinancePeriodSummary,
-  ensureFinancePeriods,
+  summarizeBudgetItem,
   EXPENSE_CATEGORIES,
   getFinancePeriodRangeFromStart,
   summarizeMiscByCategory,
@@ -84,7 +89,7 @@ const INPUT =
 
 export default function FinancesPage() {
   const [storedBudget, setBudgetState] = useModule("finances");
-  const budgetState = useMemo(() => ensureFinancePeriods(storedBudget, getColombiaTodayIso()).state, [storedBudget]);
+  const budgetState = storedBudget;
   const [budgetForm, setBudgetForm] = useState(emptyBudgetForm);
   const [miscForm, setMiscForm] = useState(emptyMiscForm());
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
@@ -138,10 +143,11 @@ export default function FinancesPage() {
     event.preventDefault();
     const amount = Number(budgetForm.amount);
     if (!budgetForm.concept.trim() || amount <= 0) {
-      setFormError("Agrega concepto y valor mayor a cero.");
+      setFormError("Agrega el nombre del gasto y un valor mayor a cero.");
       return;
     }
     const item: FinanceBudgetItem = {
+      consumptions: activePeriod.items.find(item => item.id === editingBudgetId)?.consumptions,
       id: editingBudgetId ?? newId("item"),
       concept: budgetForm.concept.trim(),
       amount,
@@ -163,7 +169,7 @@ export default function FinancesPage() {
     setBudgetFormOpen(false);
     setFormError("");
     celebrate();
-    showFeedback(editingBudgetId ? "Concepto actualizado" : "Concepto creado");
+    showFeedback(editingBudgetId ? "Gasto actualizado" : "Gasto creado");
   }
 
   async function handleMiscSubmit(event: FormEvent<HTMLFormElement>) {
@@ -209,11 +215,15 @@ export default function FinancesPage() {
       return;
     }
     const range = getFinancePeriodRangeFromStart(summarySettingsForm.startDate);
+    if (range.id !== activePeriod.id && budgetState.periods.some(period => period.id === range.id)) {
+      setFormError("Ya existe un período con esa fecha de inicio. Elige otra fecha para conservar su historial.");
+      return;
+    }
     const updatedPeriod = {
       ...activePeriod,
       id: range.id,
       startDate: range.startDate,
-      endDate: range.endDate,
+      endDate: dayBefore(nextCutoff(range.startDate, cutoffDay)),
     };
     if (
       !(await setBudgetState((current) => ({
@@ -242,7 +252,7 @@ export default function FinancesPage() {
       setBudgetForm(emptyBudgetForm());
       setBudgetFormOpen(false);
     }
-    showFeedback("Concepto eliminado");
+    showFeedback("Gasto eliminado");
   }
 
   async function deleteMiscExpense(expense: FinanceMiscExpense) {
@@ -260,7 +270,7 @@ export default function FinancesPage() {
     { label: "Ingresos", value: summary.base, icon: Banknote, color: "var(--primary)" },
     { label: "Comprometido", value: summary.totalPayments, icon: ReceiptText, color: "var(--tertiary)" },
     { label: "Pagado", value: summary.paid, icon: CheckCircle2, color: "var(--secondary)" },
-    { label: "Por pagar", value: summary.pending, icon: CircleAlert, color: "var(--primary)" },
+    { label: "Pendiente", value: summary.pending, icon: CircleAlert, color: "var(--primary)" },
   ];
 
   return (
@@ -274,6 +284,12 @@ export default function FinancesPage() {
           badge="Período en curso"
         />
 
+        <PeriodCloseNotice key={`close-${activePeriod.id}`} moduleName="Finanzas" endDate={activePeriod.endDate} onClose={async () => {
+          if (!(await setBudgetState(current => closeFinancePeriod(current, getColombiaTodayIso())))) return false;
+          setBudgetFormOpen(false); setMiscFormOpen(false); setSettingsOpen(false);
+          setEditingBudgetId(null); setEditingMiscId(null); setBudgetForm(emptyBudgetForm()); setMiscForm(emptyMiscForm());
+          return true;
+        }} />
         <section className={`card-elevated${settingsOpen ? " overflow-visible" : ""}`} aria-label="Resumen del período">
           <span
             className="glow-blob"
@@ -342,11 +358,13 @@ export default function FinancesPage() {
             })}
           </div>
 
+          <p className="relative z-10 mt-2 text-xs text-on-surface-variant">Pendiente incluye pagos por hacer y dinero reservado para próximos consumos.</p>
+
           {settingsOpen ? (
             <form id="finance-settings-form" className="relative z-10 mt-4 rounded-xl bg-surface-container p-3" onSubmit={handleSummarySettingsSubmit}>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_96px]">
                 <label className="field">
-                  <span>Corte</span>
+                  <span>Día de corte</span>
                   <div className="input-shell input-shell--muted">
                     <input
                       type="number"
@@ -368,6 +386,7 @@ export default function FinancesPage() {
                   triggerClassName={`${INPUT} w-full text-left`}
                 />
               </label>
+              <p className="mt-2 text-xs text-on-surface-variant">El corte inicia el siguiente período, con cierre confirmado por ti. Es independiente de Mercado; en meses cortos se usa el último día.</p>
               <button type="submit" className="cta-pill mt-3">
                 Guardar resumen
               </button>
@@ -375,8 +394,12 @@ export default function FinancesPage() {
           ) : null}
         </section>
 
+        <Link href="/history?module=finances" className="flex min-h-11 items-center justify-between gap-2 rounded-2xl bg-surface-container px-4 text-sm font-bold text-secondary focus-visible:outline-2 focus-visible:outline-primary">
+          Ver históricos de Finanzas<ChevronRight size={18} aria-hidden="true" />
+        </Link>
+
         <FinanceIncomes
-          key={activePeriod.id}
+          key={`incomes-${activePeriod.id}`}
           incomes={activePeriod.incomes}
           onSave={(incomes) => updateActivePeriod({ ...activePeriod, incomes })}
         />
@@ -472,7 +495,7 @@ export default function FinancesPage() {
         <section className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <h2 className="section-title">Conceptos</h2>
+              <h2 className="section-title">Gastos mensuales</h2>
               <span className="pill">{activePeriod.items.length} activos</span>
             </div>
             <button
@@ -483,7 +506,7 @@ export default function FinancesPage() {
                 setBudgetFormOpen((current) => !current);
               }}
               className="icon-fab icon-fab--sm"
-              aria-label="Agregar concepto"
+              aria-label="Agregar gasto"
               aria-expanded={budgetFormOpen}
             >
               <Plus aria-hidden="true" size={18} strokeWidth={2.6} />
@@ -497,7 +520,7 @@ export default function FinancesPage() {
                 onChange={(event) => setBudgetForm((current) => ({ ...current, concept: event.target.value }))}
                 placeholder="Arriendo, seguro, colegio..."
                 className={`${INPUT} w-full`}
-                aria-label="Concepto presupuestado"
+                aria-label="Nombre del gasto mensual"
               />
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_130px]">
                 <MoneyInput
@@ -509,6 +532,7 @@ export default function FinancesPage() {
                 />
                 <div className="input-shell">
                   <select
+                    disabled={activePeriod.items.find(item => item.id === editingBudgetId)?.consumptions !== undefined}
                     value={budgetForm.status}
                     onChange={(event) => setBudgetForm((current) => ({ ...current, status: event.target.value as FinancePaymentStatus }))}
                     aria-label="Estado de pago"
@@ -526,10 +550,10 @@ export default function FinancesPage() {
                   className="size-5 accent-primary-container"
                   style={{ minHeight: "auto", flex: "none" }}
                 />
-                Gasto fijo reutilizable
+                Recurrente · repetir cada mes
               </label>
               <button type="submit" className="cta-pill mt-1">
-                {editingBudgetId ? "Guardar concepto" : "Crear concepto"}
+                {editingBudgetId ? "Guardar gasto" : "Crear gasto"}
               </button>
             </form>
           ) : null}
@@ -537,11 +561,12 @@ export default function FinancesPage() {
           <div className="flex flex-col gap-1.5">
             {activePeriod.items.length === 0 ? (
               <p className="rounded-2xl bg-surface-container p-4 text-sm font-semibold text-on-surface-variant">
-                Sin conceptos presupuestados.
+                Sin gastos presupuestados.
               </p>
             ) : null}
             {activePeriod.items.map((item) => (
-              <SwipeDeleteRow key={item.id} deleteLabel={`Eliminar ${item.concept}`} onDelete={() => deleteBudgetItem(item)}>
+              <div key={item.id}>
+              <SwipeDeleteRow deleteLabel={`Eliminar ${item.concept}`} onDelete={() => deleteBudgetItem(item)}>
                 <div className="flex items-center gap-2.5 rounded-2xl bg-surface-container px-3 py-2.5">
                   <span
                     className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-container-high"
@@ -552,7 +577,7 @@ export default function FinancesPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-[14px] font-bold text-on-surface">{item.concept}</h3>
                     <p className="truncate text-[11px] font-semibold text-on-surface-variant">
-                      {item.fixed ? "Fijo" : "Variable"} · {moneyFormatter.format(item.amount)}
+                      {item.fixed ? "Recurrente" : "Ocasional"} · {moneyFormatter.format(item.amount)}
                     </p>
                   </div>
                   <button
@@ -564,15 +589,16 @@ export default function FinancesPage() {
                         items: activePeriod.items.map((current) => (current.id === item.id ? { ...current, status } : current)),
                       });
                     }}
-                    className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold"
+                    className="min-h-11 shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold"
                     style={
                       item.status === "paid"
                         ? { background: "rgb(255 185 85 / 15%)", color: "var(--secondary)" }
                         : { background: "rgb(255 107 151 / 15%)", color: "var(--primary)" }
                     }
-                    aria-label={`Marcar ${item.concept} como ${item.status === "paid" ? "pendiente" : "pagado"}`}
+                    disabled={item.consumptions !== undefined}
+                    aria-label={item.consumptions !== undefined ? `Estado de ${item.concept}: calculado según consumos` : `Marcar ${item.concept} como ${item.status === "paid" ? "pendiente" : "pagado"}`}
                   >
-                    {item.status === "paid" ? "Pagado" : "Por pagar"}
+                    {item.consumptions !== undefined ? (summarizeBudgetItem(item).excess > 0 ? "Excedido" : summarizeBudgetItem(item).remaining > 0 ? "Reservado" : "Consumido") : item.status === "paid" ? "Pagado" : "Por pagar"}
                   </button>
                   <button
                     type="button"
@@ -587,13 +613,15 @@ export default function FinancesPage() {
                       setEditingBudgetId(item.id);
                       setBudgetFormOpen(true);
                     }}
-                    className="row-tool"
+                    className="row-tool !h-11 !w-11 shrink-0"
                     aria-label={`Editar ${item.concept}`}
                   >
                     <Pencil aria-hidden="true" size={15} />
                   </button>
                 </div>
               </SwipeDeleteRow>
+              <BudgetConsumptions key={`${activePeriod.id}-${item.id}`} item={item} onSave={consumptions => updateActivePeriod({ ...activePeriod, items: activePeriod.items.map(current => current.id === item.id ? { ...current, consumptions, status: "pending" } : current) })} />
+              </div>
             ))}
           </div>
 
@@ -695,7 +723,7 @@ export default function FinancesPage() {
                         setEditingMiscId(expense.id);
                         setMiscFormOpen(true);
                       }}
-                      className="row-tool"
+                      className="row-tool !h-11 !w-11 shrink-0"
                       aria-label={`Editar ${expense.concept}`}
                     >
                       <Pencil aria-hidden="true" size={15} />

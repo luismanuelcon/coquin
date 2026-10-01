@@ -24,7 +24,7 @@ import { getColombiaTodayIso } from "@/lib/date";
 import { getHomeAttentionSummary } from "@/lib/modules/home";
 import { calculateMarketBudgetSummary } from "@/lib/modules/market";
 import { calculateTaskProgress } from "@/lib/modules/tasks";
-import { calculateFinancePeriodSummary, ensureFinancePeriods } from "@/lib/modules/finances";
+import { calculateFinancePeriodSummary } from "@/lib/modules/finances";
 
 const money = (value: number) =>
   new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(value);
@@ -137,7 +137,7 @@ export default function HomePage() {
   const attention = getHomeAttentionSummary(todayEvents, projectTasks);
 
   const finance = useMemo(() => {
-    const state = ensureFinancePeriods(data.finances, getColombiaTodayIso()).state;
+    const state = data.finances;
     const period = state.periods.find((item) => item.id === state.activePeriodId) ?? state.periods[0];
     return { summary: calculateFinancePeriodSummary(period), period };
   }, [data.finances]);
@@ -155,7 +155,7 @@ export default function HomePage() {
     .slice(0, 2);
 
   const financeBars: Bar[] = [
-    { label: "Base", value: summary.base },
+    { label: "Ingresos", value: summary.base },
     { label: "Compr.", value: summary.totalPayments },
     { label: "Pagado", value: summary.paid },
     { label: "Dispon.", value: Math.max(summary.available, 0), highlight: true },
@@ -210,7 +210,7 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-semibold text-on-surface-variant">Disponible del período</span>
+              <span className="text-[11px] font-semibold text-on-surface-variant">{summary.available < 0 ? "Déficit del período" : "Disponible del período"}</span>
               <div className="flex flex-wrap items-baseline gap-2">
                 <span
                   className="bg-gradient-to-r from-primary via-primary-fixed to-secondary bg-clip-text text-[30px] font-black leading-9 tracking-tight text-transparent"
@@ -230,7 +230,7 @@ export default function HomePage() {
             <div className="grid grid-cols-3 gap-2">
               <div className="flex flex-col rounded-xl bg-surface-container-lowest/70 p-2.5">
                 <span className="flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
-                  <span className="size-1.5 rounded-full bg-primary" /> Base
+                  <span className="size-1.5 rounded-full bg-primary" /> Ingresos
                 </span>
                 <span className="mt-1 text-[13px] font-bold text-primary">{compact(summary.base)}</span>
               </div>
@@ -242,7 +242,7 @@ export default function HomePage() {
               </div>
               <div className="flex flex-col rounded-xl bg-surface-container-lowest/70 p-2.5">
                 <span className="flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant">
-                  <span className="size-1.5 rounded-full bg-tertiary-container" /> Por pagar
+                  <span className="size-1.5 rounded-full bg-tertiary-container" /> Pendiente
                 </span>
                 <span className="mt-1 text-[13px] font-bold text-tertiary">{compact(summary.pending)}</span>
               </div>

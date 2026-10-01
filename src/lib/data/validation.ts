@@ -20,7 +20,9 @@ export function validateData(module: string, v: unknown): boolean {
   if (module === "tasks") return list(v, row => text(row.title) && text(row.owner) && (row.ownerId === undefined || (typeof row.ownerId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.ownerId))) && date(row.due) &&
     ["Pendiente", "En progreso", "Urgente", "Completada"].includes(String(row.status)));
   if (!object(v)) return false;
-  if (module === "market") return amount(v.budget) && list(v.purchases, row =>
+  if (module === "market") return (v.cutoffDay === undefined || (Number.isInteger(v.cutoffDay) && Number(v.cutoffDay) >= 1 && Number(v.cutoffDay) <= 31)) &&
+    (v.period === undefined || (object(v.period) && date(v.period.startDate) && date(v.period.endDate) && String(v.period.startDate) <= String(v.period.endDate))) &&
+    (v.history === undefined || list(v.history, item => date(item.startDate) && date(item.endDate) && String(item.startDate) <= String(item.endDate) && validateData("market", { budget: item.budget, purchases: item.purchases }))) && amount(v.budget) && list(v.purchases, row =>
     text(row.detail) && date(row.date) && amount(row.amount) && Number(row.amount) > 0 &&
     ["Aseo", "Carnes", "Verduras", "Despensa", "Lacteos", "Hogar", "Otro"].includes(String(row.category)));
   if (module !== "finances" || !object(v.settings) || v.settings.currency !== "COP" ||
@@ -31,6 +33,7 @@ export function validateData(module: string, v: unknown): boolean {
     list(row.incomes, item => text(item.concept) && amount(item.amount) && optionalText(item.note) &&
       (item.date === undefined || date(item.date))) &&
     list(row.items, item => text(item.concept) && amount(item.amount) &&
+      (item.consumptions === undefined || list(item.consumptions, entry => date(entry.date) && amount(entry.amount) && Number(entry.amount) > 0 && optionalText(entry.note))) &&
       typeof item.fixed === "boolean" && ["paid", "pending"].includes(String(item.status)) && optionalText(item.note)) &&
     list(row.miscExpenses, item => text(item.concept) && amount(item.amount) && date(item.date) &&
       optionalText(item.note) && optionalText(item.category) && optionalBool(item.weekend) && optionalBool(item.owed))) &&

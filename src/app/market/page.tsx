@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   Pencil,
   Plus,
@@ -12,6 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
+import { PeriodCloseNotice } from "@/components/ui/period-close-notice";
+import { closeMarketPeriod, marketPeriod, dayBefore, nextCutoff } from "@/lib/modules/period-close";
 import { AppChrome } from "@/components/layout/app-chrome";
 import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -45,6 +49,8 @@ const dateFormatter = {
 
 export default function MarketPage() {
   const [market, setMarket] = useModule("market");
+  const period = marketPeriod(market, getColombiaTodayIso());
+  const [cutoffDraft, setCutoffDraft] = useState(String(market.cutoffDay ?? 1));
   const purchases = market.purchases;
   const budgetAmount = market.budget;
   const [budgetDraft, setBudgetDraft] = useState(String(budgetAmount));
@@ -66,7 +72,7 @@ export default function MarketPage() {
   const categoryTotals = useMemo(() => getMarketCategoryTotals(purchases), [purchases]);
   const numericAmount = Number(amount);
   const canSubmit = Boolean(date && detail.trim() && numericAmount > 0);
-  const canSaveBudget = Number(budgetDraft) >= 0;
+  const canSaveBudget = Number.isSafeInteger(Number(budgetDraft)) && Number(budgetDraft) >= 0 && Number.isInteger(Number(cutoffDraft)) && Number(cutoffDraft) >= 1 && Number(cutoffDraft) <= 31;
 
   useScrollIntoViewOnOpen(settingsOpen, "market-budget-form");
   useScrollIntoViewOnOpen(purchaseFormOpen, "market-purchase-form");
@@ -80,6 +86,7 @@ export default function MarketPage() {
     if (
       !(await setMarket((current) => ({
         ...current,
+        period: marketPeriod(current, getColombiaTodayIso()),
         purchases: editingId
           ? current.purchases.map((item) => (item.id === editingId ? purchase : item))
           : [purchase, ...current.purchases],
@@ -97,7 +104,7 @@ export default function MarketPage() {
   async function handleBudgetSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSaveBudget) return;
-    if (!(await setMarket((current) => ({ ...current, budget: Number(budgetDraft) })))) return;
+    if (!(await setMarket((current) => ({ ...current, budget: Number(budgetDraft), cutoffDay: Number(cutoffDraft), period: { startDate: marketPeriod(current, getColombiaTodayIso()).startDate, endDate: dayBefore(nextCutoff(marketPeriod(current, getColombiaTodayIso()).startDate, Number(cutoffDraft))) } })))) return;
     setSettingsOpen(false);
     celebrate();
   }
@@ -112,10 +119,16 @@ export default function MarketPage() {
           tone="market"
           eyebrow="Mercado & despensa"
           title="Presupuesto y compras"
-          subtitle={`${summary.purchaseCount} compras este mes`}
-          badge="Este mes"
+          subtitle={`${summary.purchaseCount} compras en este período`}
+          badge="Período abierto"
         />
 
+        <PeriodCloseNotice key={period.startDate} moduleName="Mercado" endDate={period.endDate} onClose={async () => {
+          if (!(await setMarket(current => closeMarketPeriod(current, getColombiaTodayIso())))) return false;
+          setPurchaseFormOpen(false); setSettingsOpen(false); setEditingId(null); setDetail(""); setAmount("");
+          setLastAdded("Período cerrado. El historial se conservó."); return true;
+        }} />
+        <p className="text-xs font-semibold text-on-surface-variant">Período: {dateFormatter.format(new Date(`${period.startDate}T12:00:00`))} – {dateFormatter.format(new Date(`${period.endDate}T12:00:00`))} · Corte: día {market.cutoffDay ?? 1}</p>
         <section className="card-elevated" aria-label="Presupuesto del hogar">
           <span
             className="glow-blob"
@@ -158,6 +171,7 @@ export default function MarketPage() {
                 onClick={() => {
                   setSettingsOpen((current) => !current);
                   setBudgetDraft(String(budgetAmount));
+                  setCutoffDraft(String(market.cutoffDay ?? 1));
                   setPurchaseFormOpen(false);
                 }}
                 className="icon-fab icon-fab--sm icon-fab--ghost"
@@ -201,14 +215,17 @@ export default function MarketPage() {
 
         {settingsOpen ? (
           <form id="market-budget-form" className="card-surface flex flex-col gap-2 p-3" onSubmit={handleBudgetSubmit}>
-            <div className="input-shell">
+            <label className="field"><span>Presupuesto del período (COP)</span><div className="input-shell">
               <span className="text-secondary font-bold">$</span>
               <MoneyInput
                 value={budgetDraft}
                 onChange={setBudgetDraft}
-                ariaLabel="Presupuesto mensual"
+                ariaLabel="Presupuesto del período"
               />
             </div>
+            </label>
+            <label className="field"><span>Día de corte</span><input className={inputClass} type="number" min="1" max="31" required value={cutoffDraft} onChange={event => setCutoffDraft(event.target.value)} /></label>
+            <p className="text-xs text-on-surface-variant">Día del mes en que comienza el siguiente período. El cierre requiere tu confirmación. En meses más cortos se usa el último día. Es independiente de Finanzas.</p>
             <button type="submit" disabled={!canSaveBudget} className="cta-pill">
               Guardar presupuesto
             </button>
@@ -318,7 +335,7 @@ export default function MarketPage() {
                 </span>
                 <div className="flex shrink-0 items-center">
                   <button
-                    className="row-tool"
+                    className="row-tool !h-11 !w-11 shrink-0"
                     type="button"
                     aria-label={`Editar ${purchase.detail}`}
                     title="Editar compra"
@@ -334,7 +351,7 @@ export default function MarketPage() {
                     <Pencil size={15} />
                   </button>
                   <button
-                    className="row-tool"
+                    className="row-tool !h-11 !w-11 shrink-0"
                     type="button"
                     aria-label={`Eliminar ${purchase.detail}`}
                     title="Eliminar compra"
@@ -352,6 +369,7 @@ export default function MarketPage() {
           </div>
         </section>
 
+        <Link href="/history?module=market" className="flex min-h-11 items-center justify-between rounded-2xl bg-surface-container px-4 text-sm font-bold text-secondary focus-visible:outline-2 focus-visible:outline-primary">Ver históricos de Mercado</Link>
         <button
           type="button"
           className="cta-pill"

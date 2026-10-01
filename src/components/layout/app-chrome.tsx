@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, Home as HomeIcon, Settings } from "lucide-react";
+import { Bell, History, Home as HomeIcon, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "./bottom-nav";
 import { SignOutButton, useAppData } from "@/components/data/data-provider";
@@ -19,9 +20,27 @@ const pathToTone: Record<string, ModuleKey> = {
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const userMenu = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const dismissOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !userMenu.current?.contains(event.target)) userMenu.current?.removeAttribute("open");
+    };
+    const dismissEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && userMenu.current?.open) {
+        userMenu.current.removeAttribute("open");
+        userMenu.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", dismissOutside);
+    document.addEventListener("keydown", dismissEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutside);
+      document.removeEventListener("keydown", dismissEscape);
+    };
+  }, []);
   const tone = pathToTone[pathname] ?? "home";
   const theme = moduleThemes[tone];
-  const headerLabel = pathname === "/settings" ? "Ajustes" : theme.label;
+  const headerLabel = pathname === "/history" ? "Históricos" : pathname === "/settings" ? "Ajustes" : theme.label;
   const { householdName, displayName } = useAppData();
   return (
     <main className="app-shell">
@@ -59,7 +78,10 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
               >
                 <Bell size={22} strokeWidth={2.2} aria-hidden="true" />
               </button>
-              <span className="avatar-ring" aria-label={`Coquín · ${householdName || "Mi hogar"}`}>
+              <details ref={userMenu} className="relative" key={pathname} onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) event.currentTarget.removeAttribute("open");
+              }}>
+                <summary className="avatar-ring list-none cursor-pointer focus-visible:outline-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden" aria-label="Menú del usuario" title="Menú del usuario">
                 <Image
                   src="/coquin-icon.png"
                   alt=""
@@ -68,7 +90,13 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                   priority
                   className="object-cover"
                 />
-              </span>
+                </summary>
+                <nav aria-label="Menú del usuario" className="absolute right-0 top-full z-50 mt-3 w-52 rounded-2xl border border-surface-container-high bg-surface-container p-2 shadow-xl">
+                  <p className="truncate px-3 py-2 text-xs font-semibold text-on-surface-variant">{displayName}</p>
+                  <Link href="/history" aria-current={pathname === "/history" ? "page" : undefined} className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary aria-[current=page]:bg-surface-container-high aria-[current=page]:text-primary"><History size={18} aria-hidden="true" />Históricos</Link>
+                  <Link href="/settings" aria-current={pathname === "/settings" ? "page" : undefined} className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary aria-[current=page]:bg-surface-container-high aria-[current=page]:text-primary"><Settings size={18} aria-hidden="true" />Ajustes</Link>
+                </nav>
+              </details>
             </div>
           </div>
         </header>

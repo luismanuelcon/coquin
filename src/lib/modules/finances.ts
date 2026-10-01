@@ -146,11 +146,18 @@ export function summarizeMiscFlags(period: FinancePeriod) {
   };
 }
 
+export function summarizeBudgetItem(item: FinanceBudgetItem) {
+  const consumed = item.consumptions === undefined
+    ? (item.status === "paid" ? item.amount : 0)
+    : item.consumptions.reduce((sum, entry) => sum + entry.amount, 0);
+  return { consumed, remaining: Math.max(item.amount - consumed, 0), excess: Math.max(consumed - item.amount, 0), committed: Math.max(item.amount, consumed) };
+}
+
 export function calculateFinancePeriodSummary(period: FinancePeriod) {
   const miscTotal = getMiscExpensesTotal(period);
-  const budgetedTotal = period.items.reduce((sum, item) => sum + item.amount, 0);
+  const budgetedTotal = period.items.reduce((sum, item) => sum + summarizeBudgetItem(item).committed, 0);
   const totalPayments = budgetedTotal + miscTotal;
-  const itemsPaid = period.items.reduce((sum, item) => sum + (item.status === "paid" ? item.amount : 0), 0);
+  const itemsPaid = period.items.reduce((sum, item) => sum + summarizeBudgetItem(item).consumed, 0);
   // Misc expenses are money already spent, so they count as paid, not pending.
   const paid = itemsPaid + miscTotal;
   const base = period.incomes.reduce((sum, income) => sum + income.amount, 0);
@@ -175,6 +182,7 @@ export function createNextFinancePeriod(previousPeriod: FinancePeriod) {
       ...item,
       id: `item-${toIsoDate(start)}-${item.id}`,
       status: "pending",
+      consumptions: item.consumptions === undefined ? undefined : [],
     }));
 
   return {

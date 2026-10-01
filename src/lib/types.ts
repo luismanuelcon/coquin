@@ -40,7 +40,10 @@ export type FinanceIncome = {
   note?: string;
 };
 
+export type FinanceConsumption = { id: string; date: string; amount: number; note?: string };
+
 export type FinanceBudgetItem = {
+  consumptions?: FinanceConsumption[];
   id: string;
   concept: string;
   amount: number;
@@ -115,4 +118,12 @@ export type ProjectTask = {
   ownerId?: string;
   status: string;
   due: string;
+};
+
+export type MarketState = {
+  budget: number;
+  purchases: MarketPurchase[];
+  cutoffDay?: number;
+  period?: { startDate: string; endDate: string };
+  history?: { id: string; startDate: string; endDate: string; budget: number; purchases: MarketPurchase[] }[];
 };
