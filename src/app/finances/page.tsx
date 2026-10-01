@@ -6,6 +6,7 @@ import {
   Banknote,
   CheckCircle2,
   ChevronRight,
+  ChevronDown,
   CircleAlert,
   Eye,
   EyeOff,
@@ -94,6 +95,7 @@ export default function FinancesPage() {
   const [miscForm, setMiscForm] = useState(emptyMiscForm());
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
   const [editingMiscId, setEditingMiscId] = useState<string | null>(null);
+  const [openConsumptionId, setOpenConsumptionId] = useState<string | null>(null);
   const [budgetFormOpen, setBudgetFormOpen] = useState(false);
   const [miscDetailOpen, setMiscDetailOpen] = useState(false);
   const [miscChartOpen, setMiscChartOpen] = useState(false);
@@ -564,10 +566,13 @@ export default function FinancesPage() {
                 Sin gastos presupuestados.
               </p>
             ) : null}
-            {activePeriod.items.map((item) => (
+            {activePeriod.items.map((item) => {
+              const totals = summarizeBudgetItem(item);
+              const partial = totals.consumed > 0 && totals.consumed < item.amount;
+              return (
               <div key={item.id}>
               <SwipeDeleteRow deleteLabel={`Eliminar ${item.concept}`} onDelete={() => deleteBudgetItem(item)}>
-                <div className="flex items-center gap-2.5 rounded-2xl bg-surface-container px-3 py-2.5">
+                <div className={`flex items-center gap-2.5 bg-surface-container px-3 py-2.5 ${openConsumptionId === item.id ? "rounded-t-2xl" : "rounded-2xl"}`}>
                   <span
                     className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-container-high"
                     style={{ color: item.status === "paid" ? "var(--secondary)" : "var(--primary)" }}
@@ -578,6 +583,7 @@ export default function FinancesPage() {
                     <h3 className="truncate text-[14px] font-bold text-on-surface">{item.concept}</h3>
                     <p className="truncate text-[11px] font-semibold text-on-surface-variant">
                       {item.fixed ? "Recurrente" : "Ocasional"} · {moneyFormatter.format(item.amount)}
+                      {partial ? <span className="text-secondary"> ({moneyFormatter.format(totals.consumed)})</span> : null}
                     </p>
                   </div>
                   <button
@@ -618,11 +624,23 @@ export default function FinancesPage() {
                   >
                     <Pencil aria-hidden="true" size={15} />
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setOpenConsumptionId((current) => (current === item.id ? null : item.id))}
+                    className="row-tool !h-11 !w-11 shrink-0"
+                    aria-expanded={openConsumptionId === item.id}
+                    aria-label={`${openConsumptionId === item.id ? "Ocultar" : "Ver"} consumos de ${item.concept}`}
+                  >
+                    <ChevronDown aria-hidden="true" size={16} className={`transition-transform motion-reduce:transition-none ${openConsumptionId === item.id ? "rotate-180" : ""}`} />
+                  </button>
                 </div>
               </SwipeDeleteRow>
-              <BudgetConsumptions key={`${activePeriod.id}-${item.id}`} item={item} onSave={consumptions => updateActivePeriod({ ...activePeriod, items: activePeriod.items.map(current => current.id === item.id ? { ...current, consumptions, status: "pending" } : current) })} />
+              {openConsumptionId === item.id ? (
+                <BudgetConsumptions key={`${activePeriod.id}-${item.id}`} item={item} onSave={consumptions => updateActivePeriod({ ...activePeriod, items: activePeriod.items.map(current => current.id === item.id ? { ...current, consumptions, status: "pending" } : current) })} />
+              ) : null}
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="flex items-stretch gap-2">
