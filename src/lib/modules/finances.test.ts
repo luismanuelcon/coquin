@@ -5,6 +5,7 @@ import {
   calculateFinanceObligations,
   calculateFinancePeriodSummary,
   createNextFinancePeriod,
+  deriveMarketBudgetItem,
   ensureFinancePeriods,
   getFinancePeriodRange,
   getFinancePeriodRangeFromStart,
@@ -17,6 +18,18 @@ import {
 } from "./finances";
 
 describe("finances module", () => {
+  it("derives a read-only fixed expense from a positive market budget", () => {
+    expect(deriveMarketBudgetItem(450000)).toEqual({
+      id: "market-budget", concept: "Mercado", amount: 450000, fixed: true, status: "pending",
+    });
+  });
+
+  it("does not derive a market expense when the budget is zero or invalid", () => {
+    expect(deriveMarketBudgetItem(0)).toBeNull();
+    expect(deriveMarketBudgetItem(-100)).toBeNull();
+    expect(deriveMarketBudgetItem(1.5)).toBeNull();
+  });
+
   it("recalculates the base and available balance as multiple income sources change", () => {
     const period: FinancePeriod = {
       id: "period-2026-09-01", startDate: "2026-09-01", endDate: "2026-09-30",

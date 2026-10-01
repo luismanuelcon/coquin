@@ -3,6 +3,8 @@ const text = (v: unknown) => typeof v === "string" && v.trim().length > 0 && v.l
 const amount = (v: unknown) => typeof v === "number" && Number.isSafeInteger(v) && v >= 0 && v <= 1e12;
 const optionalText = (v: unknown) => v === undefined || (typeof v === "string" && v.length <= 500);
 const optionalBool = (v: unknown) => v === undefined || typeof v === "boolean";
+const uuid = (v: unknown) => typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+const optionalUuid = (v: unknown) => v === undefined || uuid(v);
 const date = (v: unknown) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) &&
   Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
 function list(v: unknown, check: (row: Record<string, unknown>) => boolean): boolean {
@@ -21,9 +23,11 @@ export function validateData(module: string, v: unknown): boolean {
     ["Pendiente", "En progreso", "Urgente", "Completada"].includes(String(row.status)));
   if (!object(v)) return false;
   if (module === "market") return (v.cutoffDay === undefined || (Number.isInteger(v.cutoffDay) && Number(v.cutoffDay) >= 1 && Number(v.cutoffDay) <= 31)) &&
+    (v.responsibleId === undefined || uuid(v.responsibleId)) &&
     (v.period === undefined || (object(v.period) && date(v.period.startDate) && date(v.period.endDate) && String(v.period.startDate) <= String(v.period.endDate))) &&
     (v.history === undefined || list(v.history, item => date(item.startDate) && date(item.endDate) && String(item.startDate) <= String(item.endDate) && validateData("market", { budget: item.budget, purchases: item.purchases }))) && amount(v.budget) && list(v.purchases, row =>
     text(row.detail) && date(row.date) && amount(row.amount) && Number(row.amount) > 0 &&
+    optionalBool(row.owed) && optionalUuid(row.debtorId) && optionalText(row.debtorName) && optionalUuid(row.buyerId) && optionalText(row.buyerName) &&
     ["Aseo", "Carnes", "Verduras", "Despensa", "Lacteos", "Hogar", "Otro"].includes(String(row.category)));
   if (module !== "finances" || !object(v.settings) || v.settings.currency !== "COP" ||
     !Number.isInteger(v.settings.cutoffDay) || Number(v.settings.cutoffDay) < 1 ||
