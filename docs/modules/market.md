@@ -25,8 +25,16 @@ Mercado controla el presupuesto mensual destinado a compras del hogar. No busca 
 ## Datos Clave
 
 - `MarketBudget`: mes, presupuesto y moneda.
-- `MarketPurchase`: compra mensual con fecha, detalle, categoria y valor.
+- `MarketPurchase`: compra mensual con fecha, detalle, categoria y valor. Opcionalmente marca una deuda (`owed`, `debtorId`/`debtorName`, `buyerId`/`buyerName`).
 - `MarketCategory`: categorias permitidas para clasificar el gasto.
+- `MarketState.responsibleId`: integrante que carga el presupuesto de mercado como gasto fijo en sus finanzas.
+
+## Responsable Y Deudas
+
+- En la configuracion del mercado, cuando el hogar tiene 2 o mas integrantes, se puede elegir un `responsable`.
+- El presupuesto del mercado aparece como gasto fijo de solo lectura ("Mercado") en las finanzas del responsable. Finanzas es privado por usuario, por eso el cargo se deriva unicamente al abrir las finanzas del responsable; no se escribe en las finanzas de otros.
+- Al registrar una compra, cualquier integrante puede marcar "lo pague yo" y elegir quien lo debe. El comprador queda como acreedor y la persona elegida como deudor.
+- `summarizeMarketDebts` agrupa las compras marcadas en totales "deudor le debe a acreedor", visibles en el modulo Mercado. Cada compra marcada muestra una etiqueta con el deudor.
 
 ## Reglas De Negocio
 

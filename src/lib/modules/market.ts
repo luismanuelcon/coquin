@@ -43,3 +43,33 @@ export function createMarketPurchase(input: Omit<MarketPurchase, "id">): MarketP
     id: `purchase-${input.date}-${input.category}-${input.amount}-${slugify(input.detail) || "sin-detalle"}`,
   };
 }
+
+export type MarketDebt = {
+  debtorId: string;
+  debtorName: string;
+  creditorId: string;
+  creditorName: string;
+  total: number;
+};
+
+/** Groups purchases marked as owed into "debtor owes creditor" totals. */
+export function summarizeMarketDebts(purchases: MarketPurchase[]): MarketDebt[] {
+  const debts = new Map<string, MarketDebt>();
+  for (const purchase of purchases) {
+    if (!purchase.owed || !purchase.debtorId || !purchase.buyerId || purchase.debtorId === purchase.buyerId) continue;
+    const key = `${purchase.debtorId}->${purchase.buyerId}`;
+    const existing = debts.get(key);
+    if (existing) {
+      existing.total += purchase.amount;
+    } else {
+      debts.set(key, {
+        debtorId: purchase.debtorId,
+        debtorName: purchase.debtorName ?? "Alguien",
+        creditorId: purchase.buyerId,
+        creditorName: purchase.buyerName ?? "Alguien",
+        total: purchase.amount,
+      });
+    }
+  }
+  return [...debts.values()].sort((a, b) => b.total - a.total);
+}

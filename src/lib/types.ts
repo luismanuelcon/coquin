@@ -98,6 +98,14 @@ export type MarketPurchase = {
   detail: string;
   category: MarketCategory;
   amount: number;
+  /** True when the buyer paid with their own money and expects reimbursement. */
+  owed?: boolean;
+  /** Member who must reimburse the buyer. */
+  debtorId?: string;
+  debtorName?: string;
+  /** Member who paid (creditor); usually who registered the purchase. */
+  buyerId?: string;
+  buyerName?: string;
 };
 
 export type MarketBudget = {
@@ -124,6 +132,8 @@ export type MarketState = {
   budget: number;
   purchases: MarketPurchase[];
   cutoffDay?: number;
+  /** Member who carries the market budget as a fixed expense in their finances. */
+  responsibleId?: string;
   period?: { startDate: string; endDate: string };
   history?: { id: string; startDate: string; endDate: string; budget: number; purchases: MarketPurchase[] }[];
 };

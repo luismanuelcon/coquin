@@ -146,6 +146,15 @@ export function summarizeMiscFlags(period: FinancePeriod) {
   };
 }
 
+/** Id for the read-only fixed expense derived from the shared market budget. */
+export const MARKET_BUDGET_ITEM_ID = "market-budget";
+
+/** Builds the read-only fixed expense shown in the market responsible's finances. */
+export function deriveMarketBudgetItem(marketBudget: number): FinanceBudgetItem | null {
+  if (!Number.isInteger(marketBudget) || marketBudget <= 0) return null;
+  return { id: MARKET_BUDGET_ITEM_ID, concept: "Mercado", amount: marketBudget, fixed: true, status: "pending" };
+}
+
 export function summarizeBudgetItem(item: FinanceBudgetItem) {
   const consumed = item.consumptions === undefined
     ? (item.status === "paid" ? item.amount : 0)

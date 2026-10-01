@@ -21,7 +21,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { DatePicker } from "@/components/ui/date-picker";
 import { MoneyInput } from "@/components/ui/money-input";
-import { useModule } from "@/components/data/data-provider";
+import { useModule, useAppData } from "@/components/data/data-provider";
 import { celebrate } from "@/lib/ui/celebrate";
 import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
@@ -29,6 +29,7 @@ import {
   calculateMarketBudgetSummary,
   createMarketPurchase,
   getMarketCategoryTotals,
+  summarizeMarketDebts,
 } from "@/lib/modules/market";
 import type { MarketCategory, MarketPurchase } from "@/lib/types";
 
@@ -49,8 +50,11 @@ const dateFormatter = {
 
 export default function MarketPage() {
   const [market, setMarket] = useModule("market");
+  const { members, userId } = useAppData();
+  const canAssignResponsible = members.length >= 2;
   const period = marketPeriod(market, getColombiaTodayIso());
   const [cutoffDraft, setCutoffDraft] = useState(String(market.cutoffDay ?? 1));
+  const [responsibleDraft, setResponsibleDraft] = useState(market.responsibleId ?? "");
   const purchases = market.purchases;
   const budgetAmount = market.budget;
   const [budgetDraft, setBudgetDraft] = useState(String(budgetAmount));
@@ -62,6 +66,8 @@ export default function MarketPage() {
   const [category, setCategory] = useState<MarketCategory>("Aseo");
   const [detail, setDetail] = useState("");
   const [amount, setAmount] = useState("");
+  const [owed, setOwed] = useState(false);
+  const [debtorId, setDebtorId] = useState("");
   const [lastAdded, setLastAdded] = useState("");
 
   const activeBudget = useMemo(
@@ -70,8 +76,13 @@ export default function MarketPage() {
   );
   const summary = useMemo(() => calculateMarketBudgetSummary(activeBudget, purchases), [activeBudget, purchases]);
   const categoryTotals = useMemo(() => getMarketCategoryTotals(purchases), [purchases]);
+  const debts = useMemo(() => summarizeMarketDebts(purchases), [purchases]);
+  const responsibleName = useMemo(
+    () => members.find((member) => member.userId === market.responsibleId)?.displayName ?? "",
+    [members, market.responsibleId],
+  );
   const numericAmount = Number(amount);
-  const canSubmit = Boolean(date && detail.trim() && numericAmount > 0);
+  const canSubmit = Boolean(date && detail.trim() && numericAmount > 0) && (!owed || Boolean(debtorId));
   const canSaveBudget = Number.isSafeInteger(Number(budgetDraft)) && Number(budgetDraft) >= 0 && Number.isInteger(Number(cutoffDraft)) && Number(cutoffDraft) >= 1 && Number(cutoffDraft) <= 31;
 
   useScrollIntoViewOnOpen(settingsOpen, "market-budget-form");
@@ -81,7 +92,17 @@ export default function MarketPage() {
     event.preventDefault();
     if (!canSubmit) return;
 
-    const purchase = createMarketPurchase({ date, category, detail: detail.trim(), amount: numericAmount });
+    const debtor = owed ? members.find((member) => member.userId === debtorId) : undefined;
+    const buyer = members.find((member) => member.userId === userId);
+    const purchase = createMarketPurchase({
+      date,
+      category,
+      detail: detail.trim(),
+      amount: numericAmount,
+      ...(owed && debtor
+        ? { owed: true, debtorId: debtor.userId, debtorName: debtor.displayName, buyerId: userId || undefined, buyerName: buyer?.displayName }
+        : {}),
+    });
     purchase.id = editingId ?? crypto.randomUUID();
     if (
       !(await setMarket((current) => ({
@@ -98,13 +119,15 @@ export default function MarketPage() {
     celebrate();
     setDetail("");
     setAmount("");
+    setOwed(false);
+    setDebtorId("");
     setPurchaseFormOpen(false);
   }
 
   async function handleBudgetSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSaveBudget) return;
-    if (!(await setMarket((current) => ({ ...current, budget: Number(budgetDraft), cutoffDay: Number(cutoffDraft), period: { startDate: marketPeriod(current, getColombiaTodayIso()).startDate, endDate: dayBefore(nextCutoff(marketPeriod(current, getColombiaTodayIso()).startDate, Number(cutoffDraft))) } })))) return;
+    if (!(await setMarket((current) => ({ ...current, budget: Number(budgetDraft), cutoffDay: Number(cutoffDraft), responsibleId: responsibleDraft || undefined, period: { startDate: marketPeriod(current, getColombiaTodayIso()).startDate, endDate: dayBefore(nextCutoff(marketPeriod(current, getColombiaTodayIso()).startDate, Number(cutoffDraft))) } })))) return;
     setSettingsOpen(false);
     celebrate();
   }
@@ -147,6 +170,9 @@ export default function MarketPage() {
                   {new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(activeBudget.budget)}
                 </span>
               </div>
+              {responsibleName ? (
+                <p className="mt-1 truncate text-[11px] font-semibold text-secondary">Responsable: {responsibleName}</p>
+              ) : null}
             </div>
             <div className="flex shrink-0 gap-2">
               <button
@@ -157,6 +183,8 @@ export default function MarketPage() {
                   setCategory("Aseo");
                   setDetail("");
                   setAmount("");
+                  setOwed(false);
+                  setDebtorId("");
                   setPurchaseFormOpen((current) => !current);
                   setSettingsOpen(false);
                 }}
@@ -172,6 +200,7 @@ export default function MarketPage() {
                   setSettingsOpen((current) => !current);
                   setBudgetDraft(String(budgetAmount));
                   setCutoffDraft(String(market.cutoffDay ?? 1));
+                  setResponsibleDraft(market.responsibleId ?? "");
                   setPurchaseFormOpen(false);
                 }}
                 className="icon-fab icon-fab--sm icon-fab--ghost"
@@ -225,6 +254,18 @@ export default function MarketPage() {
             </div>
             </label>
             <label className="field"><span>Día de corte</span><input className={inputClass} type="number" min="1" max="31" required value={cutoffDraft} onChange={event => setCutoffDraft(event.target.value)} /></label>
+            {canAssignResponsible ? (
+              <label className="field"><span>Responsable del mercado</span><div className="input-shell">
+                <select value={responsibleDraft} onChange={event => setResponsibleDraft(event.target.value)} aria-label="Responsable del mercado">
+                  <option value="">Sin responsable</option>
+                  {members.map((member) => (
+                    <option key={member.userId} value={member.userId}>{member.displayName}</option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-xs font-normal normal-case text-on-surface-variant">El presupuesto del mercado aparecerá como gasto fijo en las finanzas del responsable.</span>
+              </label>
+            ) : null}
             <p className="text-xs text-on-surface-variant">Día del mes en que comienza el siguiente período. El cierre requiere tu confirmación. En meses más cortos se usa el último día. Es independiente de Finanzas.</p>
             <button type="submit" disabled={!canSaveBudget} className="cta-pill">
               Guardar presupuesto
@@ -269,6 +310,30 @@ export default function MarketPage() {
                   ariaLabel="Valor de la compra"
                 />
               </div>
+              {canAssignResponsible ? (
+                <>
+                  <label className="input-shell input-shell--muted gap-3 text-sm font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={owed}
+                      onChange={(event) => { setOwed(event.target.checked); if (!event.target.checked) setDebtorId(""); }}
+                      className="size-5 accent-primary-container"
+                      style={{ minHeight: "auto", flex: "none" }}
+                    />
+                    ¿Se debe?
+                  </label>
+                  {owed ? (
+                    <div className="input-shell">
+                      <select value={debtorId} onChange={(event) => setDebtorId(event.target.value)} aria-label="A quién se le debe">
+                        <option value="">¿A quién?</option>
+                        {members.filter((member) => member.userId !== userId).map((member) => (
+                          <option key={member.userId} value={member.userId}>{member.displayName}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
               <button type="submit" disabled={!canSubmit} className="cta-pill">
                 <ShoppingCart size={18} aria-hidden="true" />
                 {editingId ? "Guardar cambios" : "Registrar compra"}
@@ -305,6 +370,25 @@ export default function MarketPage() {
           </div>
         </section>
 
+        {debts.length > 0 ? (
+          <section className="card-surface" aria-label="Deudas del mercado">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="section-title">Quién debe</h2>
+              <Tags aria-hidden="true" className="text-primary" size={18} strokeWidth={2.4} />
+            </div>
+            <div className="flex flex-col gap-2">
+              {debts.map((debt) => (
+                <div key={`${debt.debtorId}-${debt.creditorId}`} className="flex items-center justify-between gap-3 rounded-xl bg-surface-container px-3 py-2 text-xs font-semibold">
+                  <span className="min-w-0 truncate text-on-surface">
+                    <span className="font-bold text-primary">{debt.debtorName}</span> le debe a <span className="font-bold text-secondary">{debt.creditorName}</span>
+                  </span>
+                  <span className="shrink-0 whitespace-nowrap font-bold text-on-surface">{moneyFormatter.format(debt.total)}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="card-surface p-0" aria-label="Compras registradas">
           <div className="flex items-center justify-between gap-3 p-4 pb-3">
             <h2 className="section-title">Compras registradas</h2>
@@ -329,6 +413,11 @@ export default function MarketPage() {
                   <p className="truncate text-[11px] font-semibold text-on-surface-variant">
                     {purchase.category} · {dateFormatter.format(new Date(`${purchase.date}T12:00:00`))}
                   </p>
+                  {purchase.owed && purchase.debtorName ? (
+                    <span className="mt-1 inline-block rounded-full bg-[rgb(255_107_151/15%)] px-2 py-0.5 text-[10px] font-bold text-primary">
+                      {purchase.debtorName} lo debe
+                    </span>
+                  ) : null}
                 </div>
                 <span className="shrink-0 whitespace-nowrap text-[14px] font-bold text-on-surface">
                   -{moneyFormatter.format(purchase.amount)}
@@ -345,6 +434,8 @@ export default function MarketPage() {
                       setDetail(purchase.detail);
                       setCategory(purchase.category);
                       setAmount(String(purchase.amount));
+                      setOwed(Boolean(purchase.owed));
+                      setDebtorId(purchase.debtorId ?? "");
                       setPurchaseFormOpen(true);
                     }}
                   >
@@ -379,6 +470,8 @@ export default function MarketPage() {
             setCategory("Aseo");
             setDetail("");
             setAmount("");
+            setOwed(false);
+            setDebtorId("");
             setPurchaseFormOpen(true);
             setSettingsOpen(false);
           }}

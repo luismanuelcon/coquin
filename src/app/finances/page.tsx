@@ -14,6 +14,7 @@ import {
   Plus,
   ReceiptText,
   Settings,
+  ShoppingCart,
   TrendingUp,
   Wallet,
 } from "lucide-react";
@@ -29,13 +30,15 @@ import { MiscWeekendChart } from "@/components/ui/misc-weekend-chart";
 import { BudgetConsumptions } from "@/components/finances/budget-consumptions";
 import { FinanceIncomes } from "@/components/finances/finance-incomes";
 import { MoneyInput } from "@/components/ui/money-input";
-import { useModule } from "@/components/data/data-provider";
+import { useModule, useAppData } from "@/components/data/data-provider";
 import { celebrate } from "@/lib/ui/celebrate";
 import { getColombiaTodayIso } from "@/lib/date";
 import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-open";
 import {
   calculateFinancePeriodSummary,
   summarizeBudgetItem,
+  deriveMarketBudgetItem,
+  MARKET_BUDGET_ITEM_ID,
   EXPENSE_CATEGORIES,
   getFinancePeriodRangeFromStart,
   summarizeMiscByCategory,
@@ -90,6 +93,8 @@ const INPUT =
 
 export default function FinancesPage() {
   const [storedBudget, setBudgetState] = useModule("finances");
+  const [market] = useModule("market");
+  const { userId } = useAppData();
   const budgetState = storedBudget;
   const [budgetForm, setBudgetForm] = useState(emptyBudgetForm);
   const [miscForm, setMiscForm] = useState(emptyMiscForm());
@@ -116,7 +121,19 @@ export default function FinancesPage() {
     () => budgetState.periods.find((period) => period.id === budgetState.activePeriodId) ?? budgetState.periods[0],
     [budgetState],
   );
-  const summary = useMemo(() => calculateFinancePeriodSummary(activePeriod), [activePeriod]);
+  const marketItem = useMemo(
+    () => (market.responsibleId === userId ? deriveMarketBudgetItem(market.budget) : null),
+    [market.responsibleId, market.budget, userId],
+  );
+  const summaryPeriod = useMemo(
+    () => (marketItem ? { ...activePeriod, items: [marketItem, ...activePeriod.items] } : activePeriod),
+    [activePeriod, marketItem],
+  );
+  const displayItems = useMemo(
+    () => (marketItem ? [marketItem, ...activePeriod.items] : activePeriod.items),
+    [activePeriod.items, marketItem],
+  );
+  const summary = useMemo(() => calculateFinancePeriodSummary(summaryPeriod), [summaryPeriod]);
   const miscSummary = useMemo(() => summarizeMiscByCategory(activePeriod), [activePeriod]);
   const miscFlags = useMemo(() => summarizeMiscFlags(activePeriod), [activePeriod]);
   const paidPercent = summary.totalPayments === 0 ? 0 : Math.round((summary.paid / summary.totalPayments) * 100);
@@ -498,7 +515,7 @@ export default function FinancesPage() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <h2 className="section-title">Gastos mensuales</h2>
-              <span className="pill">{activePeriod.items.length} activos</span>
+              <span className="pill">{displayItems.length} activos</span>
             </div>
             <button
               type="button"
@@ -561,13 +578,32 @@ export default function FinancesPage() {
           ) : null}
 
           <div className="flex flex-col gap-1.5">
-            {activePeriod.items.length === 0 ? (
+            {displayItems.length === 0 ? (
               <p className="rounded-2xl bg-surface-container p-4 text-sm font-semibold text-on-surface-variant">
                 Sin gastos presupuestados.
               </p>
             ) : null}
-            {activePeriod.items.map((item) => {
+            {displayItems.map((item) => {
               const totals = summarizeBudgetItem(item);
+              if (item.id === MARKET_BUDGET_ITEM_ID) {
+                return (
+                  <Link
+                    key={item.id}
+                    href="/market"
+                    className="flex items-center gap-2 rounded-2xl bg-surface-container px-3 py-2.5 focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-container-high text-secondary">
+                      <ShoppingCart size={17} aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-[14px] font-bold text-on-surface">{item.concept}</h3>
+                      <p className="truncate text-[11px] font-semibold text-on-surface-variant">Recurrente · viene de Mercado</p>
+                    </div>
+                    <span className="shrink-0 text-[13px] font-bold tabular-nums text-on-surface">{moneyFormatter.format(item.amount)}</span>
+                    <ChevronRight aria-hidden="true" size={16} className="shrink-0 text-on-surface-variant" />
+                  </Link>
+                );
+              }
               return (
               <div key={item.id}>
               <SwipeDeleteRow deleteLabel={`Eliminar ${item.concept}`} onDelete={() => deleteBudgetItem(item)}>
