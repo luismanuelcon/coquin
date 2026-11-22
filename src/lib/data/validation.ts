@@ -34,7 +34,7 @@ export function validateData(module: string, v: unknown): boolean {
     Number(v.settings.cutoffDay) > 31 || !text(v.activePeriodId)) return false;
   return list(v.periods, row => date(row.startDate) && date(row.endDate) &&
     String(row.startDate) <= String(row.endDate) &&
-    list(row.incomes, item => text(item.concept) && amount(item.amount) && optionalText(item.note) &&
+    list(row.incomes, item => (item.status === undefined || ["pending", "received"].includes(String(item.status))) && text(item.concept) && amount(item.amount) && optionalText(item.note) &&
       (item.date === undefined || date(item.date))) &&
     list(row.items, item => text(item.concept) && amount(item.amount) &&
       (item.consumptions === undefined || list(item.consumptions, entry => date(entry.date) && amount(entry.amount) && Number(entry.amount) > 0 && optionalText(entry.note))) &&

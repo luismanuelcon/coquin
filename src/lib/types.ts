@@ -32,6 +32,8 @@ export type FinanceItem = {
 export type FinancePaymentStatus = "paid" | "pending";
 
 export type FinanceIncome = {
+  /** Legacy incomes without a status are treated as received. */
+  status?: "pending" | "received";
   /** Optional for records saved before income dates were introduced. */
   date?: string;
   id: string;
