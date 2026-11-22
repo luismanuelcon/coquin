@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const client = await createClient();
-    const { data, error } = await client.auth.getClaims();
-    logAuthEvent("server-session.verify.result", { authenticated: !error && Boolean(data?.claims), status: error?.status });
-    return NextResponse.json({ authenticated: !error && Boolean(data?.claims) }, {
-      status: !error && data?.claims ? 200 : 401,
+    const { data, error } = await client.auth.getUser();
+    logAuthEvent("server-session.verify.result", { authenticated: !error && Boolean(data?.user), status: error?.status });
+    return NextResponse.json({ authenticated: !error && Boolean(data?.user) }, {
+      status: !error && data?.user ? 200 : 401,
       headers: { "Cache-Control": "private, no-store" },
     });
   } catch {

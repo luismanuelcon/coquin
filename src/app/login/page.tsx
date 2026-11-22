@@ -6,6 +6,7 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { registerAccount, joinRegisteredFamily } from "@/lib/auth/registration";
 import { logAuthEvent } from "@/lib/auth/diagnostics";
+import { getVerifiedUser } from "@/lib/auth/verified-user";
 import { confirmServerSession } from "@/lib/auth/server-session";
 import { phoneLoginEmail } from "@/lib/auth/phone";
 
@@ -57,7 +58,7 @@ export default function LoginPage() {
         } else {
           logAuthEvent("signin.start");
           const { error: authError } = await client.auth.signInWithPassword({ email, password });
-          logAuthEvent("signin.result", { authenticated: !authError, status: authError?.status });
+          logAuthEvent("signin.result", { authenticated: !authError, status: authError?.status, code: authError?.code });
           if (authError) {
             setError("No pudimos ingresar. Revisa tu celular y contraseña.");
             return;
@@ -67,6 +68,7 @@ export default function LoginPage() {
       if (mode === "signup" && joinFamily) {
         await joinRegisteredFamily(client, code);
       }
+      await getVerifiedUser(client);
       await confirmServerSession();
       logAuthEvent("signin.navigate.home");
       window.location.replace("/");
