@@ -229,7 +229,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
         : <form onSubmit={joinHousehold} className="auth-form"><label>Código de familia<input value={code} onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} autoCapitalize="characters" autoComplete="off" spellCheck={false} inputMode="text" maxLength={8} placeholder="K9F4QM7P" required /></label><button className="auth-submit" disabled={busy || code.trim().length < 8}>{busy ? "Uniéndote..." : "Unirme al hogar"}</button></form>}
       <button type="button" className="household-skip" onClick={continueSolo} disabled={busy}>No deseo crear ni unirme a una familia; continuar solo</button>
     </div>}
-    {state === "error" && <><button className="auth-submit" onClick={load}>Reintentar</button><a className="household-skip" href="/login">Volver a iniciar sesión</a></>}
+    {state === "error" && <><button className="auth-submit" onClick={load}>Reintentar</button><SignOutButton label="Limpiar sesión e iniciar de nuevo" /></>}
     {state !== "loading" && <SignOutButton />}
   </main>;
   return <DataContext.Provider value={{ data, save, userId, displayName, contactEmail, saveEmail, members, membersError, refreshMembers, householdName, householdCode, role, rotateCode }}>
@@ -251,7 +251,7 @@ export function useModule<K extends DataModule>(module: K) {
   const { data, save } = useAppData();
   return [data[module], (value: SetStateAction<AppData[K]>) => save(module, value)] as const;
 }
-export function SignOutButton() {
+export function SignOutButton({ label = "Salir" }: { label?: string }) {
   const [error, setError] = useState(false);
   return <><button type="button" className="sign-out" onClick={async () => {
     try {
@@ -259,5 +259,5 @@ export function SignOutButton() {
       if (signOutError) throw signOutError;
       window.location.replace("/login");
     } catch { setError(true); }
-  }}>Salir</button>{error && <span role="alert">No se pudo cerrar la sesión.</span>}</>;
+  }}>{label}</button>{error && <span role="alert">No se pudo cerrar la sesión.</span>}</>;
 }

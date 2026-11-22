@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export async function getVerifiedUser(client: SupabaseClient) {
   logAuthEvent("browser.verify.start");
   let result = await client.auth.getUser();
-  logAuthEvent("browser.verify.result", { authenticated: !result.error && Boolean(result.data.user), status: result.error?.status });
+  logAuthEvent("browser.verify.result", { authenticated: !result.error && Boolean(result.data.user), status: result.error?.status, code: result.error?.code });
   if (!result.error && result.data.user) return result.data.user;
   const recoverable = !result.error || result.error.status === 401 || result.error.status === 403 || result.error.name === "AuthSessionMissingError";
   if (recoverable) {
@@ -14,10 +14,10 @@ export async function getVerifiedUser(client: SupabaseClient) {
     if (data.session) {
       logAuthEvent("browser.refresh.start");
       const refreshed = await client.auth.refreshSession();
-      logAuthEvent("browser.refresh.result", { hasSession: Boolean(refreshed.data.session), status: refreshed.error?.status });
+      logAuthEvent("browser.refresh.result", { hasSession: Boolean(refreshed.data.session), status: refreshed.error?.status, code: refreshed.error?.code });
       if (!refreshed.error && refreshed.data.session) {
         result = await client.auth.getUser();
-        logAuthEvent("browser.reverify.result", { authenticated: !result.error && Boolean(result.data.user), status: result.error?.status });
+        logAuthEvent("browser.reverify.result", { authenticated: !result.error && Boolean(result.data.user), status: result.error?.status, code: result.error?.code });
         if (!result.error && result.data.user) return result.data.user;
       }
     }

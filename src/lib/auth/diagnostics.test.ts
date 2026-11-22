@@ -9,3 +9,13 @@ it("logs only allowlisted operational fields", () => {
     expect(JSON.stringify(info.mock.calls)).not.toContain("secret");
   } finally { info.mockRestore(); }
 });
+it("exposes known error codes and redacts unexpected strings", () => {
+  const info = vi.spyOn(console, "info").mockImplementation(() => {});
+  try {
+    logAuthEvent("test", { code: "refresh_token_not_found" });
+    expect(info.mock.calls[0][1]).toMatchObject({ code: "refresh_token_not_found" });
+    logAuthEvent("test", { code: "private-provider-content" });
+    expect(info.mock.calls[1][1]).toMatchObject({ code: "other_auth_error" });
+    expect(JSON.stringify(info.mock.calls)).not.toContain("private-provider-content");
+  } finally { info.mockRestore(); }
+});
