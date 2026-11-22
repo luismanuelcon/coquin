@@ -1,3 +1,4 @@
+import { logAuthEvent } from "@/lib/auth/diagnostics";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseConfig } from "@/lib/supabase/config";
@@ -21,7 +22,10 @@ export async function proxy(request: NextRequest) {
 
   const { data, error } = await supabase.auth.getClaims();
   if ((error || !data?.claims) && request.nextUrl.pathname !== "/login") {
-    const redirect = NextResponse.redirect(new URL("/login", request.url));
+    logAuthEvent("proxy.redirect.login", { authenticated: false, status: error?.status });
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("reason", "server-session");
+    const redirect = NextResponse.redirect(loginUrl);
     response.cookies.getAll().forEach(cookie => redirect.cookies.set(cookie));
     redirect.headers.set("Cache-Control", "private, no-store");
     return redirect;

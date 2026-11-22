@@ -2,6 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type SetStateAction } from "react";
 import { usePathname } from "next/navigation";
+import { logAuthEvent } from "@/lib/auth/diagnostics";
+import { getVerifiedUser } from "@/lib/auth/verified-user";
 import { createClient } from "@/lib/supabase/client";
 import { emptyData, type AppData, type DataModule } from "@/lib/data/empty";
 import { CoquinWordmark } from "@/components/brand/coquin-wordmark";
@@ -63,12 +65,20 @@ function ProtectedData({ children }: { children: ReactNode }) {
   const [saved, setSaved] = useState(false);
 
   const load = useCallback(async () => {
+    logAuthEvent("household.load.start");
     setState("loading");
     setError("");
     try {
       const client = createClient();
-      const { data: auth, error: authError } = await client.auth.getUser();
-      if (authError || !auth.user) { window.location.replace("/login"); return; }
+      let user;
+      try {
+        user = await getVerifiedUser(client);
+      } catch (authError) {
+        setError(authError instanceof Error ? authError.message : "No pudimos comprobar tu sesión. Reintenta.");
+        setState("error");
+        return;
+      }
+      const auth = { user };
       setUserId(auth.user.id);
       const currentName = profileName(auth.user.user_metadata);
       setDisplayName(currentName);
@@ -97,8 +107,10 @@ function ProtectedData({ children }: { children: ReactNode }) {
       setHouseholdCode(household.join_code);
       setRole(member.role === "admin" ? "admin" : "member");
       await refreshMembers();
+      logAuthEvent("household.load.ready");
       setState("ready");
     } catch {
+      logAuthEvent("household.load.failed");
       setError("No pudimos cargar tu hogar. Revisa la conexión y que la base de datos esté habilitada.");
       setState("error");
     }
@@ -217,7 +229,7 @@ function ProtectedData({ children }: { children: ReactNode }) {
         : <form onSubmit={joinHousehold} className="auth-form"><label>Código de familia<input value={code} onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} autoCapitalize="characters" autoComplete="off" spellCheck={false} inputMode="text" maxLength={8} placeholder="K9F4QM7P" required /></label><button className="auth-submit" disabled={busy || code.trim().length < 8}>{busy ? "Uniéndote..." : "Unirme al hogar"}</button></form>}
       <button type="button" className="household-skip" onClick={continueSolo} disabled={busy}>No deseo crear ni unirme a una familia; continuar solo</button>
     </div>}
-    {state === "error" && <button className="auth-submit" onClick={load}>Reintentar</button>}
+    {state === "error" && <><button className="auth-submit" onClick={load}>Reintentar</button><a className="household-skip" href="/login">Volver a iniciar sesión</a></>}
     {state !== "loading" && <SignOutButton />}
   </main>;
   return <DataContext.Provider value={{ data, save, userId, displayName, contactEmail, saveEmail, members, membersError, refreshMembers, householdName, householdCode, role, rotateCode }}>

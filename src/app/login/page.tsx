@@ -1,10 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { registerAccount, joinRegisteredFamily } from "@/lib/auth/registration";
+import { logAuthEvent } from "@/lib/auth/diagnostics";
+import { confirmServerSession } from "@/lib/auth/server-session";
 import { phoneLoginEmail } from "@/lib/auth/phone";
 
 export default function LoginPage() {
@@ -20,6 +22,12 @@ export default function LoginPage() {
   const [visible, setVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get("reason");
+    if (reason === "server-session" || reason === "browser-session") logAuthEvent(`login.return.${reason}`);
+    if (reason === "server-session") setError("El servidor no reconoció una sesión activa. Ingresa de nuevo; si acabas de hacerlo, puede haber un problema al guardar o validar las cookies de sesión.");
+    if (reason === "browser-session") setError("La sesión del navegador no está disponible o venció. Ingresa de nuevo para continuar.");
+  }, []);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -47,7 +55,9 @@ export default function LoginPage() {
           setPassword("");
           setConfirm("");
         } else {
+          logAuthEvent("signin.start");
           const { error: authError } = await client.auth.signInWithPassword({ email, password });
+          logAuthEvent("signin.result", { authenticated: !authError, status: authError?.status });
           if (authError) {
             setError("No pudimos ingresar. Revisa tu celular y contraseña.");
             return;
@@ -57,8 +67,11 @@ export default function LoginPage() {
       if (mode === "signup" && joinFamily) {
         await joinRegisteredFamily(client, code);
       }
-      window.location.assign("/");
+      await confirmServerSession();
+      logAuthEvent("signin.navigate.home");
+      window.location.replace("/");
     } catch (err) {
+      logAuthEvent("signin.flow.failed");
       setError(err instanceof Error ? err.message : "No se pudo conectar. Intenta de nuevo.");
     } finally { setBusy(false); }
   }
