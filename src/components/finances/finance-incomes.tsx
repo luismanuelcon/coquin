@@ -5,12 +5,13 @@ import { Banknote, CheckCircle2, ChevronDown, Pencil, Plus, Trash2 } from "lucid
 import { DatePicker } from "@/components/ui/date-picker";
 import { getColombiaTodayIso } from "@/lib/date";
 import { MoneyInput } from "@/components/ui/money-input";
+import { summarizeFinanceIncomes } from "@/lib/modules/finances";
 import type { FinanceIncome } from "@/lib/types";
 
 const money = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 const input = "h-11 w-full min-w-0 rounded-xl bg-surface-container-lowest px-3 text-base text-on-surface focus-visible:outline-2 focus-visible:outline-primary";
 const action = "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50";
-const empty = () => ({ concept: "", amount: "", note: "", date: getColombiaTodayIso() });
+const empty = () => ({ concept: "", amount: "", note: "", status: "received" as "received" | "pending", date: getColombiaTodayIso() });
 const dateFormatter = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
 export function FinanceIncomes({ incomes, onSave }: {
@@ -26,7 +27,7 @@ export function FinanceIncomes({ incomes, onSave }: {
   const addButton = useRef<HTMLButtonElement>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const total = incomes.reduce((sum, income) => sum + income.amount, 0);
+  const { total, pending, received } = summarizeFinanceIncomes(incomes);
 
   function close() {
     setOpen(false);
@@ -68,7 +69,7 @@ export function FinanceIncomes({ incomes, onSave }: {
       setError("Escribe un concepto y un valor en COP mayor a cero, sin decimales.");
       return;
     }
-    const income: FinanceIncome = { id: editingId ?? `income-${crypto.randomUUID()}`, concept: draft.concept.trim(), date: draft.date, amount, note: draft.note.trim() || undefined };
+    const income: FinanceIncome = { id: editingId ?? `income-${crypto.randomUUID()}`, concept: draft.concept.trim(), date: draft.date, status: draft.status, amount, note: draft.note.trim() || undefined };
     void save(editingId ? incomes.map((item) => item.id === editingId ? income : item) : [...incomes, income], editingId ? "Ingreso actualizado." : "Ingreso agregado.");
   }
 
@@ -101,7 +102,11 @@ export function FinanceIncomes({ incomes, onSave }: {
       <div className="mt-4 rounded-2xl bg-surface-container-lowest p-3">
         <p className="text-xs font-semibold text-on-surface-variant">Ingresos del período</p>
         <p className="mt-1 break-words text-2xl font-black tracking-tight text-secondary tabular-nums">{money.format(total)}</p>
-        <p className="mt-1 text-xs text-on-surface-variant">Suma de todos tus ingresos</p>
+        <p className="mt-1 text-xs text-on-surface-variant">Presupuesto: recibidos + pendientes por recibir</p>
+        <div className="mt-3 grid grid-cols-1 gap-2 text-sm min-[380px]:grid-cols-2">
+          <p>Recibidos <strong className="block tabular-nums">{money.format(received)}</strong></p>
+          <p>Pendientes por recibir <strong className="block tabular-nums">{money.format(pending)}</strong></p>
+        </div>
       </div>
       {incomes.length === 0 ? <p className="mt-4 text-sm text-on-surface-variant">Aún no hay ingresos. Agrega el primero para calcular tu disponible.</p> : (
         <ul className="mt-3 flex flex-col gap-2">
@@ -109,11 +114,12 @@ export function FinanceIncomes({ incomes, onSave }: {
             <li key={income.id} className="flex items-center gap-1 rounded-xl bg-surface-container-lowest/60 py-2 pl-3 pr-1">
               <div className="min-w-0 flex-1">
                 <p className="break-words text-sm font-bold text-on-surface">{income.concept}</p>
+                <p className="mt-1 text-xs font-bold text-secondary">{income.status === "pending" ? "Pendiente por recibir" : "Recibido"}</p>
                 {income.note ? <p className="break-words text-xs text-on-surface-variant">{income.note}</p> : null}
                 <p className="mt-0.5 break-words text-xs font-semibold text-on-surface-variant tabular-nums">{money.format(income.amount)}</p>
                 <p className="mt-0.5 text-xs text-on-surface-variant">{income.date ? dateFormatter.format(new Date(`${income.date}T12:00:00Z`)) : "Sin fecha registrada"}</p>
               </div>
-              <button type="button" className={action} disabled={busy} aria-label={`Editar ingreso ${income.concept}`} onClick={() => { setDraft({ concept: income.concept, amount: String(income.amount), note: income.note ?? "", date: income.date ?? "" }); setEditingId(income.id); setError(""); setMessage(""); setExpanded(true); setOpen(true); }}><Pencil size={16} aria-hidden="true" /></button>
+              <button type="button" className={action} disabled={busy} aria-label={`Editar ingreso ${income.concept}`} onClick={() => { setDraft({ concept: income.concept, amount: String(income.amount), note: income.note ?? "", date: income.date ?? "", status: income.status ?? "received" }); setEditingId(income.id); setError(""); setMessage(""); setExpanded(true); setOpen(true); }}><Pencil size={16} aria-hidden="true" /></button>
               <button type="button" className={action} disabled={busy} aria-label={`Eliminar ingreso ${income.concept}`} onClick={() => { if (window.confirm(`¿Eliminar el ingreso «${income.concept}» de ${money.format(income.amount)}? El total de ingresos se recalculará.`)) void save(incomes.filter((item) => item.id !== income.id), "Ingreso eliminado."); }}><Trash2 size={16} aria-hidden="true" /></button>
             </li>
           ))}
@@ -124,7 +130,9 @@ export function FinanceIncomes({ incomes, onSave }: {
           <fieldset disabled={busy} className="flex min-w-0 flex-col gap-3">
             <legend className="mb-3 font-bold">{editingId ? "Editar ingreso" : "Nuevo ingreso"}</legend>
             <label className="field"><span>Concepto</span><input autoFocus required className={input} value={draft.concept} placeholder="Ej. Consultoría" onChange={(event) => setDraft({ ...draft, concept: event.target.value })} /></label>
-            <div className="field"><label htmlFor="finance-income-date">Fecha del ingreso</label><DatePicker id="finance-income-date" value={draft.date} onChange={(date) => setDraft({ ...draft, date })} tone="finances" ariaLabel="Fecha del ingreso" disabled={busy} triggerClassName={`${input} text-left`} /></div>
+            <label className="field"><span>Estado del ingreso</span><select className={input} value={draft.status} onChange={event => setDraft({ ...draft, status: event.target.value as "pending" | "received" })}><option value="received">Recibido</option><option value="pending">Pendiente por recibir</option></select></label>
+            <p className="text-xs text-on-surface-variant">Ambos estados cuentan en tu presupuesto. Cuando recibas el dinero, edita este ingreso y cambia su estado a Recibido.</p>
+            <div className="field"><label htmlFor="finance-income-date">{draft.status === "pending" ? "Fecha esperada de recepción" : "Fecha del ingreso"}</label><DatePicker id="finance-income-date" value={draft.date} onChange={(date) => setDraft({ ...draft, date })} tone="finances" ariaLabel="Fecha del ingreso" disabled={busy} triggerClassName={`${input} text-left`} /></div>
             <label className="field"><span>Valor (COP)</span><MoneyInput className={input} value={draft.amount} onChange={(amount) => setDraft({ ...draft, amount })} /></label>
             <label className="field"><span>Nota (opcional)</span><input className={input} value={draft.note} onChange={(event) => setDraft({ ...draft, note: event.target.value })} /></label>
             <div className="flex flex-wrap gap-2"><button type="submit" className="cta-pill min-h-11">{busy ? "Guardando…" : "Guardar ingreso"}</button><button type="button" className={action} onClick={close}>Cancelar</button></div>

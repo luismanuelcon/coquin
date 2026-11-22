@@ -24,7 +24,7 @@ import { getColombiaTodayIso } from "@/lib/date";
 import { getHomeAttentionSummary } from "@/lib/modules/home";
 import { calculateMarketBudgetSummary } from "@/lib/modules/market";
 import { calculateTaskProgress } from "@/lib/modules/tasks";
-import { calculateFinancePeriodSummary } from "@/lib/modules/finances";
+import { calculateFinancePeriodSummary, summarizeFinanceIncomes } from "@/lib/modules/finances";
 
 const money = (value: number) =>
   new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(value);
@@ -142,6 +142,7 @@ export default function HomePage() {
     return { summary: calculateFinancePeriodSummary(period), period };
   }, [data.finances]);
   const summary = finance.summary;
+  const expectedIncome = summarizeFinanceIncomes(finance.period.incomes).pending;
 
   const completedTasks = projectTasks.filter((task) => task.status === "Completada").length;
   const taskProgress = calculateTaskProgress(completedTasks, projectTasks.length || 1);
@@ -225,6 +226,7 @@ export default function HomePage() {
               </div>
             </div>
 
+            {expectedIncome > 0 ? <p className="text-xs text-on-surface-variant">Disponible presupuestado: incluye $ {money(expectedIncome)} pendientes por recibir.</p> : null}
             <FinanceBars bars={financeBars} />
 
             <div className="grid grid-cols-3 gap-2">

@@ -1,4 +1,4 @@
-import type { FinanceBudgetItem, FinanceBudgetState, FinanceItem, FinancePeriod } from "@/lib/types";
+import type { FinanceBudgetItem, FinanceBudgetState, FinanceIncome, FinanceItem, FinancePeriod } from "@/lib/types";
 
 export const EXPENSE_CATEGORIES = [
   "Comida",
@@ -160,6 +160,17 @@ export function summarizeBudgetItem(item: FinanceBudgetItem) {
     ? (item.status === "paid" ? item.amount : 0)
     : item.consumptions.reduce((sum, entry) => sum + entry.amount, 0);
   return { consumed, remaining: Math.max(item.amount - consumed, 0), excess: Math.max(consumed - item.amount, 0), committed: Math.max(item.amount, consumed) };
+}
+
+export function summarizeFinanceIncomes(incomes: FinanceIncome[]) {
+  const total = incomes.reduce((sum, income) => sum + income.amount, 0);
+  const pending = incomes.reduce((sum, income) => sum + (income.status === "pending" ? income.amount : 0), 0);
+  return { total, pending, received: total - pending };
+}
+
+export function withBudgetConsumptions(item: FinanceBudgetItem, consumptions: NonNullable<FinanceBudgetItem["consumptions"]>): FinanceBudgetItem {
+  const next = { ...item, consumptions };
+  return { ...next, status: summarizeBudgetItem(next).remaining === 0 ? "paid" : "pending" };
 }
 
 export function calculateFinancePeriodSummary(period: FinancePeriod) {

@@ -37,6 +37,8 @@ import { useScrollIntoViewOnOpen } from "@/lib/hooks/use-scroll-into-view-on-ope
 import {
   calculateFinancePeriodSummary,
   summarizeBudgetItem,
+  summarizeFinanceIncomes,
+  withBudgetConsumptions,
   deriveMarketBudgetItem,
   MARKET_BUDGET_ITEM_ID,
   EXPENSE_CATEGORIES,
@@ -136,6 +138,7 @@ export default function FinancesPage() {
   const summary = useMemo(() => calculateFinancePeriodSummary(summaryPeriod), [summaryPeriod]);
   const miscSummary = useMemo(() => summarizeMiscByCategory(activePeriod), [activePeriod]);
   const miscFlags = useMemo(() => summarizeMiscFlags(activePeriod), [activePeriod]);
+  const incomeSummary = summarizeFinanceIncomes(activePeriod.incomes);
   const paidPercent = summary.totalPayments === 0 ? 0 : Math.round((summary.paid / summary.totalPayments) * 100);
 
   useScrollIntoViewOnOpen(budgetFormOpen, "finance-budget-form");
@@ -174,6 +177,9 @@ export default function FinancesPage() {
       status: budgetForm.status,
       note: budgetForm.note.trim() || undefined,
     };
+    if (item.consumptions !== undefined) {
+      item.status = summarizeBudgetItem(item).remaining === 0 ? "paid" : "pending";
+    }
     if (
       !(await updateActivePeriod({
         ...activePeriod,
@@ -288,7 +294,7 @@ export default function FinancesPage() {
   const metrics = [
     { label: "Ingresos", value: summary.base, icon: Banknote, color: "var(--primary)" },
     { label: "Comprometido", value: summary.totalPayments, icon: ReceiptText, color: "var(--tertiary)" },
-    { label: "Pagado", value: summary.paid, icon: CheckCircle2, color: "var(--secondary)" },
+    { label: "Ejecutado", value: summary.paid, icon: CheckCircle2, color: "var(--secondary)" },
     { label: "Pendiente", value: summary.pending, icon: CircleAlert, color: "var(--primary)" },
   ];
 
@@ -357,7 +363,7 @@ export default function FinancesPage() {
               <TrendingUp size={14} aria-hidden="true" />
             </span>
             <span className="text-xs font-bold text-secondary">{paidPercent}%</span>
-            <span className="text-[11px] font-semibold text-on-surface-variant">del compromiso pagado</span>
+            <span className="text-[11px] font-semibold text-on-surface-variant">del compromiso pagado o consumido</span>
           </div>
 
           <div className="relative z-10 mt-3 grid grid-cols-2 gap-2">
@@ -377,8 +383,9 @@ export default function FinancesPage() {
             })}
           </div>
 
-          <p className="relative z-10 mt-2 text-xs text-on-surface-variant">Pendiente incluye pagos por hacer y dinero reservado para próximos consumos.</p>
+          <p className="relative z-10 mt-2 text-xs text-on-surface-variant">Ejecutado incluye pagos y consumos registrados. Pendiente incluye pagos por hacer y dinero reservado para próximos consumos.</p>
 
+          {incomeSummary.pending > 0 ? <p className="relative z-10 mt-2 rounded-xl bg-surface-container p-3 text-xs text-on-surface-variant">El disponible es presupuestado: incluye {moneyFormatter.format(incomeSummary.pending)} pendientes por recibir. Ingresos recibidos: {moneyFormatter.format(incomeSummary.received)}.</p> : null}
           {settingsOpen ? (
             <form id="finance-settings-form" className="relative z-10 mt-4 rounded-xl bg-surface-container p-3" onSubmit={handleSummarySettingsSubmit}>
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-[minmax(0,1fr)_96px]">
@@ -685,7 +692,7 @@ export default function FinancesPage() {
                 </div>
               </SwipeDeleteRow>
               {openConsumptionId === item.id ? (
-                <BudgetConsumptions key={`${activePeriod.id}-${item.id}`} item={item} onSave={consumptions => updateActivePeriod({ ...activePeriod, items: activePeriod.items.map(current => current.id === item.id ? { ...current, consumptions, status: "pending" } : current) })} />
+                <BudgetConsumptions key={`${activePeriod.id}-${item.id}`} item={item} onSave={consumptions => updateActivePeriod({ ...activePeriod, items: activePeriod.items.map(current => current.id === item.id ? withBudgetConsumptions(current, consumptions) : current) })} />
               ) : null}
               </div>
               );

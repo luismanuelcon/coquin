@@ -55,3 +55,9 @@ Valida:
 Los gastos se identifican como recurrentes u ocasionales. Cada gasto admite consumos con fecha, valor y detalle opcional; pueden editarse o eliminarse desde el desglose. El presupuesto completo está comprometido: consumirlo aumenta lo pagado y reduce la reserva, sin descontarlo dos veces. Si los consumos exceden el presupuesto, el exceso incrementa el compromiso y reduce el disponible.
 
 Los registros sin desglose conservan el estado pagado/pendiente anterior. Al agregar consumos, el estado se calcula a partir del detalle; un gasto que figuraba pagado pide confirmar esta conversión. Los consumos se conservan en Históricos pero se vacían al abrir el siguiente período. Editar el presupuesto conserva los consumos existentes.
+
+## Ingresos esperados y recibidos
+
+Cada ingreso admite `pending` (pendiente por recibir) o `received` (recibido). Ambos suman al presupuesto; la interfaz separa sus totales y advierte cuando el disponible incluye dinero esperado. Los registros anteriores sin estado se consideran recibidos. Cambiar el estado no duplica ni modifica el monto del presupuesto.
+
+Al guardar o editar consumos, un gasto con consumo igual o superior al presupuesto guarda estado `paid` y muestra Consumido/Excedido. El total ejecutado incluye los consumos, y el pendiente solo el saldo no consumido. Eliminar movimientos o ajustar el presupuesto recalcula ese estado.
