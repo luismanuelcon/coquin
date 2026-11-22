@@ -216,6 +216,22 @@ export default function SettingsPage() {
             <SignOutButton />
           </div>
         </section>
+        <section className="card-surface flex flex-col gap-3 p-4" aria-labelledby="software-version-title">
+          <h2 id="software-version-title" className="section-title">Acerca de Coquín</h2>
+          <dl className="flex flex-col gap-3 text-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <dt className="text-on-surface-variant">Versión del software</dt>
+              <dd className="font-bold text-secondary">v{process.env.NEXT_PUBLIC_APP_VERSION}</dd>
+            </div>
+            <div>
+              <dt className="text-on-surface-variant">Última actualización</dt>
+              <dd className="mt-1 font-semibold text-on-surface">
+                <time dateTime={process.env.NEXT_PUBLIC_APP_UPDATED_AT}>{process.env.NEXT_PUBLIC_APP_UPDATED_LABEL}</time>
+                <span className="mt-1 block text-xs text-on-surface-variant">Hora de Colombia (UTC−5) · Fecha de compilación</span>
+              </dd>
+            </div>
+          </dl>
+        </section>
       </div>
     </AppChrome>
   );
